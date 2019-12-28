@@ -311,9 +311,9 @@ func (g *Grid) IsWin(row, col int) bool {
 	if count >= 4 {
 		switch h {
 		case WhiteHand:
-			fmt.Println("白手赢", fmt.Sprintf("最后一个落子点为(%d,%d)", row, col))
+			fmt.Println("白手赢", fmt.Sprintf("最后一个落子点为(row:%d,col:%d)", row, col))
 		case BlackHand:
-			fmt.Println("黑手赢", fmt.Sprintf("最后一个落子点为(%d,%d)", row, col))
+			fmt.Println("黑手赢", fmt.Sprintf("最后一个落子点为(row:%d,col:%d)", row, col))
 		}
 		return true
 	}
@@ -347,9 +347,9 @@ func (g *Grid) IsWin(row, col int) bool {
 	if count >= 4 {
 		switch h {
 		case WhiteHand:
-			fmt.Println("白手赢", fmt.Sprintf("最后一个落子点为(%d,%d)", row, col))
+			fmt.Println("白手赢", fmt.Sprintf("最后一个落子点为(row:%d,col:%d)", row, col))
 		case BlackHand:
-			fmt.Println("黑手赢", fmt.Sprintf("最后一个落子点为(%d,%d)", row, col))
+			fmt.Println("黑手赢", fmt.Sprintf("最后一个落子点为(row:%d,col:%d)", row, col))
 		}
 		return true
 	}
@@ -383,9 +383,9 @@ func (g *Grid) IsWin(row, col int) bool {
 	if count >= 4 {
 		switch h {
 		case WhiteHand:
-			fmt.Println("白手赢", fmt.Sprintf("最后一个落子点为(%d,%d)", row, col))
+			fmt.Println("白手赢", fmt.Sprintf("最后一个落子点为(row:%d,col:%d)", row, col))
 		case BlackHand:
-			fmt.Println("黑手赢", fmt.Sprintf("最后一个落子点为(%d,%d)", row, col))
+			fmt.Println("黑手赢", fmt.Sprintf("最后一个落子点为(row:%d,col:%d)", row, col))
 		}
 		return true
 	}
@@ -419,9 +419,9 @@ func (g *Grid) IsWin(row, col int) bool {
 	if count >= 4 {
 		switch h {
 		case WhiteHand:
-			fmt.Println("白手赢", fmt.Sprintf("最后一个落子点为(%d,%d)", row, col))
+			fmt.Println("白手赢", fmt.Sprintf("最后一个落子点为(row:%d,col:%d)", row, col))
 		case BlackHand:
-			fmt.Println("黑手赢", fmt.Sprintf("最后一个落子点为(%d,%d)", row, col))
+			fmt.Println("黑手赢", fmt.Sprintf("最后一个落子点为(row:%d,col:%d)", row, col))
 		}
 		return true
 	}
