@@ -73,28 +73,13 @@ func (g *Grid) RightBottom() *Grid {
 //设置row,col坐标的值, 即 落棋子
 func (g *Grid) Set(row, col int, value hand) {
 	offset := g
-	var i, j int
-	i, j = 1, 1
-	for i <= row {
-		if row == i {
-			for j <= col {
-				if col == j {
-					if offset.value == NilHand {
-						//只有空白处,可以落棋子
-						offset.value = value
-					}
-					return
-				}
-				offset = g.Offset(row, col)
-				if offset == nil {
-					fmt.Println(row, col)
-					panic("1")
-				}
-				j++
-			}
-		}
-		i++
+	offset = g.Offset(row, col)
+	if offset == nil {
+		return
+	} else if offset.value == NilHand {
+		offset.value = value
 	}
+	return
 }
 
 //获取向右偏移x位的指针
@@ -426,6 +411,7 @@ func (g *Grid) IsWin(row, col int) bool {
 		return true
 	}
 	if g.IsFull() {
+		fmt.Println("平手")
 		return true
 	} else {
 		return false
@@ -548,6 +534,9 @@ func GameTwo(row, col int) {
 
 		//随机落棋
 		r, c = rand.Intn(grid.GetRowLen())+1, rand.Intn(grid.GetColLen())+1
+		if r == 3 && c == 1 {
+			fmt.Println("1")
+		}
 		if i%2 == 0 {
 			//黑手落棋子
 			grid.Set(r, c, BlackHand)
@@ -574,5 +563,5 @@ func main() {
 
 	TestGrid(6, 7)
 	GameOne(6, 7)
-	GameTwo(50, 50)
+	GameTwo(4, 4)
 }
