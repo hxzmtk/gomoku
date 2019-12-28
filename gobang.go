@@ -510,6 +510,12 @@ func GameOne(row, col int) {
 	}
 }
 
+//落子的坐标
+type XY struct {
+	row int
+	col int
+}
+
 func GameTwo(row, col int) {
 	/*
 		游戏规则:(和我们平时玩的规则一样)
@@ -519,30 +525,45 @@ func GameTwo(row, col int) {
 			4. 棋盘被完全填满,还未出现胜负,则平局
 	*/
 	grid := InitGrid(row, col, &Grid{})
+
+	//生成所有的棋子位置
+	xy := map[int]XY{}
+	var loop int // 第几次循环
+	for r := 1; r <= row; r++ {
+		for c := 1; c <= col; c++ {
+			xy[loop] = XY{row: r, col: c}
+			loop++
+		}
+	}
+
 	rand.Seed(time.Now().Unix())
+	p := XY{1, 1}
 	i := 0
-	r := 1
-	c := 1
 	for {
 		//if grid.IsFull() {
 		//	break
 		//}
-		if grid.IsWin(r, c) {
+		if grid.IsWin(p.row, p.col) {
 			grid.Print()
 			break
 		}
 
 		//随机落棋
-		r, c = rand.Intn(grid.GetRowLen())+1, rand.Intn(grid.GetColLen())+1
-		if r == 3 && c == 1 {
-			fmt.Println("1")
+		for {
+			if v, ok := xy[rand.Intn(loop+1)]; ok {
+				p = v
+				delete(xy, loop) //已取出,删除该坐标
+				break
+			}
+			//棋子坐标非法， continue
 		}
+
 		if i%2 == 0 {
 			//黑手落棋子
-			grid.Set(r, c, BlackHand)
+			grid.Set(p.row, p.col, BlackHand)
 		} else {
 			//白手落棋子
-			grid.Set(r, c, WhiteHand)
+			grid.Set(p.row, p.col, WhiteHand)
 		}
 		i++
 	}
@@ -563,5 +584,5 @@ func main() {
 
 	TestGrid(6, 7)
 	GameOne(6, 7)
-	GameTwo(4, 4)
+	GameTwo(20, 20)
 }
