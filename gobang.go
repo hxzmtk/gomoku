@@ -165,17 +165,19 @@ func (g *Grid) Print() {
 	fmt.Println("当前棋盘布局为:")
 	var colNumStr = ""
 	col := g.GetColLen()
+	fillC := strconv.Itoa(g.GetColLen())
 	for i := 1; i <= col; i++ {
-		colNumStr += " " + strconv.Itoa(i)
+		colNumStr += " " + StrLeftFill(len(fillC), i)
 	}
-	fmt.Println(" ", strings.TrimLeft(colNumStr, " "))
+	fmt.Println(StrLeftFill(len(strconv.Itoa(g.GetRowLen())), ""), strings.TrimLeft(colNumStr, " "))
 
 	for row := 1; row <= g.GetRowLen(); row++ {
 		var rowStr = ""
 		for col := 1; col <= g.GetColLen(); col++ {
-			rowStr += " " + g.Offset(row, col).value.Str()
+			//rowStr += StrLeftFill(len(strconv.Itoa(g.GetColLen())), "") + g.Offset(row, col).value.Str()
+			rowStr += " " + StrLeftFill(len(strconv.Itoa(g.GetColLen())), g.Offset(row, col).value.Str())
 		}
-		fmt.Println(row, strings.TrimLeft(rowStr, " "))
+		fmt.Println(StrLeftFill(len(strconv.Itoa(g.GetRowLen())), row), strings.TrimLeft(rowStr, " "))
 	}
 
 	fmt.Println("")
@@ -557,6 +559,13 @@ func GameTwo(row, col int) {
 	}
 }
 
+//字符串左边填充
+func StrLeftFill(s int, value interface{}) string {
+	var format = ""
+	format = "%" + strconv.Itoa(s) + "v"
+	return fmt.Sprintf(format, value)
+}
+
 func main() {
 	grid := InitGrid(6, 7, &Grid{})
 
@@ -565,5 +574,5 @@ func main() {
 
 	TestGrid(6, 7)
 	GameOne(6, 7)
-	GameTwo(6, 7)
+	GameTwo(50, 50)
 }
