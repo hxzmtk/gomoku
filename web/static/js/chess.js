@@ -13,12 +13,12 @@ $(document).ready(function(){
                 */
 
                 //横线
-                ctx.moveTo(40, 40 + i * 40);
-                ctx.lineTo(15 * 40, 40 + i * 40);
+                ctx.moveTo(20, 20 + i * 40);
+                ctx.lineTo(15 * 40 -20, 20 + i * 40);
     
                 //纵线
-                ctx.moveTo(40 + i * 40, 40);
-                ctx.lineTo(40 + i * 40, 15 * 40);
+                ctx.moveTo(20 + i * 40, 20);
+                ctx.lineTo(20 + i * 40, 15 * 40 - 20);
 
                 ctx.stroke();
             }
@@ -46,11 +46,22 @@ $(document).ready(function(){
     };
     //落子
     function Setup(row,col,who) {
+        if (row >= 15 || col >=15){
+            return
+        }
         if (who == 1) { //黑手
+            arc(20 + row * 40,20 + col *40, 1);
         } else if (who == 2) { //白手
-
+            arc(20 + row * 40,20 + col *40, 2);
         }
     };
+
+    $("#chess").on("click", function(e){
+        var x = e.offsetX;
+        var y = e.offsetY;
+        // Setup(Math.floor(x/40),Math.floor(y/40),1);
+        // Setup(Math.floor(x/40),Math.floor(y/40),2);
+    });
 
     draw();
 });
