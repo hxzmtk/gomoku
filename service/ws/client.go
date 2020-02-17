@@ -186,5 +186,4 @@ func (c *Client) InRoom(roomNumber uint) bool {
 	} else {
 		return false
 	}
-	return true
 }
