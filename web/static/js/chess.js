@@ -57,11 +57,76 @@ $(document).ready(function(){
     };
 
     $("#chess").on("click", function(e){
-        var x = e.offsetX;
-        var y = e.offsetY;
+        var x = Math.floor(e.offsetX/40);
+        var y = Math.floor(e.offsetY/40);
         // Setup(Math.floor(x/40),Math.floor(y/40),1);
         // Setup(Math.floor(x/40),Math.floor(y/40),2);
+        let msg = {
+            "m_type": 1,
+            "content": {
+                "x":x,
+                "y":y,
+                "room_number": parseInt($("#room-number-info").html()),
+            }
+        }
+        ws.send(JSON.stringify(msg));
+    });
+
+    $("#room-create").on("click", function(w){
+        let msg = {
+            "m_type": 0,
+            "content": {
+                "action":"create"
+            }
+        }
+        ws.send(JSON.stringify(msg));
+    });
+
+    $("#room-join").on("click", function(w){
+        let msg = {
+            "m_type": 0,
+            "content": {
+                "action":"join",
+                "room_number":parseInt($("#modal-room-number").val())
+            }
+        }
+        ws.send(JSON.stringify(msg));
+        $("#modal-room-join").modal('hide');
     });
 
     draw();
+
+    const ws = new WebSocket("ws://"+ document.location.host + "/v1/ws");
+    ws.onopen = function(){
+        console.log("CONNECT");
+    };
+
+    ws.onclose = function(){
+        console.log("DISCONNECT");
+    };
+
+    ws.onmessage = function(event){
+        console.log(event.data);
+        let dic = JSON.parse(event.data);
+        switch (dic['m_type']) {
+            case 0:
+                console.log(dic);
+                if (dic.status == true) {
+                    if (dic['content']['action'] == 'create') {
+                        $("#room-number-info").html(dic['content']['room_number']);
+                    }
+                    else if (dic['content']['action'] == 'join'){
+                        console.log("加入成功");
+                        $("#room-number-info").html(dic['content']['room_number']);
+                    }
+                }
+                
+                break;
+            case 1:
+                if (dic.status == true) {
+                    Setup(dic['content'].x, dic['content'].y,dic['content'].is_black == true?1:2);
+                }
+                break;
+        }
+    }
 });
