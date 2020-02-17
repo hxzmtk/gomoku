@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/bzyy/gobang/pkg/util"
+	"github.com/bzyy/gomoku/pkg/util"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"github.com/mitchellh/mapstructure"

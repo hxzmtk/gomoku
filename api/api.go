@@ -1,7 +1,7 @@
 package api
 
 import (
-	v1 "github.com/bzyy/gobang/api/v1"
+	v1 "github.com/bzyy/gomoku/api/v1"
 	"github.com/gin-gonic/gin"
 )
 

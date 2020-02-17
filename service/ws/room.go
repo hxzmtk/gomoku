@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bzyy/gobang/service/gomoku"
+	"github.com/bzyy/gomoku/service/gomoku"
 )
 
 type Room struct {

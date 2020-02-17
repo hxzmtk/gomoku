@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/bzyy/gobang/api"
+	"github.com/bzyy/gomoku/api"
 )
 
 func main() {

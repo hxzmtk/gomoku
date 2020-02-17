@@ -1,7 +1,7 @@
 package v1
 
 import (
-	serviceWs "github.com/bzyy/gobang/service/ws"
+	serviceWs "github.com/bzyy/gomoku/service/ws"
 	"github.com/gin-gonic/gin"
 )
 
