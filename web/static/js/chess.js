@@ -118,7 +118,14 @@ $(document).ready(function(){
                     else if (dic['content']['action'] == 'join'){
                         console.log("加入成功");
                         $("#room-number-info").html(dic['content']['room_number']);
+                        $("#user-info").html(dic['content'].is_black == true?"先手":"后手");
                     }
+                    $(".chess").removeClass("invisible");  
+                }
+
+                if (dic.msg != ""){
+                    $("#toast-1 .toast-body").html(dic.msg);
+                    $('.toast').toast('show');
                 }
                 
                 break;
@@ -126,7 +133,15 @@ $(document).ready(function(){
                 if (dic.status == true) {
                     Setup(dic['content'].x, dic['content'].y,dic['content'].is_black == true?1:2);
                 }
+                if (dic.msg != ""){
+                    $("#toast-1 .toast-body").html(dic.msg);
+                    $('.toast').toast('show');
+                }
                 break;
         }
-    }
+    };
+
+    $('.toast').on('hidden.bs.toast', function () {
+        // do something...
+    });
 });

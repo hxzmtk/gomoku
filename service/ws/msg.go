@@ -59,6 +59,7 @@ func (w *WsReceive) verify() error {
 type RcvRoomMsg struct {
 	Action     string `json:"action" mapstructure:"action"`
 	RoomNumber int    `json:"room_number" mapstructure:"room_number"` //房间编号
+	IsBlack    bool   `json:"is_black" mapstructure:"is_black"`
 }
 
 type RcvChessMsg struct {

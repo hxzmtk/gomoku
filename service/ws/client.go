@@ -78,6 +78,8 @@ func (c *Client) readPump() {
 				if roomNumber, err := c.hub.CreateRoom(c); err == nil {
 					m.RoomNumber = roomNumber
 					msg.Status = true
+				} else if roomNumber == 0 {
+					msg.Msg = err.Error()
 				} else {
 					msg.Msg = err.Error()
 				}
@@ -86,6 +88,7 @@ func (c *Client) readPump() {
 					log.Println(err)
 					msg.Msg = err.Error()
 				} else {
+
 					msg.Status = true
 				}
 			}
@@ -173,13 +176,15 @@ func ServeWs(hub *Hub, c *gin.Context) {
 	go client.readPump()
 }
 
-func (c *Client) InRoom() bool {
-	for _, room := range c.hub.Rooms {
+func (c *Client) InRoom(roomNumber uint) bool {
+	if room, ok := c.hub.Rooms[roomNumber]; ok {
 		if room.FirstMove == c || room.LastMove == c || room.Master == c {
 			return true
 		} else {
 			return false
 		}
+	} else {
+		return false
 	}
 	return true
 }
