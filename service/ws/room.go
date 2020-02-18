@@ -78,6 +78,10 @@ func (h *Hub) JoinRoom(c *Client, roomID int) error {
 		if r.FirstMove != nil && r.LastMove != nil && r.Master != nil && r.grid == nil {
 			r.grid = gomoku.InitGrid(15, 15, &gomoku.Grid{})
 		}
+
+		h.Rooms[roomNumber].Master.Target = c
+		c.Target = h.Rooms[roomNumber].Master
+
 	} else {
 		return errors.New("房间不存在")
 	}

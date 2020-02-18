@@ -36,14 +36,21 @@ var upgrader = websocket.Upgrader{
 }
 
 type Client struct {
-	ID   string
-	hub  *Hub
-	conn *websocket.Conn
-	send chan []byte
+	ID     string
+	hub    *Hub
+	conn   *websocket.Conn
+	send   chan []byte
+	Target *Client //对手
 }
 
 func (c *Client) readPump() {
 	defer func() {
+
+		if c.Target != nil {
+			//重置对手指向“我”的指针
+			c.Target.Target = nil
+		}
+
 		c.hub.unregister <- c
 		c.conn.Close()
 	}()
@@ -83,19 +90,48 @@ func (c *Client) readPump() {
 				} else {
 					msg.Msg = err.Error()
 				}
+				msg.Content = m
+				message, _ = json.Marshal(msg)
+				c.send <- message
+				continue
 			} else if m.Action == "join" {
 				if err = c.hub.JoinRoom(c, m.RoomNumber); err != nil {
 					log.Println(err)
 					msg.Msg = err.Error()
 				} else {
-
 					msg.Status = true
+					if c.hub.Rooms[uint(m.RoomNumber)].FirstMove == c {
+						m.IsBlack = true
+					}
 				}
+				msg.Content = m
+				message, _ = json.Marshal(msg)
+				c.send <- message
+				if c.Target != nil {
+					msg.Msg = "对手加入成功"
+					if m.IsBlack {
+						m.IsBlack = false
+					} else {
+						m.IsBlack = true
+					}
+					msg.Content = m
+					message, _ = json.Marshal(msg)
+					c.Target.send <- message
+				}
+				continue
 			}
-			msg.Content = m
 		case chessWalk:
 			m := RcvChessMsg{}
 			_ = mapstructure.Decode(msg.Content, &m)
+
+			if c.Target == nil {
+				msg.Msg = "对手断开连接了"
+				msg.Content = m
+				message, _ = json.Marshal(msg)
+				c.send <- message
+				continue
+			}
+
 			if success, info := c.hub.GoSet(c, &m); success {
 				msg.Status = true
 				msg.Msg = info
@@ -103,10 +139,16 @@ func (c *Client) readPump() {
 				msg.Msg = info
 			}
 			msg.Content = m
+			message, _ = json.Marshal(msg)
+			c.send <- message
+			if c.Target != nil && msg.Status {
+				c.Target.send <- message
+			}
+			continue
 		}
-		message, _ = json.Marshal(msg)
 
-		c.hub.broadcast <- MainMsg{ID: c.ID, Msg: message}
+		// message, _ = json.Marshal(msg)
+		// c.hub.broadcast <- MainMsg{ID: c.ID, Msg: message}
 	}
 }
 

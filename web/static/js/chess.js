@@ -116,7 +116,6 @@ $(document).ready(function(){
                         $("#room-number-info").html(dic['content']['room_number']);
                     }
                     else if (dic['content']['action'] == 'join'){
-                        console.log("加入成功");
                         $("#room-number-info").html(dic['content']['room_number']);
                         $("#user-info").html(dic['content'].is_black == true?"先手":"后手");
                     }

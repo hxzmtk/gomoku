@@ -3,8 +3,6 @@ package ws
 import (
 	"encoding/json"
 	"sync"
-
-	"github.com/mitchellh/mapstructure"
 )
 
 // https://github.com/gorilla/websocket/blob/master/examples/chat/hub.go
@@ -44,35 +42,6 @@ func (h *Hub) Run() {
 			msg := WsReceive{}
 			_ = json.Unmarshal(message.Msg, &msg)
 			for _, client := range h.clients {
-				switch msg.MType {
-				case chessWalk:
-					m := RcvChessMsg{}
-					_ = mapstructure.Decode(msg.Content, &m)
-					if client.InRoom(uint(m.RoomNumber)) {
-						break
-					} else {
-						continue
-					}
-				case roomMsg:
-					m := RcvRoomMsg{}
-					_ = mapstructure.Decode(msg.Content, &m)
-
-					if client.InRoom(uint(m.RoomNumber)) && m.Action == "join" {
-						if h.Rooms[uint(m.RoomNumber)].FirstMove == client {
-							m.IsBlack = true
-						} else {
-							m.IsBlack = false
-						}
-						msg.Content = m
-						break
-					} else if m.Action == "join" || message.ID == client.ID {
-						break
-					} else {
-						continue
-					}
-
-				}
-				message.Msg, _ = json.Marshal(msg)
 				select {
 				case client.send <- message.Msg:
 				default:
