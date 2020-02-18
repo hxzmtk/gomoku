@@ -48,16 +48,16 @@ func (h *Hub) Run() {
 				case chessWalk:
 					m := RcvChessMsg{}
 					_ = mapstructure.Decode(msg.Content, &m)
-					if !client.InRoom(uint(m.RoomNumber)) {
+					if client.InRoom(uint(m.RoomNumber)) {
+						break
+					} else {
 						continue
 					}
 				case roomMsg:
 					m := RcvRoomMsg{}
 					_ = mapstructure.Decode(msg.Content, &m)
-					if message.ID == client.ID {
-						if _, ok := h.Rooms[uint(m.RoomNumber)]; !ok {
-							continue
-						}
+
+					if client.InRoom(uint(m.RoomNumber)) && m.Action == "join" {
 						if h.Rooms[uint(m.RoomNumber)].FirstMove == client {
 							m.IsBlack = true
 						} else {
@@ -65,7 +65,9 @@ func (h *Hub) Run() {
 						}
 						msg.Content = m
 						break
-					} else if !client.InRoom(uint(m.RoomNumber)) {
+					} else if m.Action == "join" || message.ID == client.ID {
+						break
+					} else {
 						continue
 					}
 
