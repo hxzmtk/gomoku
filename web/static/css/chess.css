@@ -5,3 +5,19 @@ canvas {
 .chess {
     background-color: #f0b060;
 }
+
+#dialog .modal-content {
+    background-color: #fffade;
+}
+
+.custom-control-input {
+    position: absolute;
+    left: 0;
+    z-index: -1;
+    width: 1rem;
+    height: 1.25rem;
+    opacity: 0;
+}
+.m-b-xxs{
+    margin-bottom: 1px;
+}

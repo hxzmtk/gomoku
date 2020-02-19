@@ -1,4 +1,9 @@
 $(document).ready(function(){
+
+    $(window).on('load',function(){
+        $('#dialog').modal('show');
+    });
+
     // https://developer.mozilla.org/zh-CN/docs/Web/API/Canvas_API/Tutorial/Drawing_shapes
     const canvas = document.getElementById('chess');
     function draw() {
@@ -80,6 +85,7 @@ $(document).ready(function(){
             }
         }
         ws.send(JSON.stringify(msg));
+        $('#dialog').modal('hide');
     });
 
     $("#room-join").on("click", function(w){
@@ -92,6 +98,7 @@ $(document).ready(function(){
         }
         ws.send(JSON.stringify(msg));
         $("#modal-room-join").modal('hide');
+        $("#dialog").modal('hide');
     });
 
     draw();
@@ -142,5 +149,39 @@ $(document).ready(function(){
 
     $('.toast').on('hidden.bs.toast', function () {
         // do something...
+    });
+
+    //dialog
+    $("#choice-enemy-1").on("click", function(e){
+        if ($(this).is(":checked")){
+            $(".choice-level").addClass("d-none");
+            $(".choice-action").removeClass("d-none");
+        }
+    });
+    $("#choice-enemy-2").on("click", function(e){
+        if ($(this).is(":checked")){
+            $(".choice-action").addClass("d-none");
+            $(".choice-level").removeClass("d-none");
+            $(".edit-room-number").addClass("d-none");
+        }
+    });
+
+    $("#choice-action-1").on("click", function(e){
+        if ($(this).is(":checked")){
+            $(".edit-room-number").addClass("d-none");
+
+            $("#room-join").addClass("d-none");
+            $("#room-create").removeClass("d-none");
+        }
+    });
+    $("#choice-action-2").on("click", function(e){
+        if ($(this).is(":checked")){
+            $(".choice-level").addClass("d-none");
+            $(".choice-action").removeClass("d-none");
+            $(".edit-room-number").removeClass("d-none");
+
+            $("#room-create").addClass("d-none");
+            $("#room-join").removeClass("d-none");
+        }
     });
 });

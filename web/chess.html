@@ -21,41 +21,16 @@
                             身份: <span id="user-info"></span>
                         </h4>
                     </div>
-                    <div class="float-right">
-                        <button type="button" class="btn btn-primary btn-sm" id="room-create">创建房间</button>
-                        <button type="button" class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#modal-room-join">加入房间</button>
-                    </div>
                 </div>
 
-                <div class="row">
-                    <div class="col-lg-12 chess shadow-lg p-3 mb-5 rounded d-flex justify-content-center invisible">
+                <div class="row h-100 d-inline-block">
+                    <div class="col-lg-12 chess shadow-lg p-3 mb-5 rounded d-flex justify-content-center invisible ">
                         <canvas id="chess"  width="680px" height="680px"></canvas>
                     </div>
                 </div>
             </div>
 
             <div>
-                <!-- Modal -->
-                <div class="modal fade" id="modal-room-join" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="staticBackdropLabel">请输入房间编号</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <input class="form-control" type="number" value="0" id="modal-room-number">
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
-                        <button type="button" class="btn btn-primary" id="room-join">加入</button>
-                    </div>
-                    </div>
-                </div>
-                </div>
-            </div>
 
             <div style="position: absolute; top: 0; right: 0;">
           
@@ -75,5 +50,79 @@
             </div>
 
         </div>
+
+
+        <!-- Modal -->
+        <div class="modal fade" id="dialog" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalCenterTitle">New Game</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-1">
+                        <h6>选择对手</h6>
+
+                        <div class="custom-control custom-radio py-1 bg-warning rounded-top shadow-sm m-b-xxs">
+                            <input type="radio" id="choice-enemy-1" name="choice-enemy" class="custom-control-input" checked>
+                            <label class="custom-control-label" for="choice-enemy-1">联机</label>
+                        </div>
+                          <div class="custom-control custom-radio py-1 bg-warning rounded-top shadow-sm m-b-xxs">
+                            <input type="radio" id="choice-enemy-2" name="choice-enemy" class="custom-control-input">
+                            <label class="custom-control-label" for="choice-enemy-2">电脑</label>
+                        </div>
+                    </div>
+
+                    <div class="mb-1 choice-action">
+                        <h6>动作</h6>
+                        <div class="custom-control custom-radio py-1 bg-warning rounded-top shadow-sm m-b-xxs">
+                            <input type="radio" id="choice-action-1" name="choice-action" class="custom-control-input" checked>
+                            <label class="custom-control-label" for="choice-action-1">创建房间</label>
+                        </div>
+                        <div class="custom-control custom-radio py-1 bg-warning rounded-bottom shadow-sm">
+                            <input type="radio" id="choice-action-2" name="choice-action" class="custom-control-input">
+                            <label class="custom-control-label" for="choice-action-2">加入房间</label>
+                        </div>
+                    </div>
+
+                    <div class="mb-1 choice-level d-none">
+                        <h6>困难度</h6>
+                        <div class="custom-control custom-radio py-1 bg-warning rounded-top shadow-sm m-b-xxs">
+                            <input type="radio" id="choice-level-1" name="choice-level" class="custom-control-input">
+                            <label class="custom-control-label" for="choice-level-1">新手</label>
+                        </div>
+                        <div class="custom-control custom-radio py-1 bg-warning rounded-bottom shadow-sm m-b-xxs">
+                            <input type="radio" id="choice-level-2" name="choice-level" class="custom-control-input" checked>
+                            <label class="custom-control-label" for="choice-level-2">中等</label>
+                        </div>
+                        <div class="custom-control custom-radio py-1 bg-warning rounded-bottom shadow-sm">
+                            <input type="radio" id="choice-level-3" name="choice-level" class="custom-control-input">
+                            <label class="custom-control-label" for="choice-level-3">专家</label>
+                        </div>
+                    </div>
+
+                    <div class="form-inline edit-room-number d-none">
+                        <div class="form-group">
+                          <h6 class="mr-1"><label for="modal-room-number">房间编号:</label></h6>
+                          <input class="form-control" type="number" value="0" id="modal-room-number">
+                        </div>
+                    </div>
+                </div>
+
+                
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="room-create">Start</button>
+                    <button type="button" class="btn btn-primary d-none" id="room-join">Start</button>
+                </div>
+            </div>
+            </div>
+        </div>
+        
     </body>
 </html>
