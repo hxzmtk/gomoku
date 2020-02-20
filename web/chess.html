@@ -10,25 +10,30 @@
         <link rel="stylesheet" href="static/css/chess.css">
     </head>
     <body>
-        <div class="container-fluid" aria-live="polite" aria-atomic="true" style="position: relative; min-height: 200px;" >
-            <div class="container">
-                <div class="clearfix">
-                    <div class="room-info float-left d-flex justify-content-start">
-                        <h4 class="mr-3">
-                            房间号: <span id="room-number-info">0</span>
-                        </h4>
-                        <h4 class="mr-3">
-                            身份: <span id="user-info"></span>
-                        </h4>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-2">
+                    <h4 class="mr-3">
+                        房间号: <span id="room-number-info">0</span>
+                    </h4>
+                    <h4 class="mr-3">
+                        身份: <span id="user-info"></span>
+                    </h4>
+                </div>
+                <div class="col-lg-8 d-flex justify-content-center">
+                    <div>
+                        <div class="go-board">
+                        </div>
                     </div>
                 </div>
-
-                <div class="row h-100 d-inline-block">
-                    <div class="col-lg-12 chess shadow-lg p-3 mb-5 rounded d-flex justify-content-center invisible ">
-                        <canvas id="chess"  width="680px" height="680px"></canvas>
-                    </div>
+                <div class="col-lg-2">
+                    <button type="button" class="btn btn-primary btn-sm btn-block">离开房间</button>
+                    <button type="button" class="btn btn-secondary btn-sm btn-block">悔棋</button>
+                    <button type="button" class="btn btn-secondary btn-sm btn-block mb-0">About</button>
                 </div>
             </div>
+
+        </div>
 
             <div>
 
@@ -48,8 +53,6 @@
                 </div>
 
             </div>
-
-        </div>
 
 
         <!-- Modal -->
@@ -72,12 +75,12 @@
                             <label class="custom-control-label" for="choice-enemy-1">联机</label>
                         </div>
                           <div class="custom-control custom-radio py-1 bg-warning rounded-top shadow-sm m-b-xxs">
-                            <input type="radio" id="choice-enemy-2" name="choice-enemy" class="custom-control-input">
+                            <input type="radio" id="choice-enemy-2" name="choice-enemy" class="custom-control-input" disabled>
                             <label class="custom-control-label" for="choice-enemy-2">电脑</label>
                         </div>
                     </div>
 
-                    <div class="mb-1 choice-action">
+                    <div class="mb-1 choice- action">
                         <h6>动作</h6>
                         <div class="custom-control custom-radio py-1 bg-warning rounded-top shadow-sm m-b-xxs">
                             <input type="radio" id="choice-action-1" name="choice-action" class="custom-control-input" checked>
