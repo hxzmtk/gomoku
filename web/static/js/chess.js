@@ -36,11 +36,6 @@ function flushRoom(arr) {
 
 $(document).ready(function(){
 
-    $(window).on('load',function(){
-        generate_board(15,15);
-        $('#dialog').modal('show');
-    });
-
     $(".go-board").on("click", function(e){
         if (e.target.id.startsWith("go-")){
             let arr = e.target.id.split("-");
@@ -179,4 +174,6 @@ $(document).ready(function(){
 });
 
 $(window).on('load', function(){
+    generate_board(15,15);
+    $('#dialog').modal('show');
 });
