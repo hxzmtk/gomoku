@@ -12,6 +12,8 @@ func LoadStatic(engine *gin.Engine) {
 func LoadHtml(engine *gin.Engine) {
 	engine.LoadHTMLFiles("web/chess.html")
 	engine.GET("/", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "chess.html", gin.H{})
+		c.HTML(http.StatusOK, "chess.html", gin.H{
+			"debug": gin.IsDebugging(),
+		})
 	})
 }
