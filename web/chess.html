@@ -103,11 +103,12 @@
                         </div>
                     </div>
 
-                    <div class="form-inline edit-room-number d-none">
-                        <div class="form-group">
-                          <h6 class="mr-1"><label for="modal-room-number">房间编号:</label></h6>
-                          <input class="form-control" type="number" value="0" id="modal-room-number">
+                    <div class="input-group mb-3 d-none group-choice-room">
+                        <div class="input-group-prepend">
+                          <label class="input-group-text" for="room-list">房间</label>
                         </div>
+                        <select class="custom-select" id="room-list">
+                        </select>
                     </div>
                 </div>
 
@@ -116,7 +117,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                     <button type="button" class="btn btn-primary" id="room-create">Start</button>
-                    <button type="button" class="btn btn-primary d-none" id="room-join">Start</button>
+                    <button type="button" class="btn btn-primary d-none" id="room-join">Join</button>
                 </div>
             </div>
             </div>

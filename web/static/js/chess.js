@@ -19,6 +19,20 @@ function Setup(x, y, color) {
     }
 }
 
+function flushRoom(arr) {
+    $("#room-list").empty();
+    if (arr.length == 0) {
+        $("#room-list").append(`<option value="0">空房间</option`)
+    }
+    for (let i = 0; i < arr.length; i++) {
+        let msg = "可加入"
+        if (arr[i]['is_full']){
+            msg = "已满"
+        }
+        $("#room-list").append(`<option value="${arr[i]['room_number']}">房间号:${arr[i]['room_number']} ${msg}</option`)      
+    }
+}
+
 
 $(document).ready(function(){
 
@@ -62,7 +76,7 @@ $(document).ready(function(){
             "m_type": 0,
             "content": {
                 "action":"join",
-                "room_number":parseInt($("#modal-room-number").val())
+                "room_number":parseInt($("#room-list :selected")[0].value)
             }
         }
         ws.send(JSON.stringify(msg));
@@ -112,6 +126,10 @@ $(document).ready(function(){
                     $('.toast').toast('show');
                 }
                 break;
+            case 2:
+                console.log(dic);
+                flushRoom(dic['content'])
+                break;
         }
     };
 
@@ -130,13 +148,13 @@ $(document).ready(function(){
         if ($(this).is(":checked")){
             $(".choice-action").addClass("d-none");
             $(".choice-level").removeClass("d-none");
-            $(".edit-room-number").addClass("d-none");
+            $(".group-choice-room").addClass("d-none");
         }
     });
 
     $("#choice-action-1").on("click", function(e){
         if ($(this).is(":checked")){
-            $(".edit-room-number").addClass("d-none");
+            $(".group-choice-room").addClass("d-none");
 
             $("#room-join").addClass("d-none");
             $("#room-create").removeClass("d-none");
@@ -146,10 +164,16 @@ $(document).ready(function(){
         if ($(this).is(":checked")){
             $(".choice-level").addClass("d-none");
             $(".choice-action").removeClass("d-none");
-            $(".edit-room-number").removeClass("d-none");
+            $(".group-choice-room").removeClass("d-none");
 
             $("#room-create").addClass("d-none");
             $("#room-join").removeClass("d-none");
+
+            ws.send(JSON.stringify({
+                "m_type": 2,
+                "content": {
+                }
+            }))
         }
     });
 });

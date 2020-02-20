@@ -81,7 +81,9 @@ func (c *Client) readPump() {
 		case roomMsg:
 			m := RcvRoomMsg{}
 			_ = mapstructure.Decode(msg.Content, &m)
-			if m.Action == "create" {
+
+			switch m.Action {
+			case "create":
 				if roomNumber, err := c.hub.CreateRoom(c); err == nil {
 					m.RoomNumber = roomNumber
 					msg.Status = true
@@ -94,7 +96,7 @@ func (c *Client) readPump() {
 				message, _ = json.Marshal(msg)
 				c.send <- message
 				continue
-			} else if m.Action == "join" {
+			case "join":
 				if err = c.hub.JoinRoom(c, m.RoomNumber); err != nil {
 					log.Println(err)
 					msg.Msg = err.Error()
@@ -145,8 +147,12 @@ func (c *Client) readPump() {
 				c.Target.send <- message
 			}
 			continue
+		case roomList:
+			msg.Content = c.hub.GetRooms()
+			message, _ = json.Marshal(msg)
+			c.send <- message
+			continue
 		}
-
 		// message, _ = json.Marshal(msg)
 		// c.hub.broadcast <- MainMsg{ID: c.ID, Msg: message}
 	}

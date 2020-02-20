@@ -131,3 +131,18 @@ func (h *Hub) GoSet(c *Client, msg *RcvChessMsg) (bool, string) {
 	}
 	return true, ""
 }
+
+func (h *Hub) GetRooms() []ResRoomListMsg {
+	rooms := []ResRoomListMsg{}
+	for _, room := range h.Rooms {
+		isFull := false
+		if room.FirstMove != nil && room.LastMove != nil {
+			isFull = true
+		}
+		rooms = append(rooms, ResRoomListMsg{
+			RoomNumber: room.ID,
+			IsFull:     isFull,
+		})
+	}
+	return rooms
+}

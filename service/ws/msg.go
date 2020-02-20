@@ -18,6 +18,7 @@ type msgType uint
 const (
 	roomMsg   msgType = iota //房间消息(创建房间、加入房间)
 	chessWalk                //落子消息
+	roomList                 //获取房间列表消息
 )
 
 type WsReceive struct {
@@ -50,6 +51,8 @@ func (w *WsReceive) verify() error {
 			return errors.New("无效的房间编号")
 		}
 		w.Content = m
+	case roomList:
+
 	default:
 		return errors.New("错误的消息类型")
 	}
@@ -67,6 +70,11 @@ type RcvChessMsg struct {
 	Y          int  `json:"y" mapstructure:"y"` //纵坐标
 	RoomNumber int  `json:"room_number" mapstructure:"room_number"`
 	IsBlack    bool `json:"is_black" mapstructure:"is_black"` //是反先手
+}
+
+type ResRoomListMsg struct {
+	RoomNumber uint `json:"room_number" mapstructure:"room_number"`
+	IsFull     bool `json:"is_full" mapstructure:"is_full"` //是否满了
 }
 
 type MainMsg struct {
