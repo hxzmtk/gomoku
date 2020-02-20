@@ -10,20 +10,18 @@
         <link rel="stylesheet" href="static/css/chess.css">
     </head>
     <body>
-        <div class="container">
+        <div class="container d-none">
             <div class="row">
                 <div class="col-lg-2">
-                    <h4 class="mr-3">
+                    <h6 class="mr-3">
                         房间号: <span id="room-number-info">0</span>
-                    </h4>
-                    <h4 class="mr-3">
+                    </h6>
+                    <h6 class="mr-3">
                         身份: <span id="user-info"></span>
-                    </h4>
+                    </h6>
                 </div>
                 <div class="col-lg-8 d-flex justify-content-center">
-                    <div>
-                        <div class="go-board">
-                        </div>
+                    <div class="go-board">
                     </div>
                 </div>
                 <div class="col-lg-2">
@@ -36,32 +34,29 @@
         </div>
 
             <div>
-
-            <div style="position: absolute; top: 0; right: 0;">
-          
-                <!-- Then put toasts within -->
-                <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" id="toast-1">
-                  <div class="toast-header">
-                    <strong class="mr-auto">消息</strong>
-                    <small class="text-muted">just now</small>
-                    <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close"  data-delay="3000">
-                      <span aria-hidden="true">&times;</span>
-                    </button>
-                  </div>
-                  <div class="toast-body">
-                  </div>
+                <div style="position: absolute; top: 0; right: 0;">
+                    <!-- Then put toasts within -->
+                    <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" id="toast-1">
+                        <div class="toast-header">
+                            <strong class="mr-auto">消息</strong>
+                            <small class="text-muted">just now</small>
+                            <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close"  data-delay="3000">
+                            <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="toast-body">
+                        </div>
                 </div>
-
             </div>
 
 
         <!-- Modal -->
-        <div class="modal fade" id="dialog" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal fade" id="dialog" tabindex="-1" data-backdrop="static" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalCenterTitle">New Game</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" aria-label="Close">
                       <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -70,11 +65,11 @@
                     <div class="mb-1">
                         <h6>选择对手</h6>
 
-                        <div class="custom-control custom-radio py-1 bg-warning rounded-top shadow-sm m-b-xxs">
+                        <div class="custom-control custom-radio py-1 bg-info rounded-top shadow-sm m-b-xxs">
                             <input type="radio" id="choice-enemy-1" name="choice-enemy" class="custom-control-input" checked>
                             <label class="custom-control-label" for="choice-enemy-1">联机</label>
                         </div>
-                          <div class="custom-control custom-radio py-1 bg-warning rounded-top shadow-sm m-b-xxs">
+                          <div class="custom-control custom-radio py-1 bg-info rounded-top shadow-sm m-b-xxs">
                             <input type="radio" id="choice-enemy-2" name="choice-enemy" class="custom-control-input" disabled>
                             <label class="custom-control-label" for="choice-enemy-2">电脑</label>
                         </div>
@@ -82,11 +77,11 @@
 
                     <div class="mb-1 choice- action">
                         <h6>动作</h6>
-                        <div class="custom-control custom-radio py-1 bg-warning rounded-top shadow-sm m-b-xxs">
+                        <div class="custom-control custom-radio py-1 bg-info rounded-top shadow-sm m-b-xxs">
                             <input type="radio" id="choice-action-1" name="choice-action" class="custom-control-input" checked>
                             <label class="custom-control-label" for="choice-action-1">创建房间</label>
                         </div>
-                        <div class="custom-control custom-radio py-1 bg-warning rounded-bottom shadow-sm">
+                        <div class="custom-control custom-radio py-1 bg-info rounded-bottom shadow-sm">
                             <input type="radio" id="choice-action-2" name="choice-action" class="custom-control-input">
                             <label class="custom-control-label" for="choice-action-2">加入房间</label>
                         </div>

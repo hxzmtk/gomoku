@@ -1,10 +1,13 @@
 function generate_board(row, col){
 
     for (let i = 0; i < 15; i++) {
+        let tmp = ""
         for (let j = 0; j < 15; j++) {
-            $(".go-board").append(`<i class="i-nomal" id="go-${i}-${j}"></i>`)
+            tmp += `<i class="i-nomal" id="go-${i}-${j}"></i>`
+            $(".go-board").append(`<i id="go-${i}-${j}"></i>`)
         }
-        $(".go-board").append("<br>")
+        // $(".go-board").append(`<div>${tmp}</div>`)
+        $(".go-board").append(`<br>`)
     }
 }
 
@@ -51,6 +54,7 @@ $(document).ready(function(){
         }
         ws.send(JSON.stringify(msg));
         $('#dialog').modal('hide');
+        $(".container").removeClass("d-none");
     });
 
     $("#room-join").on("click", function(e){
@@ -64,6 +68,7 @@ $(document).ready(function(){
         ws.send(JSON.stringify(msg));
         $("#modal-room-join").modal('hide');
         $("#dialog").modal('hide');
+        $(".container").removeClass("d-none");
     });
 
     const ws = new WebSocket("ws://"+ document.location.host + "/v1/ws");
