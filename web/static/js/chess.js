@@ -98,6 +98,9 @@ function updateStatus(who){
     $("#chess-status").append(elm);
 }
 
+
+let ws = undefined
+
 $(document).ready(function(){
 
     $(".go-board").on("click", function(e){
@@ -144,7 +147,7 @@ $(document).ready(function(){
         $(".container").removeClass("d-none");
     });
 
-    const ws = new WebSocket("ws://"+ document.location.host + "/v1/ws");
+    ws = new WebSocket("ws://"+ document.location.host + "/v1/ws");
     ws.onopen = function(){
         console.log("CONNECT");
     };
