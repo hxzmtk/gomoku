@@ -21,14 +21,25 @@
     </head>
     <body>
         <div class="container d-none">
-            <div class="row">
+            <div class="row mt-lg-5">
                 <div class="col-lg-2">
-                    <h6 class="mr-3">
-                        房间号: <span id="room-number-info">0</span>
-                    </h6>
-                    <h6 class="mr-3">
-                        身份: <span id="user-info"></span>
-                    </h6>
+                    <div class="col d-flex flex-lg-wrap">
+                        <h6 class="mr-3">
+                            房间号: <span id="room-number-info">0</span>
+                        </h6>
+                        <h6 class="mr-3">
+                            身份: <span id="user-info">无</span>
+                        </h6>
+                        <h6>
+                            状态: <span id="chess-status">无</span>
+                        </h6>
+                    </div>
+
+                    <div style="min-height: 1.5rem;">
+                        <div class="alert-msg alert-primary"style="font-size: 0.5rem;">
+                            &nbsp;
+                        </div>
+                    </div>
                 </div>
                 <div class="col-lg-8 d-flex justify-content-center">
                     <div class="go-board">
@@ -43,29 +54,12 @@
 
         </div>
 
-            <div>
-                <div style="position: absolute; top: 0; right: 0;">
-                    <!-- Then put toasts within -->
-                    <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" id="toast-1">
-                        <div class="toast-header">
-                            <strong class="mr-auto">消息</strong>
-                            <small class="text-muted">just now</small>
-                            <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close"  data-delay="3000">
-                            <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="toast-body">
-                        </div>
-                </div>
-            </div>
-
-
         <!-- Modal -->
         <div class="modal fade" id="dialog" tabindex="-1" data-backdrop="static" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalCenterTitle">New Game</h5>
+                    <h5 class="modal-title" id="exampleModalCenterTitle">五子棋</h5>
                     <button type="button" class="close" aria-label="Close">
                       <span aria-hidden="true">&times;</span>
                     </button>
@@ -125,7 +119,7 @@
                 
 
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary">Close</button>
                     <button type="button" class="btn btn-primary" id="room-create">Start</button>
                     <button type="button" class="btn btn-primary d-none" id="room-join">Join</button>
                 </div>

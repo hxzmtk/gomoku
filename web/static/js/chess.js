@@ -1,3 +1,15 @@
+//全局变量
+let hand = {
+    "nilHand": 0,
+    "blackHand": 1,
+    "whiteHand": 2
+}
+
+let player = hand.nilHand;  //记录 “我”是 '黑子'还是'白子';
+let playing = hand.nilHand; //记录当前该"谁"落子了
+
+
+//生成棋盘/
 function generate_board(row, col){
 
     for (let i = 0; i < 15; i++) {
@@ -11,6 +23,7 @@ function generate_board(row, col){
     }
 }
 
+// 落棋
 function Setup(x, y, color) {
     if (color == 1){
         $(`#go-${x}-${y}`).addClass("b");
@@ -19,10 +32,12 @@ function Setup(x, y, color) {
     }
 }
 
+
+// 获取房间列表
 function flushRoom(arr) {
     $("#room-list").empty();
     if (arr.length == 0) {
-        $("#room-list").append(`<option value="0">空房间</option`)
+        $("#room-list").append(`<option value="0">空房间,请创建房间</option`)
     }
     for (let i = 0; i < arr.length; i++) {
         let msg = "可加入"
@@ -33,6 +48,55 @@ function flushRoom(arr) {
     }
 }
 
+//提示消息
+function alertMsg(msg) {
+    let elm = $(".alert-msg");
+    elm.empty();
+    elm.html(`<div class="col d-flex justify-content-center">${msg}</div>`);
+    elm.fadeTo(2000, 500).slideUp(500, function(){
+        $(".alert").slideUp(500);
+    });
+}
+
+//更新身份
+function updateIdentity(who){
+    player = who
+    switch (player) {
+        case hand.blackHand:
+            $("#user-info").html('先手');
+            break;
+        case hand.whiteHand:
+            $("#user-info").html('后手');
+            break;
+        default:
+            $("#user-info").html('无');
+            break;
+    }
+};
+
+//更新状态
+function updateStatus(who){
+    playing = who;
+    if (playing == hand.nilHand) {
+        return
+    }
+    let content = "";
+    let style = "";
+    if (playing != player) {
+        style = "spinner-grow";
+        content = "轮到你了"
+    }else {
+        style = "spinner-border";
+        content = "对方思考中"
+    }
+
+    let elm = `<span>
+                <span class="${style} ${style}-sm text-primary" role="status" aria-hidden="true"></span>
+                <span style="font-size:0.5rem">${content}</span>
+            </span>`
+    $("#chess-status").empty()
+    $("#chess-status").append(elm);
+}
 
 $(document).ready(function(){
 
@@ -101,24 +165,24 @@ $(document).ready(function(){
                     }
                     else if (dic['content']['action'] == 'join'){
                         $("#room-number-info").html(dic['content']['room_number']);
-                        $("#user-info").html(dic['content'].is_black == true?"先手":"后手");
+                        // $("#user-info").html(dic['content'].is_black == true?"先手":"后手");
+                        updateIdentity(dic['content'].is_black == true?hand.blackHand:hand.whiteHand)
+
                     }
-                    $(".chess").removeClass("invisible");  
                 }
 
                 if (dic.msg != ""){
-                    $("#toast-1 .toast-body").html(dic.msg);
-                    $('.toast').toast('show');
+                    alertMsg(dic.msg);
                 }
                 
                 break;
             case 1:
                 if (dic.status == true) {
                     Setup(dic['content'].x, dic['content'].y,dic['content'].is_black == true?1:2);
+                    updateStatus(dic['content'].is_black == true?hand.blackHand:hand.whiteHand);
                 }
                 if (dic.msg != ""){
-                    $("#toast-1 .toast-body").html(dic.msg);
-                    $('.toast').toast('show');
+                    alertMsg(dic.msg);
                 }
                 break;
             case 2:
@@ -126,13 +190,18 @@ $(document).ready(function(){
                 flushRoom(dic['content'])
                 break;
         }
+        alertMsg(dic.msg);
     };
 
     $('.toast').on('hidden.bs.toast', function () {
         // do something...
     });
 
-    //dialog
+});
+
+
+//dialog
+$(document).ready(function(){
     $("#choice-enemy-1").on("click", function(e){
         if ($(this).is(":checked")){
             $(".choice-level").addClass("d-none");
@@ -172,6 +241,7 @@ $(document).ready(function(){
         }
     });
 });
+
 
 $(window).on('load', function(){
     generate_board(15,15);
