@@ -7,20 +7,38 @@ let hand = {
 
 let player = hand.nilHand;  //记录 “我”是 '黑子'还是'白子';
 let playing = hand.nilHand; //记录当前该"谁"落子了
+let place = undefined //二维数组；存放棋子
+let last_pos = {x:-1,y:-1} //存放上一个"落子"的位置
 
+//初始化二维数组
+function initPlace(row, col) {
+    place = Array(row).fill(0).map(x => Array(col).fill(0));
+}
 
-//生成棋盘/
+//使刚落下的棋子闪烁,用于提示
+function remain(x,y){
+    if (last_pos.x != -1  && last_pos.y != -1){
+        $(`#go-${last_pos.x}-${last_pos.y}`).removeClass("chess-spinner");
+        $(`#go-${x}-${y}`).addClass("chess-spinner");
+    }
+    $(`#go-${x}-${y}`).addClass("chess-spinner");
+    last_pos.x = x, last_pos.y = y;
+}
+
+//生成棋盘
 function generate_board(row, col){
 
-    for (let i = 0; i < 15; i++) {
+    for (let i = 0; i < row; i++) {
         let tmp = ""
-        for (let j = 0; j < 15; j++) {
+        for (let j = 0; j < col; j++) {
             tmp += `<i class="i-nomal" id="go-${i}-${j}"></i>`
             $(".go-board").append(`<i id="go-${i}-${j}"></i>`)
         }
         // $(".go-board").append(`<div>${tmp}</div>`)
         $(".go-board").append(`<br>`)
     }
+
+    initPlace(row,col);
 }
 
 // 落棋
@@ -183,6 +201,7 @@ $(document).ready(function(){
                 if (dic.status == true) {
                     Setup(dic['content'].x, dic['content'].y,dic['content'].is_black == true?1:2);
                     updateStatus(dic['content'].is_black == true?hand.blackHand:hand.whiteHand);
+                    remain(dic['content'].x, dic['content'].y);
                 }
                 if (dic.msg != ""){
                     alertMsg(dic.msg);
