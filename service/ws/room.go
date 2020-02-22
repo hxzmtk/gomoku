@@ -42,18 +42,22 @@ func (room *Room) GoSet(c *Client, msg *RcvChessMsg) (bool, string) {
 		msg.IsBlack = true
 		if room.grid.Set(msg.Y+1, msg.X+1, gomoku.BlackHand) {
 			room.NextWho = room.LastMove
-		}
-		if room.grid.IsWin(msg.Y+1, msg.X+1) {
-			room.isWin = true
-			return true, fmt.Sprintf("黑手赢")
+			if room.grid.IsWin(msg.Y+1, msg.X+1) {
+				room.isWin = true
+				return true, fmt.Sprintf("黑手赢")
+			}
+		} else {
+			return false, "该位置已有棋子"
 		}
 	} else if room.LastMove == c {
 		if room.grid.Set(msg.Y+1, msg.X+1, gomoku.WhiteHand) {
 			room.NextWho = room.FirstMove
-		}
-		if room.grid.IsWin(msg.Y+1, msg.X+1) {
-			room.isWin = true
-			return true, fmt.Sprintf("白手赢")
+			if room.grid.IsWin(msg.Y+1, msg.X+1) {
+				room.isWin = true
+				return true, fmt.Sprintf("白手赢")
+			}
+		} else {
+			return false, "该位置已有棋子"
 		}
 
 	}
@@ -73,6 +77,44 @@ func (room *Room) ELectWhoFirst(c *Client) {
 	room.NextWho = room.FirstMove
 }
 
+func (room *Room) SendMessage([]byte) {
+
+}
+
+//返回"对手"的指针
+func (room *Room) GetTarget(me *Client) *Client {
+	if room.FirstMove != me {
+		return room.FirstMove
+	}
+	if room.LastMove != me {
+		return room.LastMove
+	}
+	return nil
+}
+
+//初始化棋盘
+func (room *Room) InitGrid() {
+	if room.FirstMove != nil && room.LastMove != nil && room.Master != nil && room.grid == nil {
+		room.grid = gomoku.InitGrid(15, 15, &gomoku.Grid{})
+	}
+}
+
+//加入房间
+func (room *Room) JoinRoom(c *Client) error {
+
+	if room.FirstMove != nil && room.LastMove != nil {
+		if room.Master == nil {
+			room.Master = c
+		} else if room.FirstMove != c && room.LastMove != c {
+			return errors.New("房间已满")
+		} else if room.Master == c || (room.FirstMove == c || room.LastMove == c) {
+			return errors.New("您已在房间")
+		}
+	}
+	c.Room = room
+	return nil
+}
+
 func (h *Hub) CreateRoom(master *Client) (int, error) {
 	h.mux.Lock()
 	defer h.mux.Unlock()
@@ -80,8 +122,6 @@ func (h *Hub) CreateRoom(master *Client) (int, error) {
 	if master.Room != nil {
 		return 0, errors.New("您已创建过房间啦")
 	}
-
-	rand.Seed(time.Now().Unix())
 
 	roomID := rand.Intn(1000) + 1
 
@@ -105,27 +145,11 @@ func (h *Hub) JoinRoom(c *Client, roomID int) error {
 	h.mux.Lock()
 	defer h.mux.Unlock()
 	roomNumber := uint(roomID)
-	if r, ok := h.Rooms[uint(roomID)]; ok {
-
-		if r.FirstMove == nil && r.LastMove == nil {
-			if h.Rooms[roomNumber].Master == nil {
-				h.Rooms[roomNumber].Master = c
-			} else {
-				if h.Rooms[roomNumber].Master == c {
-					return errors.New("您已在房间")
-				}
-			}
-
-			//选择谁先手
-			h.Rooms[roomNumber].ELectWhoFirst(c)
+	if room, ok := h.Rooms[roomNumber]; ok {
+		if err := room.JoinRoom(c); err != nil {
+			return err
 		}
-		if r.FirstMove != nil && r.LastMove != nil && r.Master != nil && r.grid == nil {
-			r.grid = gomoku.InitGrid(15, 15, &gomoku.Grid{})
-		}
-
-		h.Rooms[roomNumber].Master.Target = c
-		c.Room = r
-		c.Target = h.Rooms[roomNumber].Master
+		room.ELectWhoFirst(c)
 
 	} else {
 		return errors.New("房间不存在")
