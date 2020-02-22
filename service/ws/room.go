@@ -127,59 +127,10 @@ func (room *Room) LevelRoom(c *Client) {
 	}
 }
 
-func (h *Hub) CreateRoom(master *Client) (int, error) {
-	h.mux.Lock()
-	defer h.mux.Unlock()
-
-	if master.Room != nil {
-		return 0, errors.New("您已创建过房间啦")
+//检查房间是否为空
+func (room *Room) IsEmpty() bool {
+	if room.Master == nil && room.FirstMove == nil && room.LastMove == nil {
+		return true
 	}
-
-	roomID := rand.Intn(1000) + 1
-
-	if _, ok := h.Rooms[uint(roomID)]; ok {
-		return 0, errors.New("房间已存在")
-	} else {
-		grid := gomoku.InitGrid(15, 15, &gomoku.Grid{})
-		room := &Room{
-			ID:     uint(roomID),
-			Master: master,
-			grid:   grid,
-		}
-		h.Rooms[uint(roomID)] = room
-		master.Room = room
-	}
-	return roomID, nil
-
-}
-
-func (h *Hub) JoinRoom(c *Client, roomID int) error {
-	h.mux.Lock()
-	defer h.mux.Unlock()
-	roomNumber := uint(roomID)
-	if room, ok := h.Rooms[roomNumber]; ok {
-		if err := room.JoinRoom(c); err != nil {
-			return err
-		}
-		room.ELectWhoFirst(c)
-
-	} else {
-		return errors.New("房间不存在")
-	}
-	return nil
-}
-
-func (h *Hub) GetRooms() []ResRoomListMsg {
-	rooms := []ResRoomListMsg{}
-	for _, room := range h.Rooms {
-		isFull := false
-		if room.FirstMove != nil && room.LastMove != nil {
-			isFull = true
-		}
-		rooms = append(rooms, ResRoomListMsg{
-			RoomNumber: room.ID,
-			IsFull:     isFull,
-		})
-	}
-	return rooms
+	return false
 }

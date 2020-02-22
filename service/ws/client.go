@@ -222,15 +222,3 @@ func ServeWs(hub *Hub, c *gin.Context) {
 	go client.writePump()
 	go client.readPump()
 }
-
-func (c *Client) InRoom(roomNumber uint) bool {
-	if room, ok := c.hub.Rooms[roomNumber]; ok {
-		if room.FirstMove == c || room.LastMove == c || room.Master == c {
-			return true
-		} else {
-			return false
-		}
-	} else {
-		return false
-	}
-}

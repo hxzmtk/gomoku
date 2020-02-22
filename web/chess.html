@@ -46,7 +46,16 @@
                     </div>
                 </div>
                 <div class="col-lg-2">
-                    <button type="button" class="btn btn-primary btn-sm btn-block">离开房间</button>
+                    <div class="btn-group btn-block" role="group">
+                        <button id="room-panel" type="button" class="btn btn-primary btn-sm btn-block dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                          控制面板
+                        </button>
+                        <div class="dropdown-menu btn-block border-0" aria-labelledby="room-panel">
+                            <button type="button" class="btn btn-secondary btn-sm btn-block">离开房间</button>
+                            <button type="button" class="btn btn-secondary btn-sm btn-block">重开</button>
+                            <button type="button" class="btn btn-secondary btn-sm btn-block">认输</button>
+                        </div>
+                    </div>
                     <button type="button" class="btn btn-secondary btn-sm btn-block">悔棋</button>
                     <button type="button" class="btn btn-secondary btn-sm btn-block mb-0">About</button>
                 </div>

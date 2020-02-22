@@ -69,7 +69,7 @@ type RcvChessMsg struct {
 	X          int  `json:"x" mapstructure:"x"` //横坐标
 	Y          int  `json:"y" mapstructure:"y"` //纵坐标
 	RoomNumber int  `json:"room_number" mapstructure:"room_number"`
-	IsBlack    bool `json:"is_black" mapstructure:"is_black"` //是反先手
+	IsBlack    bool `json:"is_black" mapstructure:"is_black"` //是否先手
 }
 
 type ResRoomListMsg struct {
