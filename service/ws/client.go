@@ -41,6 +41,7 @@ type Client struct {
 	conn   *websocket.Conn
 	send   chan []byte
 	Target *Client //对手
+	Room   *Room
 }
 
 func (c *Client) readPump() {
@@ -133,8 +134,10 @@ func (c *Client) readPump() {
 				c.send <- message
 				continue
 			}
-
-			if success, info := c.hub.GoSet(c, &m); success {
+			if c.Room == nil {
+				continue
+			}
+			if success, info := c.Room.GoSet(c, &m); success {
 				msg.Status = true
 				msg.Msg = info
 			} else {

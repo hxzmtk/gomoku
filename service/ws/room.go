@@ -21,15 +21,66 @@ type Room struct {
 	NextWho   *Client //下一步该谁落子
 }
 
+//落子
+func (room *Room) GoSet(c *Client, msg *RcvChessMsg) (bool, string) {
+	if msg.RoomNumber <= 0 || room.ID != uint(msg.RoomNumber) {
+		return false, "无效的房间号"
+	}
+	room.mux.Lock()
+	defer room.mux.Unlock()
+	if room.isWin {
+		return false, "已分出胜负了"
+	}
+	if room.FirstMove != c && room.LastMove != c {
+		return false, "您是观战用户"
+	}
+	if room.NextWho != nil && room.NextWho != c {
+		return false, "请等待对手落子"
+	}
+
+	if room.FirstMove == c {
+		msg.IsBlack = true
+		if room.grid.Set(msg.Y+1, msg.X+1, gomoku.BlackHand) {
+			room.NextWho = room.LastMove
+		}
+		if room.grid.IsWin(msg.Y+1, msg.X+1) {
+			room.isWin = true
+			return true, fmt.Sprintf("黑手赢")
+		}
+	} else if room.LastMove == c {
+		if room.grid.Set(msg.Y+1, msg.X+1, gomoku.WhiteHand) {
+			room.NextWho = room.FirstMove
+		}
+		if room.grid.IsWin(msg.Y+1, msg.X+1) {
+			room.isWin = true
+			return true, fmt.Sprintf("白手赢")
+		}
+
+	}
+	return true, ""
+}
+
+//随机选举谁先手
+func (room *Room) ELectWhoFirst(c *Client) {
+	rand.Seed(time.Now().Unix())
+	if rand.Intn(10)%2 == 0 {
+		room.FirstMove = c
+		room.LastMove = room.Master
+	} else {
+		room.FirstMove = room.Master
+		room.LastMove = c
+	}
+	room.NextWho = room.FirstMove
+}
+
 func (h *Hub) CreateRoom(master *Client) (int, error) {
 	h.mux.Lock()
 	defer h.mux.Unlock()
 
-	for i, _ := range h.Rooms {
-		if h.Rooms[i].Master == master {
-			return 0, errors.New("您已创建过房间啦")
-		}
+	if master.Room != nil {
+		return 0, errors.New("您已创建过房间啦")
 	}
+
 	rand.Seed(time.Now().Unix())
 
 	roomID := rand.Intn(1000) + 1
@@ -44,6 +95,7 @@ func (h *Hub) CreateRoom(master *Client) (int, error) {
 			grid:   grid,
 		}
 		h.Rooms[uint(roomID)] = room
+		master.Room = room
 	}
 	return roomID, nil
 
@@ -65,71 +117,20 @@ func (h *Hub) JoinRoom(c *Client, roomID int) error {
 			}
 
 			//选择谁先手
-			rand.Seed(time.Now().Unix())
-			if rand.Intn(10)%2 == 0 {
-				h.Rooms[roomNumber].FirstMove = c
-				h.Rooms[roomNumber].LastMove = h.Rooms[roomNumber].Master
-			} else {
-				h.Rooms[roomNumber].FirstMove = h.Rooms[roomNumber].Master
-				h.Rooms[roomNumber].LastMove = c
-			}
-			h.Rooms[roomNumber].NextWho = h.Rooms[roomNumber].FirstMove
+			h.Rooms[roomNumber].ELectWhoFirst(c)
 		}
 		if r.FirstMove != nil && r.LastMove != nil && r.Master != nil && r.grid == nil {
 			r.grid = gomoku.InitGrid(15, 15, &gomoku.Grid{})
 		}
 
 		h.Rooms[roomNumber].Master.Target = c
+		c.Room = r
 		c.Target = h.Rooms[roomNumber].Master
 
 	} else {
 		return errors.New("房间不存在")
 	}
 	return nil
-}
-
-//落子
-func (h *Hub) GoSet(c *Client, msg *RcvChessMsg) (bool, string) {
-	if msg.RoomNumber <= 0 {
-		return false, "无效的房间号"
-	}
-	roomID := uint(msg.RoomNumber)
-	if r, ok := h.Rooms[roomID]; ok {
-		h.Rooms[roomID].mux.Lock()
-		defer h.Rooms[roomID].mux.Unlock()
-
-		if r.isWin {
-			return false, "已分出胜负了"
-		}
-		if r.FirstMove != c && r.LastMove != c {
-			return false, "您是观战用户"
-		}
-		if r.NextWho != nil && r.NextWho != c {
-			return false, "请等待对手落子"
-		}
-		if r.FirstMove == c {
-			msg.IsBlack = true
-			if r.grid.Set(msg.Y+1, msg.X+1, gomoku.BlackHand) {
-				r.NextWho = r.LastMove
-			}
-			if r.grid.IsWin(msg.Y+1, msg.X+1) {
-				r.isWin = true
-				return true, fmt.Sprintf("黑手赢")
-			}
-		} else if r.LastMove == c {
-			if r.grid.Set(msg.Y+1, msg.X+1, gomoku.WhiteHand) {
-				r.NextWho = r.FirstMove
-			}
-			if r.grid.IsWin(msg.Y+1, msg.X+1) {
-				r.isWin = true
-				return true, fmt.Sprintf("白手赢")
-			}
-
-		}
-	} else {
-		return false, "房间不存在"
-	}
-	return true, ""
 }
 
 func (h *Hub) GetRooms() []ResRoomListMsg {
