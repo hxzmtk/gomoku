@@ -67,8 +67,8 @@ i {
   background-color: currentColor;
   border-radius: 50%;
   opacity: 0;
-  -webkit-animation: spinner-grow .75s linear infinite;
-  animation: spinner-grow .75s linear infinite;
+  -webkit-animation: spinner-grow 3s linear infinite;
+  animation: spinner-grow 3s linear infinite;
 }
 
 @media (min-width: 200px) and (max-width: 500px) {
