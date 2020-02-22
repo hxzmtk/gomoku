@@ -115,6 +115,18 @@ func (room *Room) JoinRoom(c *Client) error {
 	return nil
 }
 
+//离开房间
+func (room *Room) LevelRoom(c *Client) {
+	if room.FirstMove == c {
+		room.FirstMove = nil
+	} else if room.LastMove == c {
+		room.LastMove = nil
+	}
+	if room.Master == c {
+		room.Master = room.GetTarget(c) //转移房主
+	}
+}
+
 func (h *Hub) CreateRoom(master *Client) (int, error) {
 	h.mux.Lock()
 	defer h.mux.Unlock()

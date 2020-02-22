@@ -45,6 +45,9 @@ type Client struct {
 
 func (c *Client) readPump() {
 	defer func() {
+		if c.Room != nil {
+			c.Room.LevelRoom(c)
+		}
 		c.hub.unregister <- c
 		c.conn.Close()
 	}()
