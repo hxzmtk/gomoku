@@ -46,7 +46,7 @@ type Client struct {
 func (c *Client) readPump() {
 	defer func() {
 		if c.Room != nil {
-			c.Room.LevelRoom(c)
+			c.Room.LeaveRoom(c)
 		}
 		c.hub.unregister <- c
 		c.conn.Close()
@@ -98,26 +98,53 @@ func (c *Client) readPump() {
 					log.Println(err)
 					msg.Msg = err.Error()
 				} else {
-					msg.Status = true
-					if c.hub.Rooms[uint(m.RoomNumber)].FirstMove == c {
-						m.IsBlack = true
-					}
 				}
 				msg.Content = m
 				message, _ = json.Marshal(msg)
 				c.send <- message
-				if c.Room.GetTarget(c) != nil {
+				if c.Room != nil && c.Room.GetTarget(c) != nil {
+					msg.Status = true
 					msg.Msg = "对手加入成功"
-					if m.IsBlack {
-						m.IsBlack = false
-					} else {
-						m.IsBlack = true
-					}
-					msg.Content = m
 					message, _ = json.Marshal(msg)
 					c.Room.GetTarget(c).send <- message
 				}
 				continue
+			case "leave":
+				if c.Room != nil {
+					c.Room.LeaveRoom(c)
+				}
+				msg.Status = true
+				msg.Msg = "您离开房间了"
+				message, _ = json.Marshal(msg)
+				c.send <- message
+				continue
+			case "start":
+				if c.Room != nil {
+					var err error
+					if err = c.Room.Start(c); err != nil {
+						msg.Msg = err.Error()
+					} else {
+						msg.Status = true
+					}
+					m.RoomNumber = int(c.Room.ID)
+					if c.Room.FirstMove == c {
+						m.IsBlack = true
+					}
+					msg.Content = m
+					message, _ = json.Marshal(msg)
+					c.send <- message
+					if target := c.Room.GetTarget(c); target != nil && err == nil {
+						if c.Room.FirstMove == target {
+							m.IsBlack = true
+						} else {
+							m.IsBlack = false
+						}
+						msg.Content = m
+						msg.Msg = "房主开始了游戏"
+						message, _ = json.Marshal(msg)
+						target.send <- message
+					}
+				}
 			}
 		case chessWalk:
 			m := RcvChessMsg{}

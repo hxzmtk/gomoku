@@ -99,8 +99,6 @@ func (h *Hub) JoinRoom(c *Client, roomID int) error {
 		if err := room.JoinRoom(c); err != nil {
 			return err
 		}
-		room.ELectWhoFirst(c)
-
 	} else {
 		return errors.New("房间不存在")
 	}
@@ -114,7 +112,7 @@ func (h *Hub) GetRooms() []ResRoomListMsg {
 			continue
 		}
 		isFull := false
-		if room.FirstMove != nil && room.LastMove != nil {
+		if room.FirstMove != nil && room.Target != nil {
 			isFull = true
 		}
 		rooms = append(rooms, ResRoomListMsg{

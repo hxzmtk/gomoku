@@ -10,6 +10,8 @@ let playing = hand.nilHand; //记录当前该"谁"落子了
 let place = undefined //二维数组；存放棋子
 let last_pos = {x:-1,y:-1} //存放上一个"落子"的位置
 
+let ws = undefined //保存websocket对象
+
 //初始化二维数组
 function initPlace(row, col) {
     place = Array(row).fill(0).map(x => Array(col).fill(0));
@@ -66,6 +68,7 @@ function flushRoom(arr) {
     }
 }
 
+
 //提示消息
 function alertMsg(msg) {
     let elm = $(".alert-msg");
@@ -96,6 +99,7 @@ function updateIdentity(who){
 function updateStatus(who){
     playing = who;
     if (playing == hand.nilHand) {
+        $("#chess-status").append("无")
         return
     }
     let content = "";
@@ -116,8 +120,73 @@ function updateStatus(who){
     $("#chess-status").append(elm);
 }
 
+//重置
+function ResetAll(){
+    player = hand.nilHand;
+    playing = hand.nilHand;
+    place = undefined;
+    last_pos = {x:-1,y:-1}
 
-let ws = undefined
+    $(".go-board i").removeClass("w b");
+    initPlace(15,15);
+    updateIdentity(hand.nilHand);
+    updateStatus(hand.nilHand);
+}
+
+//确认开始游戏
+function  ConfirmGameStart(){
+    bootbox.confirm({
+        message: "对方已加入,请开始游戏",
+        buttons: {
+            confirm: {
+                label: 'Yes',
+                className: 'btn-success'
+            },
+            cancel: {
+                label: 'No',
+                className: 'btn-danger'
+            }
+        },
+        callback: function (result) {
+            if (result){
+                ws.send(JSON.stringify({
+                    "m_type": 0,
+                    "content": {
+                        "action":"start"
+                    }
+                }))
+            }
+        }
+    });
+}
+
+//确认是否离开房间
+function  ConfirmLeaveHome(){
+    bootbox.confirm({
+        message: "真的要离开房间吗?",
+        buttons: {
+            confirm: {
+                label: 'Yes',
+                className: 'btn-success'
+            },
+            cancel: {
+                label: 'No',
+                className: 'btn-danger'
+            }
+        },
+        callback: function (result) {
+            if (result){
+                ws.send(JSON.stringify({
+                    "m_type": 0,
+                    "content": {
+                        "action":"leave",
+                        "room_number":parseInt($("#room-number-info").html())
+                    }
+                }))
+            }
+        }
+    });
+}
 
 $(document).ready(function(){
 
@@ -181,14 +250,23 @@ $(document).ready(function(){
             case 0:
                 console.log(dic);
                 if (dic.status == true) {
-                    if (dic['content']['action'] == 'create') {
+                    let action = dic['content']['action'];
+                    if (action == 'create') {
                         $("#room-number-info").html(dic['content']['room_number']);
-                    }
-                    else if (dic['content']['action'] == 'join'){
+                    } else if (action == 'join'){
                         $("#room-number-info").html(dic['content']['room_number']);
+                        ConfirmGameStart();
                         // $("#user-info").html(dic['content'].is_black == true?"先手":"后手");
                         updateIdentity(dic['content'].is_black == true?hand.blackHand:hand.whiteHand)
 
+                    } else if (action == 'leave'){
+                        ResetAll();
+                        $(".container").addClass("d-none");
+                        $('#dialog').modal('show');
+
+                    }  else if (action == "start") {
+                        $("#room-number-info").html(dic['content']['room_number']);
+                        updateIdentity(dic['content'].is_black == true?hand.blackHand:hand.whiteHand);
                     }
                 }
 

@@ -391,6 +391,15 @@ func (g *Grid) IsWin(row, col int) bool {
 	}
 }
 
+//重置棋盘
+func (g *Grid) Reset() {
+	for row := 1; row <= g.GetRowLen(); row++ {
+		for col := 1; col <= g.GetColLen(); col++ {
+			g.Offset(row, col).value = NilHand
+		}
+	}
+}
+
 /*
 约定: row,col的起始值为1
 */
