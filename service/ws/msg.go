@@ -14,11 +14,21 @@ const (
 )
 
 type msgType uint
+type RoomAction uint
 
 const (
-	roomMsg   msgType = iota //房间消息(创建房间、加入房间)
-	chessWalk                //落子消息
-	roomList                 //获取房间列表消息
+	clientInfoMsg msgType = iota //获取连接信息
+	roomMsg                      //房间消息(创建房间、加入房间)
+	chessWalk                    //落子消息
+	roomList                     //获取房间列表消息
+)
+
+//房间消息的动作
+const (
+	RoomCreate RoomAction = iota
+	RoomJoin
+	RoomStart
+	RoomLeave
 )
 
 type WsReceive struct {
@@ -52,6 +62,7 @@ func (w *WsReceive) verify() error {
 		}
 		w.Content = m
 	case roomList:
+	case clientInfoMsg:
 
 	default:
 		return errors.New("错误的消息类型")
@@ -60,9 +71,9 @@ func (w *WsReceive) verify() error {
 }
 
 type RcvRoomMsg struct {
-	Action     string `json:"action" mapstructure:"action"`
-	RoomNumber int    `json:"room_number" mapstructure:"room_number"` //房间编号
-	IsBlack    bool   `json:"is_black" mapstructure:"is_black"`
+	Action     RoomAction `json:"action" mapstructure:"action"`
+	RoomNumber int        `json:"room_number" mapstructure:"room_number"` //房间编号
+	IsBlack    bool       `json:"is_black" mapstructure:"is_black"`
 }
 
 type RcvChessMsg struct {
@@ -80,4 +91,8 @@ type ResRoomListMsg struct {
 type MainMsg struct {
 	ID  string `json:"id"`
 	Msg []byte `json:"msg"`
+}
+
+type ClientInfo struct {
+	Name string `json:"name"`
 }

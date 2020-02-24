@@ -5,6 +5,19 @@ let hand = {
     "whiteHand": 2
 }
 
+let msgType = {
+    "clientInfoMsg": 0,
+    "roomMsg": 1,
+    "chessWalkMsg": 2,
+    "roomList": 3,
+}
+let roomAction = {
+    "create": 0,
+    "join": 1,
+    "start": 2,
+    "leave": 3,
+}
+
 let player = hand.nilHand;  //记录 “我”是 '黑子'还是'白子';
 let playing = hand.nilHand; //记录当前该"谁"落子了
 let place = undefined //二维数组；存放棋子
@@ -150,9 +163,9 @@ function  ConfirmGameStart(){
         callback: function (result) {
             if (result){
                 ws.send(JSON.stringify({
-                    "m_type": 0,
+                    "m_type": msgType.roomMsg,
                     "content": {
-                        "action":"start"
+                        "action":roomAction.start
                     }
                 }))
             }
@@ -188,6 +201,14 @@ function  ConfirmLeaveHome(){
     });
 }
 
+//消息提示
+function BootboxAlert(msg){
+    bootbox.alert(msg);
+    window.setTimeout(function(){
+        bootbox.hideAll();
+    },3000);
+}
+
 $(document).ready(function(){
 
     $(".go-board").on("click", function(e){
@@ -197,7 +218,7 @@ $(document).ready(function(){
             let y = arr[2];
 
             let msg = {
-                "m_type": 1,
+                "m_type": msgType.chessWalkMsg,
                 "content": {
                     "x":parseInt(x),
                     "y":parseInt(y),
@@ -210,11 +231,12 @@ $(document).ready(function(){
 
     $("#room-create").on("click", function(e){
         let msg = {
-            "m_type": 0,
+            "m_type": msgType.roomMsg,
             "content": {
-                "action":"create"
+                "action":roomAction.create,
             }
         }
+        console.log(msg);
         ws.send(JSON.stringify(msg));
         $('#dialog').modal('hide');
         $(".container").removeClass("d-none");
@@ -222,9 +244,9 @@ $(document).ready(function(){
 
     $("#room-join").on("click", function(e){
         let msg = {
-            "m_type": 0,
+            "m_type": msgType.roomMsg,
             "content": {
-                "action":"join",
+                "action":roomAction.join,
                 "room_number":parseInt($("#room-list :selected")[0].value)
             }
         }
@@ -237,6 +259,9 @@ $(document).ready(function(){
     ws = new WebSocket("ws://"+ document.location.host + "/v1/ws");
     ws.onopen = function(){
         console.log("CONNECT");
+        ws.send(JSON.stringify({
+            "m_type": msgType.clientInfoMsg,
+        }));
     };
 
     ws.onclose = function(){
@@ -247,24 +272,24 @@ $(document).ready(function(){
         console.log(event.data);
         let dic = JSON.parse(event.data);
         switch (dic['m_type']) {
-            case 0:
+            case msgType.roomMsg:
                 console.log(dic);
                 if (dic.status == true) {
                     let action = dic['content']['action'];
-                    if (action == 'create') {
+                    if (action == roomAction.create) {
                         $("#room-number-info").html(dic['content']['room_number']);
-                    } else if (action == 'join'){
+                    } else if (action == roomAction.join){
                         $("#room-number-info").html(dic['content']['room_number']);
                         ConfirmGameStart();
                         // $("#user-info").html(dic['content'].is_black == true?"先手":"后手");
                         updateIdentity(dic['content'].is_black == true?hand.blackHand:hand.whiteHand)
 
-                    } else if (action == 'leave'){
+                    } else if (action == roomAction.leave){
                         ResetAll();
                         $(".container").addClass("d-none");
                         $('#dialog').modal('show');
 
-                    }  else if (action == "start") {
+                    }  else if (action == roomAction.start) {
                         $("#room-number-info").html(dic['content']['room_number']);
                         updateIdentity(dic['content'].is_black == true?hand.blackHand:hand.whiteHand);
                     }
@@ -275,7 +300,7 @@ $(document).ready(function(){
                 }
                 
                 break;
-            case 1:
+            case msgType.chessWalkMsg:
                 if (dic.status == true) {
                     Setup(dic['content'].x, dic['content'].y,dic['content'].is_black == true?1:2);
                     updateStatus(dic['content'].is_black == true?hand.blackHand:hand.whiteHand);
@@ -285,9 +310,12 @@ $(document).ready(function(){
                     alertMsg(dic.msg);
                 }
                 break;
-            case 2:
+            case msgType.roomList:
                 console.log(dic);
                 flushRoom(dic['content'])
+                break;
+            case msgType.clientInfoMsg:
+                console.log(dic);
                 break;
         }
         alertMsg(dic.msg);
@@ -334,7 +362,7 @@ $(document).ready(function(){
             $("#room-join").removeClass("d-none");
 
             ws.send(JSON.stringify({
-                "m_type": 2,
+                "m_type": msgType.roomList,
                 "content": {
                 }
             }))

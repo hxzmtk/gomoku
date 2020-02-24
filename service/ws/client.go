@@ -80,7 +80,7 @@ func (c *Client) readPump() {
 			_ = mapstructure.Decode(msg.Content, &m)
 
 			switch m.Action {
-			case "create":
+			case RoomCreate:
 				if roomNumber, err := c.hub.CreateRoom(c); err == nil {
 					m.RoomNumber = roomNumber
 					msg.Status = true
@@ -93,7 +93,7 @@ func (c *Client) readPump() {
 				message, _ = json.Marshal(msg)
 				c.send <- message
 				continue
-			case "join":
+			case RoomJoin:
 				if err = c.hub.JoinRoom(c, m.RoomNumber); err != nil {
 					log.Println(err)
 					msg.Msg = err.Error()
@@ -109,7 +109,7 @@ func (c *Client) readPump() {
 					c.Room.GetTarget(c).send <- message
 				}
 				continue
-			case "leave":
+			case RoomLeave:
 				if c.Room != nil {
 					c.Room.LeaveRoom(c)
 				}
@@ -118,7 +118,7 @@ func (c *Client) readPump() {
 				message, _ = json.Marshal(msg)
 				c.send <- message
 				continue
-			case "start":
+			case RoomStart:
 				if c.Room != nil {
 					var err error
 					if err = c.Room.Start(c); err != nil {
@@ -127,6 +127,7 @@ func (c *Client) readPump() {
 						msg.Status = true
 					}
 					m.RoomNumber = int(c.Room.ID)
+
 					if c.Room.FirstMove == c {
 						m.IsBlack = true
 					}
@@ -175,6 +176,11 @@ func (c *Client) readPump() {
 			continue
 		case roomList:
 			msg.Content = c.hub.GetRooms()
+			message, _ = json.Marshal(msg)
+			c.send <- message
+			continue
+		case clientInfoMsg:
+			msg.Content = ClientInfo{Name: c.ID}
 			message, _ = json.Marshal(msg)
 			c.send <- message
 			continue
