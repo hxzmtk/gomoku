@@ -99,10 +99,11 @@ func (c *Client) readPump() {
 					msg.Msg = err.Error()
 				} else {
 				}
-				msg.Content = m
+				msg.Content = ResRoomJoinMsg{Name: c.Room.GetTarget(c).ID, Action: RoomJoin}
 				message, _ = json.Marshal(msg)
 				c.send <- message
 				if c.Room != nil && c.Room.GetTarget(c) != nil {
+					msg.Content = ResRoomJoinMsg{Name: c.ID, Action: RoomJoin}
 					msg.Status = true
 					msg.Msg = "对手加入成功"
 					message, _ = json.Marshal(msg)
@@ -146,6 +147,8 @@ func (c *Client) readPump() {
 						target.send <- message
 					}
 				}
+			case RoomRestart:
+
 			}
 		case chessWalk:
 			m := RcvChessMsg{}
@@ -166,12 +169,13 @@ func (c *Client) readPump() {
 				msg.Msg = info
 			} else {
 				msg.Msg = info
+
 			}
 			msg.Content = m
 			message, _ = json.Marshal(msg)
 			c.send <- message
-			if c.Room.GetTarget(c) != nil && msg.Status {
-				c.Room.GetTarget(c).send <- message
+			if target := c.Room.GetTarget(c); target != nil && msg.Status {
+				target.send <- message
 			}
 			continue
 		case roomList:

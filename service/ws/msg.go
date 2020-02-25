@@ -29,6 +29,7 @@ const (
 	RoomJoin
 	RoomStart
 	RoomLeave
+	RoomRestart
 )
 
 type WsReceive struct {
@@ -39,6 +40,9 @@ type WsReceive struct {
 }
 
 func (w *WsReceive) verify() error {
+	if w.Content == nil {
+		return nil
+	}
 	if _, ok := w.Content.(map[string]interface{}); !ok {
 		return errors.New("必须是一个字典")
 	}
@@ -94,5 +98,10 @@ type MainMsg struct {
 }
 
 type ClientInfo struct {
-	Name string `json:"name"`
+	Name string `json:"name" mapstructure:"name"`
+}
+
+type ResRoomJoinMsg struct {
+	Action RoomAction `json:"action"`
+	Name   string     `json:"name"`
 }

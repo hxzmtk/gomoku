@@ -24,17 +24,26 @@
         <div class="container d-none">
             <div class="row mt-lg-5">
                 <div class="col-lg-2">
+
                     <div class="col d-flex flex-lg-wrap">
                         <h6 class="mr-3">
                             房间号: <span id="room-number-info">0</span>
                         </h6>
                         <h6 class="mr-3">
-                            身份: <span id="user-info">无</span>
+                            昵称: <span id="myname" style="font-size:0.5rem">无</span>
                         </h6>
-                        <h6>
+                        <h6 class="mr-3">
                             状态: <span id="chess-status">无</span>
                         </h6>
-                        
+                    </div>
+
+                    <div class="col d-flex justify-content-center">
+                        <div>
+                            <button type="button" class="btn btn-light btn-sm btn-block" id="myName">黑手</button>
+                        </div>
+                        <div>
+                            <button type="button" class="btn btn-light btn-sm btn-block" id="targetName">待加入</button>
+                        </div>
                     </div>
                     <!-- <div class="d-flex justify-content-center">
                         <span class="badge badge-pill badge-light">黑手</span>

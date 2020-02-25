@@ -72,6 +72,7 @@ func (room *Room) ELectWhoFirst(c *Client) {
 	} else {
 		room.FirstMove = room.Master
 	}
+	room.NextWho = room.FirstMove
 }
 
 func (room *Room) SendMessage([]byte) {
@@ -139,6 +140,9 @@ func (room *Room) GameReset() {
 
 //开始游戏
 func (room *Room) Start(c *Client) error {
+	if room.Master != nil && room.Master != c {
+		return errors.New("您不是房主")
+	}
 	if room.IsEmpty() {
 		return errors.New("空的房间")
 	}
@@ -146,8 +150,10 @@ func (room *Room) Start(c *Client) error {
 	if room.FirstMove == nil || room.Target == nil {
 		return errors.New("请等待对手加入")
 	}
-	if room.Master != nil && room.Master != c {
-		return errors.New("您不是房主")
-	}
 	return nil
+}
+
+//重开游戏
+func (room *Room) Restart(c *Client) error {
+	return room.Start(c)
 }

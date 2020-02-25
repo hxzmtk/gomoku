@@ -6,7 +6,7 @@ let hand = {
 }
 
 let msgType = {
-    "clientInfoMsg": 0,
+     "clientInfoMsg": 0,
     "roomMsg": 1,
     "chessWalkMsg": 2,
     "roomList": 3,
@@ -16,12 +16,14 @@ let roomAction = {
     "join": 1,
     "start": 2,
     "leave": 3,
+    "restart": 4,
 }
 
 let player = hand.nilHand;  //记录 “我”是 '黑子'还是'白子';
 let playing = hand.nilHand; //记录当前该"谁"落子了
 let place = undefined //二维数组；存放棋子
 let last_pos = {x:-1,y:-1} //存放上一个"落子"的位置
+let is_master = false; //是否是房主
 
 let ws = undefined //保存websocket对象
 
@@ -97,13 +99,16 @@ function updateIdentity(who){
     player = who
     switch (player) {
         case hand.blackHand:
-            $("#user-info").html('先手');
+            $("#myName").addClass("btn-dark");
+            $("#targetName").removeClass("btn-dark");
             break;
         case hand.whiteHand:
-            $("#user-info").html('后手');
+            $("#targetName").addClass("btn-dark");
+            $("#myName").removeClass("btn-dark");
             break;
         default:
-            $("#user-info").html('无');
+            $("#myName").removeClass("btn-dark");
+            $("#targetName").removeClass("btn-dark");
             break;
     }
 };
@@ -112,6 +117,7 @@ function updateIdentity(who){
 function updateStatus(who){
     playing = who;
     if (playing == hand.nilHand) {
+        $("#chess-status").empty();
         $("#chess-status").append("无")
         return
     }
@@ -140,7 +146,7 @@ function ResetAll(){
     place = undefined;
     last_pos = {x:-1,y:-1}
 
-    $(".go-board i").removeClass("w b");
+    $(".go-board i").removeClass("w b chess-spinner");
     initPlace(15,15);
     updateIdentity(hand.nilHand);
     updateStatus(hand.nilHand);
@@ -190,10 +196,37 @@ function  ConfirmLeaveHome(){
         callback: function (result) {
             if (result){
                 ws.send(JSON.stringify({
-                    "m_type": 0,
+                    "m_type": msgType.roomMsg, 
                     "content": {
-                        "action":"leave",
+                        "action":roomAction.leave,
                         "room_number":parseInt($("#room-number-info").html())
+                    }
+                }))
+            }
+        }
+    });
+}
+
+//重开
+function ConfirmGameRestart(){
+    bootbox.confirm({
+        message: "确认重新开局吗",
+        buttons: {
+            confirm: {
+                label: 'Yes',
+                className: 'btn-success'
+            },
+            cancel: {
+                label: 'No',
+                className: 'btn-danger'
+            }
+        },
+        callback: function (result) {
+            if (result){
+                ws.send(JSON.stringify({
+                    "m_type": msgType.roomMsg,
+                    "content": {
+                        "action":roomAction.restart,
                     }
                 }))
             }
@@ -208,6 +241,58 @@ function BootboxAlert(msg){
         bootbox.hideAll();
     },3000);
 }
+
+//处理RoomMsg消息
+function handleRoomMsg(msg){
+    if (msg.status = true) {
+        switch (msg['content']['action']) {
+            case roomAction.create:
+                $("#room-number-info").html(msg['content']['room_number']);
+                is_master = true;
+                break;
+            case roomAction.join:
+                console.log(msg['content'],$("#myName").html());
+                if (is_master) {
+                    ConfirmGameStart();
+                }
+                $("#targetName").html(msg['content'].hasOwnProperty('name')?msg['content']['name']:"待加入");
+                break;
+            case roomAction.start:
+                $("#room-number-info").html(msg['content']['room_number']);
+                updateIdentity(msg['content'].is_black == true?hand.blackHand:hand.whiteHand);
+                player = msg['content'].is_black == true?hand.blackHand:hand.whiteHand;
+                $("#chess-status").empty();
+                if (player == hand.blackHand){
+                    $("#chess-status").append("您是先手");
+                } else if (player == hand.whiteHand){
+                    $("#chess-status").append("您是后手");
+                }
+                break;
+            case roomAction.leave:
+                ResetAll();
+                $(".container").addClass("d-none");
+                $('#dialog').modal('show');
+                break;
+            default:
+                break;
+        }
+    }
+    if (msg.msg != ""){
+        alertMsg(msg.msg);
+    }
+};
+
+//处理下棋消息
+function handleChessWalkMsg(msg){
+    if (msg.status == true) {
+        Setup(msg['content'].x, msg['content'].y,msg['content'].is_black == true?1:2);
+        updateStatus(msg['content'].is_black == true?hand.blackHand:hand.whiteHand);
+        remain(msg['content'].x, msg['content'].y);
+    }
+    if (msg.msg != ""){
+        alertMsg(msg.msg);
+    }
+};
 
 $(document).ready(function(){
 
@@ -273,42 +358,10 @@ $(document).ready(function(){
         let dic = JSON.parse(event.data);
         switch (dic['m_type']) {
             case msgType.roomMsg:
-                console.log(dic);
-                if (dic.status == true) {
-                    let action = dic['content']['action'];
-                    if (action == roomAction.create) {
-                        $("#room-number-info").html(dic['content']['room_number']);
-                    } else if (action == roomAction.join){
-                        $("#room-number-info").html(dic['content']['room_number']);
-                        ConfirmGameStart();
-                        // $("#user-info").html(dic['content'].is_black == true?"先手":"后手");
-                        updateIdentity(dic['content'].is_black == true?hand.blackHand:hand.whiteHand)
-
-                    } else if (action == roomAction.leave){
-                        ResetAll();
-                        $(".container").addClass("d-none");
-                        $('#dialog').modal('show');
-
-                    }  else if (action == roomAction.start) {
-                        $("#room-number-info").html(dic['content']['room_number']);
-                        updateIdentity(dic['content'].is_black == true?hand.blackHand:hand.whiteHand);
-                    }
-                }
-
-                if (dic.msg != ""){
-                    alertMsg(dic.msg);
-                }
-                
+                handleRoomMsg(dic);
                 break;
             case msgType.chessWalkMsg:
-                if (dic.status == true) {
-                    Setup(dic['content'].x, dic['content'].y,dic['content'].is_black == true?1:2);
-                    updateStatus(dic['content'].is_black == true?hand.blackHand:hand.whiteHand);
-                    remain(dic['content'].x, dic['content'].y);
-                }
-                if (dic.msg != ""){
-                    alertMsg(dic.msg);
-                }
+                handleChessWalkMsg(dic);
                 break;
             case msgType.roomList:
                 console.log(dic);
@@ -316,6 +369,8 @@ $(document).ready(function(){
                 break;
             case msgType.clientInfoMsg:
                 console.log(dic);
+                $("#myname").html(dic.content.name);
+                $("#myName").html(dic.content.name);
                 break;
         }
         alertMsg(dic.msg);
