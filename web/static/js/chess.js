@@ -17,6 +17,7 @@ let roomAction = {
     "start": 2,
     "leave": 3,
     "restart": 4,
+    "reset": 5,
 }
 
 let player = hand.nilHand;  //记录 “我”是 '黑子'还是'白子';
@@ -146,10 +147,26 @@ function ResetAll(){
     place = undefined;
     last_pos = {x:-1,y:-1}
 
+    $("#targetName").html("待加入");
+
     $(".go-board i").removeClass("w b chess-spinner");
     initPlace(15,15);
     updateIdentity(hand.nilHand);
     updateStatus(hand.nilHand);
+}
+
+//重置棋盘渲染
+function ResetGrid(){
+    for (let i = 0; i < 15; i++) {
+        for (let j = 0; j < 15; j++) {
+            $(`#go-{i}-{j}`.removeClass("b w"));
+        }
+    }
+}
+
+//重新开局
+function Restart(){
+    ResetGrid();
 }
 
 //确认开始游戏
@@ -234,12 +251,26 @@ function ConfirmGameRestart(){
     });
 }
 
+//对方离线,提示房主重置
+function ConfirmGameReset(){
+
+    bootbox.alert({ 
+        message: "对方离开房间或掉线,请重置", 
+        closeButton: false,
+        callback: function (result) {
+            ws.send(JSON.stringify({
+                "m_type": msgType.roomMsg,
+                "content": {
+                    "action":roomAction.reset,
+                }
+            }))
+        }
+    })
+}
+
 //消息提示
 function BootboxAlert(msg){
     bootbox.alert(msg);
-    window.setTimeout(function(){
-        bootbox.hideAll();
-    },3000);
 }
 
 //处理RoomMsg消息
@@ -269,9 +300,21 @@ function handleRoomMsg(msg){
                 }
                 break;
             case roomAction.leave:
+                if (msg['content'].hasOwnProperty('is_master')) {
+                    if (msg['content']['is_master']){
+                    }else {
+                    }
+                    ConfirmGameReset();
+                     
+                } else {
+                    ResetAll();
+                    $(".container").addClass("d-none");
+                    $('#dialog').modal('show');
+                }
+                break;
+            case roomAction.reset:
                 ResetAll();
-                $(".container").addClass("d-none");
-                $('#dialog').modal('show');
+                BootboxAlert("游戏重置成功");
                 break;
             default:
                 break;

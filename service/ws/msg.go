@@ -30,6 +30,7 @@ const (
 	RoomStart
 	RoomLeave
 	RoomRestart
+	RoomReset
 )
 
 type WsReceive struct {
@@ -104,4 +105,9 @@ type ClientInfo struct {
 type ResRoomJoinMsg struct {
 	Action RoomAction `json:"action"`
 	Name   string     `json:"name"`
+}
+
+type ResRoomLeaveMsg struct {
+	Action   RoomAction `json:"action"`
+	IsMaster bool       `json:"is_master"`
 }

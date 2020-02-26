@@ -112,7 +112,7 @@ func (h *Hub) GetRooms() []ResRoomListMsg {
 			continue
 		}
 		isFull := false
-		if room.FirstMove != nil && room.Target != nil {
+		if room.Master != nil && room.Target != nil {
 			isFull = true
 		}
 		rooms = append(rooms, ResRoomListMsg{

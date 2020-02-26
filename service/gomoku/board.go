@@ -219,6 +219,18 @@ func (g *Grid) IsFull() bool {
 	return true
 }
 
+//棋盘是否为空
+func (g *Grid) IsEmpty() bool {
+	for row := 1; row <= g.GetRowLen(); row++ {
+		for col := 1; col <= g.GetColLen(); col++ {
+			if g.Offset(row, col).value != NilHand {
+				return false
+			}
+		}
+	}
+	return true
+}
+
 //统计黑手,白手的棋子数量
 func (g *Grid) Count() (black, white int) {
 	for row := 1; row <= g.GetRowLen(); row++ {

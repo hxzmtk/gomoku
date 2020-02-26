@@ -146,9 +146,12 @@ func (room *Room) Start(c *Client) error {
 	if room.IsEmpty() {
 		return errors.New("空的房间")
 	}
-	room.ELectWhoFirst(c)
-	if room.FirstMove == nil || room.Target == nil {
+	if room.Target == nil {
 		return errors.New("请等待对手加入")
+	}
+	room.ELectWhoFirst(c)
+	if !room.grid.IsEmpty() {
+		return errors.New("游戏已经开始了")
 	}
 	return nil
 }

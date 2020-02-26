@@ -97,7 +97,9 @@ func (c *Client) readPump() {
 				if err = c.hub.JoinRoom(c, m.RoomNumber); err != nil {
 					log.Println(err)
 					msg.Msg = err.Error()
-				} else {
+					message, _ = json.Marshal(msg)
+					c.send <- message
+					continue
 				}
 				msg.Content = ResRoomJoinMsg{Name: c.Room.GetTarget(c).ID, Action: RoomJoin}
 				message, _ = json.Marshal(msg)
@@ -112,8 +114,19 @@ func (c *Client) readPump() {
 				continue
 			case RoomLeave:
 				if c.Room != nil {
+					target := c.Room.GetTarget(c)
+					isMaster := false
+					if c.Room.Master != nil && c.Room.Master == c {
+						isMaster = true
+					}
+					if target != nil {
+						msg.Content = ResRoomLeaveMsg{IsMaster: isMaster, Action: RoomLeave}
+						message, _ = json.Marshal(msg)
+						target.send <- message
+					}
 					c.Room.LeaveRoom(c)
 				}
+				msg.Content = m
 				msg.Status = true
 				msg.Msg = "您离开房间了"
 				message, _ = json.Marshal(msg)
@@ -148,7 +161,19 @@ func (c *Client) readPump() {
 					}
 				}
 			case RoomRestart:
-
+			case RoomReset:
+				if c.Room != nil && c.Room.Master == c {
+					msg.Status = true
+					c.Room.GameReset()
+					message, _ = json.Marshal(msg)
+					c.send <- message
+					continue
+				}
+				msg.Status = false
+				msg.Msg = "房间不存在或您不是房主"
+				message, _ = json.Marshal(msg)
+				c.send <- message
+				continue
 			}
 		case chessWalk:
 			m := RcvChessMsg{}
@@ -169,7 +194,6 @@ func (c *Client) readPump() {
 				msg.Msg = info
 			} else {
 				msg.Msg = info
-
 			}
 			msg.Content = m
 			message, _ = json.Marshal(msg)
