@@ -77,6 +77,11 @@ func (g *Grid) Set(row, col int, value hand) bool {
 	return true
 }
 
+func (g *Grid) SetByXY(x, y int, value hand) bool {
+	row, col := y+1, x+1
+	return g.Set(row, col, value)
+}
+
 //获取向右偏移x位的指针
 func (g *Grid) RightOffset(col int) *Grid {
 	var tmp *Grid
@@ -401,6 +406,11 @@ func (g *Grid) IsWin(row, col int) bool {
 	} else {
 		return false
 	}
+}
+
+func (g *Grid) IsWinByXY(x, y int) bool {
+	row, col := y+1, x+1
+	return g.IsWin(row, col)
 }
 
 //重置棋盘

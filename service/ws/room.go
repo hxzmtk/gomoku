@@ -40,9 +40,9 @@ func (room *Room) GoSet(c *Client, msg *RcvChessMsg) (bool, string) {
 
 	if room.FirstMove == c {
 		msg.IsBlack = true
-		if room.grid.Set(msg.Y+1, msg.X+1, gomoku.BlackHand) {
+		if room.grid.SetByXY(msg.X, msg.Y, gomoku.BlackHand) {
 			room.NextWho = room.Target
-			if room.grid.IsWin(msg.Y+1, msg.X+1) {
+			if room.grid.IsWinByXY(msg.X, msg.Y) {
 				room.isWin = true
 				return true, fmt.Sprintf("黑手赢")
 			}
@@ -50,9 +50,9 @@ func (room *Room) GoSet(c *Client, msg *RcvChessMsg) (bool, string) {
 			return false, "该位置已有棋子"
 		}
 	} else if room.Target == c {
-		if room.grid.Set(msg.Y+1, msg.X+1, gomoku.WhiteHand) {
+		if room.grid.SetByXY(msg.X, msg.Y, gomoku.WhiteHand) {
 			room.NextWho = room.FirstMove
-			if room.grid.IsWin(msg.Y+1, msg.X+1) {
+			if room.grid.IsWinByXY(msg.X, msg.Y) {
 				room.isWin = true
 				return true, fmt.Sprintf("白手赢")
 			}
