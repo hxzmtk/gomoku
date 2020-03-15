@@ -8,12 +8,12 @@ import (
 
 const INCESSANT = Five * 10
 
-type hand uint
+type Hand uint
 
 type direction uint
 
 const (
-	NilHand   hand = iota //空白
+	NilHand   Hand = iota //空白
 	BlackHand             //黑手
 	WhiteHand             //白手
 )
@@ -29,7 +29,7 @@ const (
 	Bottom
 )
 
-func (h hand) Str() string {
+func (h Hand) Str() string {
 	switch h {
 	case NilHand:
 		return "."
@@ -42,7 +42,7 @@ func (h hand) Str() string {
 	}
 }
 
-func (h hand) Reverse() hand {
+func (h Hand) Reverse() Hand {
 	if h == BlackHand {
 		return WhiteHand
 	} else if h == WhiteHand {
@@ -66,7 +66,7 @@ const (
 )
 
 type Grid struct {
-	value  hand
+	value  Hand
 	left   *Grid
 	right  *Grid
 	top    *Grid
@@ -102,7 +102,7 @@ func (g *Grid) RightBottom() *Grid {
 }
 
 //设置row,col坐标的值, 即 落棋子
-func (g *Grid) Set(row, col int, value hand) {
+func (g *Grid) Set(row, col int, value Hand) {
 	offset := g
 	offset = g.Offset(row, col)
 	if offset == nil {
@@ -376,7 +376,7 @@ func (g *Grid) Copy() *Grid {
 	return newGrid
 }
 
-func (g *Grid) GetHandXY(h hand) []Pos {
+func (g *Grid) GetHandXY(h Hand) []Pos {
 	var pos []Pos
 	if h == NilHand {
 		return pos
@@ -422,7 +422,7 @@ func (g *Grid) CheckWin(x, y int) bool {
 }
 
 func (g *Grid) Win() bool {
-	for _, t := range [2]hand{BlackHand, WhiteHand} {
+	for _, t := range [2]Hand{BlackHand, WhiteHand} {
 		for _, p := range g.GetHandXY(t) {
 			x, y := p.X, p.Y
 			l, _ := g.CountLink(left, x, y)
@@ -463,10 +463,10 @@ type AI struct {
 	X     int
 	Y     int
 	Depth int
-	h     hand
+	H     Hand
 }
 
-func (ai *AI) negaMax(grid *Grid, h hand, alpha, beta, depth int) int {
+func (ai *AI) NegaMax(grid *Grid, h Hand, alpha, beta, depth int) int {
 	if depth <= 0 || grid.Win() {
 		return ai.Evaluate(grid, h)
 	}
@@ -479,7 +479,7 @@ func (ai *AI) negaMax(grid *Grid, h hand, alpha, beta, depth int) int {
 			g := grid.Copy()
 			g.OffsetXY(p.X, p.Y).value = h
 
-			value := -ai.negaMax(g, h.Reverse(), -beta, -alpha, depth-1)
+			value := -ai.NegaMax(g, h.Reverse(), -beta, -alpha, depth-1)
 			if value > alpha {
 				if depth == ai.Depth {
 					ai.X = p.X
@@ -502,13 +502,13 @@ func (ai *AI) negaMax(grid *Grid, h hand, alpha, beta, depth int) int {
 }
 
 //评分
-func (ai *AI) Evaluate(g *Grid, h hand) int {
+func (ai *AI) Evaluate(g *Grid, h Hand) int {
 	totalScore := 0
 	AIScore := 0
 	enemyScore := 0
-	computer := ai.h
+	computer := ai.H
 	target := computer.Reverse()
-	for _, t := range [2]hand{computer, target} {
+	for _, t := range [2]Hand{computer, target} {
 		for _, p := range g.GetHandXY(t) {
 			l, lIsSet := g.CountLink(left, p.X, p.Y)
 			lTop, lTopIsSet := g.CountLink(LeftTop, p.X, p.Y)
@@ -620,7 +620,7 @@ func (ai *AI) Evaluate(g *Grid, h hand) int {
 		}
 	}
 	totalScore = AIScore - enemyScore
-	if ai.h == h {
+	if ai.H == h {
 		return totalScore
 	}
 	return -totalScore
@@ -723,45 +723,52 @@ func (g *Grid) HasNeighbor(x, y int) bool {
 
 func main() {
 	grid := InitGrid(15, 15, &Grid{})
-	grid.Set(7, 7, BlackHand)
-	grid.Set(7, 8, WhiteHand)
-	grid.Set(8, 7, BlackHand)
-	grid.Set(8, 8, WhiteHand)
-	grid.Set(9, 7, BlackHand)
+	grid.OffsetXY(7, 7).value = BlackHand
+	grid.OffsetXY(7, 8).value = BlackHand
+	grid.OffsetXY(7, 9).value = BlackHand
+	grid.OffsetXY(7, 6).value = WhiteHand
+	grid.OffsetXY(6, 7).value = WhiteHand
+	grid.OffsetXY(8, 8).value = WhiteHand
+	grid.OffsetXY(7, 10).value = BlackHand
 	//grid.OffsetXY(5, 5).value = WhiteHand
 	//grid.OffsetXY(6, 5).value = BlackHand
 
+	grid.Print()
 	ai := AI{
 		Depth: 3,
-		h:     WhiteHand,
+		H:     WhiteHand,
 	}
-	//grid.OffsetXY(7, 7).value = BlackHand
-	t := WhiteHand
-	//i := 0
+	ai.NegaMax(grid.Copy(), WhiteHand, -INCESSANT, INCESSANT, ai.Depth)
+	grid.OffsetXY(ai.X, ai.Y).value = WhiteHand
 	grid.Print()
-	for !grid.IsFull() {
-		ai.negaMax(grid.Copy(), t, -INCESSANT, INCESSANT, ai.Depth)
-		grid.OffsetXY(ai.X, ai.Y).value = t
-		t = t.Reverse()
-		break
-		//if i == 100 || grid.CheckWin(ai.X, ai.Y) {
-		//	grid.Print()
-		//	break
-		//}
-		//i++
-	}
-	fmt.Println()
-	ai.negaMax(grid.Copy(), t, -INCESSANT, INCESSANT, ai.Depth)
-	grid.OffsetXY(ai.X, ai.Y).value = t
-	t = t.Reverse()
-
-	ai.negaMax(grid.Copy(), t, -INCESSANT, INCESSANT, ai.Depth)
-	grid.OffsetXY(ai.X, ai.Y).value = t
-	t = t.Reverse()
-	ai.negaMax(grid.Copy(), t, -INCESSANT, INCESSANT, ai.Depth)
-	grid.OffsetXY(ai.X, ai.Y).value = t
-
-	//AI(grid.Copy(), t)
-	//grid.OffsetXY(x, y).value = t
-	grid.Print()
+	//
+	////grid.OffsetXY(7, 7).value = BlackHand
+	//t := WhiteHand
+	////i := 0
+	//grid.Print()
+	//for !grid.IsFull() {
+	//	ai.negaMax(grid.Copy(), t, -INCESSANT, INCESSANT, ai.Depth)
+	//	grid.OffsetXY(ai.X, ai.Y).value = t
+	//	t = t.Reverse()
+	//	break
+	//	//if i == 100 || grid.CheckWin(ai.X, ai.Y) {
+	//	//	grid.Print()
+	//	//	break
+	//	//}
+	//	//i++
+	//}
+	//fmt.Println()
+	//ai.negaMax(grid.Copy(), t, -INCESSANT, INCESSANT, ai.Depth)
+	//grid.OffsetXY(ai.X, ai.Y).value = t
+	//t = t.Reverse()
+	//
+	//ai.negaMax(grid.Copy(), t, -INCESSANT, INCESSANT, ai.Depth)
+	//grid.OffsetXY(ai.X, ai.Y).value = t
+	//t = t.Reverse()
+	//ai.negaMax(grid.Copy(), t, -INCESSANT, INCESSANT, ai.Depth)
+	//grid.OffsetXY(ai.X, ai.Y).value = t
+	//
+	////AI(grid.Copy(), t)
+	////grid.OffsetXY(x, y).value = t
+	//grid.Print()
 }
