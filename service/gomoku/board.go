@@ -6,15 +6,15 @@ import (
 	"strings"
 )
 
-type hand uint
+type Hand uint
 
 const (
-	NilHand   hand = iota //空白
+	NilHand   Hand = iota //空白
 	BlackHand             //黑手
 	WhiteHand             //白手
 )
 
-func (h hand) Str() string {
+func (h Hand) Str() string {
 	switch h {
 	case NilHand:
 		return "."
@@ -28,7 +28,7 @@ func (h hand) Str() string {
 }
 
 type Grid struct {
-	value  hand
+	value  Hand
 	left   *Grid
 	right  *Grid
 	top    *Grid
@@ -64,7 +64,7 @@ func (g *Grid) RightBottom() *Grid {
 }
 
 //设置row,col坐标的值, 即 落棋子
-func (g *Grid) Set(row, col int, value hand) bool {
+func (g *Grid) Set(row, col int, value Hand) bool {
 	offset := g
 	offset = g.Offset(row, col)
 	if offset == nil {
@@ -77,7 +77,7 @@ func (g *Grid) Set(row, col int, value hand) bool {
 	return true
 }
 
-func (g *Grid) SetByXY(x, y int, value hand) bool {
+func (g *Grid) SetByXY(x, y int, value Hand) bool {
 	row, col := y+1, x+1
 	return g.Set(row, col, value)
 }

@@ -434,13 +434,6 @@ $(document).ready(function(){
             $(".choice-action").removeClass("d-none");
         }
     });
-    $("#choice-enemy-2").on("click", function(e){
-        if ($(this).is(":checked")){
-            $(".choice-action").addClass("d-none");
-            $(".choice-level").removeClass("d-none");
-            $(".group-choice-room").addClass("d-none");
-        }
-    });
 
     $("#choice-action-1").on("click", function(e){
         if ($(this).is(":checked")){

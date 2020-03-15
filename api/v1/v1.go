@@ -7,4 +7,5 @@ import (
 func LoadV1(engine *gin.Engine) {
 	v1 := engine.Group("/v1")
 	v1.GET("/ws", ws)
+	v1.GET("/ws_ai", AI)
 }
