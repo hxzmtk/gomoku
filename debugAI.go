@@ -295,164 +295,6 @@ func (g *Grid) Count() (black, white int) {
 	return
 }
 
-//检查是否已分出胜负
-func (g *Grid) IsWin(row, col int) bool {
-	offset := g.Offset(row, col)
-	h := offset.value
-	if h == NilHand {
-		return false
-	}
-	//检查行
-	count := 1
-	left := offset.left
-	right := offset.right
-	for {
-		if left == nil {
-			break
-		}
-		if left.value == h {
-			count++
-		} else {
-			break
-		}
-		left = left.left
-	}
-	for {
-		if right == nil {
-			break
-		}
-		if right.value == h {
-			count++
-		} else {
-			break
-		}
-		right = right.right
-	}
-	if count >= 5 {
-		switch h {
-		case WhiteHand:
-			fmt.Println("白手赢", fmt.Sprintf("最后一个落子点为(row:%d,col:%d)", row, col))
-		case BlackHand:
-			fmt.Println("黑手赢", fmt.Sprintf("最后一个落子点为(row:%d,col:%d)", row, col))
-		}
-		return true
-	}
-
-	//检查列
-	count = 1
-	top := offset.top
-	bottom := offset.bottom
-	for {
-		if top == nil {
-			break
-		}
-		if top.value == h {
-			count++
-		} else {
-			break
-		}
-		top = top.top
-	}
-	for {
-		if bottom == nil {
-			break
-		}
-		if bottom.value == h {
-			count++
-		} else {
-			break
-		}
-		bottom = bottom.bottom
-	}
-	if count >= 5 {
-		switch h {
-		case WhiteHand:
-			fmt.Println("白手赢", fmt.Sprintf("最后一个落子点为(row:%d,col:%d)", row, col))
-		case BlackHand:
-			fmt.Println("黑手赢", fmt.Sprintf("最后一个落子点为(row:%d,col:%d)", row, col))
-		}
-		return true
-	}
-
-	//检查左斜边
-	count = 1
-	leftTop := offset.LeftTop()
-	rightBottom := offset.RightBottom()
-	for {
-		if leftTop == nil {
-			break
-		}
-		if leftTop.value == h {
-			count++
-		} else {
-			break
-		}
-		leftTop = leftTop.LeftTop()
-	}
-	for {
-		if rightBottom == nil {
-			break
-		}
-		if rightBottom.value == h {
-			count++
-		} else {
-			break
-		}
-		rightBottom = rightBottom.RightBottom()
-	}
-	if count >= 5 {
-		switch h {
-		case WhiteHand:
-			fmt.Println("白手赢", fmt.Sprintf("最后一个落子点为(row:%d,col:%d)", row, col))
-		case BlackHand:
-			fmt.Println("黑手赢", fmt.Sprintf("最后一个落子点为(row:%d,col:%d)", row, col))
-		}
-		return true
-	}
-
-	//检查右斜边
-	count = 1
-	rightTop := offset.RightTop()
-	leftBottom := offset.LeftBottom()
-	for {
-		if rightTop == nil {
-			break
-		}
-		if rightTop.value == h {
-			count++
-		} else {
-			break
-		}
-		rightTop = rightTop.RightTop()
-	}
-	for {
-		if leftBottom == nil {
-			break
-		}
-		if leftBottom.value == h {
-			count++
-		} else {
-			break
-		}
-		leftBottom = leftBottom.LeftBottom()
-	}
-	if count >= 5 {
-		switch h {
-		case WhiteHand:
-			fmt.Println("白手赢", fmt.Sprintf("最后一个落子点为(row:%d,col:%d)", row, col))
-		case BlackHand:
-			fmt.Println("黑手赢", fmt.Sprintf("最后一个落子点为(row:%d,col:%d)", row, col))
-		}
-		return true
-	}
-	if g.IsFull() {
-		fmt.Println("平手")
-		return true
-	} else {
-		return false
-	}
-}
-
 /*
 约定: row,col的起始值为1
 */
@@ -569,6 +411,11 @@ func (g *Grid) CheckWin(x, y int) bool {
 
 	//连5
 	if l+r >= 4 || lTop+rBottom >= 4 || rTop+lBottom >= 4 || t+b >= 4 {
+		if offset.value == WhiteHand {
+			fmt.Println("白手赢", fmt.Sprintf("最后一个落子点为(x:%d,y:%d)", x, y))
+		} else if offset.value == BlackHand {
+			fmt.Println("黑手赢", fmt.Sprintf("最后一个落子点为(x:%d,y:%d)", x, y))
+		}
 		return true
 	}
 	return false
