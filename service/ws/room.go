@@ -101,7 +101,7 @@ func (room *Room) InitGrid() {
 func (room *Room) JoinRoom(c *Client) error {
 	if room.Target == c || room.Master == c {
 		return errors.New("您已在房间")
-	} else if room.Master != c && room.Target != nil {
+	} else if room.Master != nil && room.Target != nil {
 		return errors.New("房间已满")
 	}
 	room.Target = c
