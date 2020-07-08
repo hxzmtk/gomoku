@@ -10,6 +10,8 @@ const (
 
 type Node interface {
 	Go(x, y int, value Hand) bool
+	IsEmpty() bool
+	Reset()
 }
 
 type node struct {
@@ -155,4 +157,25 @@ func NewChessboard(size int) *node {
 		}
 	}
 	return root
+}
+
+func (n *node) IsEmpty() bool {
+	for x := 0; x < n.getWidth(); x++ {
+		for y := 0; y < n.getHeight(); y++ {
+			offset := n.get(x, y)
+			if offset != nil && offset.value != NilHand {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+func (n *node) Reset() {
+	for x := 0; x < n.getWidth(); x++ {
+		for y := 0; y < n.getHeight(); y++ {
+			offset := n.get(x, y)
+			offset.value = NilHand
+		}
+	}
 }

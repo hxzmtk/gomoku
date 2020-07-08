@@ -48,3 +48,66 @@ func (room *Room) Join(c IClient) error {
 func (room *Room) initChessboard() {
 	room.chessboard = chessboard.NewChessboard(15)
 }
+
+//离开房间
+func (room *Room) LeaveRoom(c IClient) {
+	if room.Master == c {
+
+		room.Master = room.GetTarget(c) //转移房主
+	}
+	if room.Target == c {
+		room.Target = nil
+	} else {
+		room.Master = nil
+	}
+}
+
+//返回"对手"的指针
+func (room *Room) GetTarget(me IClient) IClient {
+	if room.Master != me {
+		return room.Master
+	}
+	if room.Target != me {
+		return room.Target
+	}
+	return nil
+}
+
+//检查房间是否为空
+func (room *Room) IsEmpty() bool {
+	if room.Master == nil && room.FirstMove == nil && room.Target == nil {
+		return true
+	}
+	return false
+}
+
+//开始游戏
+func (room *Room) Start(c IClient) error {
+	if room.Master != nil && room.Master != c {
+		return errors.New("您不是房主")
+	}
+	if room.IsEmpty() {
+		return errors.New("空的房间")
+	}
+	if room.Target == nil {
+		return errors.New("请等待对手加入")
+	}
+	room.electWhoFirst()
+	if !room.chessboard.IsEmpty() {
+		return errors.New("游戏已经开始了")
+	}
+	return nil
+}
+
+//重开游戏
+func (room *Room) Restart(c IClient) error {
+	return room.Start(c)
+}
+
+//重置
+func (room *Room) GameReset() {
+	room.isWin = false
+	room.chessboard.Reset()
+	room.FirstMove = nil
+	room.NextWho = nil
+}

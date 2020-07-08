@@ -2,6 +2,7 @@ package hub
 
 import (
 	"encoding/json"
+	"errors"
 	"sort"
 )
 
@@ -47,7 +48,7 @@ func (h *Hub) Run() {
 			}
 			if _, ok := h.clients[humanClient.ID]; ok {
 				delete(h.clients, humanClient.ID)
-				close(humanClient.send)
+				close(humanClient.Send)
 			}
 		case message := <-h.broadcast:
 			_ = message
@@ -59,9 +60,9 @@ func (h *Hub) Run() {
 					continue
 				}
 				select {
-				case humanClient.send <- nil:
+				case humanClient.Send <- &msg:
 				default:
-					close(humanClient.send)
+					close(humanClient.Send)
 					delete(h.clients, humanClient.ID)
 				}
 			}
@@ -70,7 +71,7 @@ func (h *Hub) Run() {
 	}
 }
 
-func (h *Hub) CreateRoom(c *IClient) (roomID int, err error) {
+func (h *Hub) CreateRoom(c IClient) (roomID int, err error) {
 	return 0, nil
 }
 
@@ -106,4 +107,16 @@ func (h *Hub) GetRooms() MsgRoomInfoList {
 		return true
 	})
 	return rooms
+}
+
+func (h *Hub) JoinRoom(c IClient, roomID int) error {
+	roomNumber := uint(roomID)
+	if room, ok := h.Rooms[roomNumber]; ok {
+		if err := room.Join(c); err != nil {
+			return err
+		}
+	} else {
+		return errors.New("房间不存在")
+	}
+	return nil
 }

@@ -20,7 +20,7 @@ func Human(c *gin.Context) {
 	client := &serviceHub.HumanClient{
 		Conn: conn,
 		Hub:  hub,
-		//send: make(chan []byte, 256),
+		Send: make(chan serviceHub.IMsg, 256),
 	}
 
 	//TODO 验证生成的ID(名字)是否已存在

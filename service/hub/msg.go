@@ -1,12 +1,20 @@
 package hub
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"github.com/mitchellh/mapstructure"
+	"log"
+)
 
 type IMsg interface {
 	send()
 	receive()
 	ToBytes() []byte
 }
+
+var (
+	_ IMsg = &Msg{}
+)
 
 type IContent interface {
 	decode()
@@ -33,17 +41,135 @@ const (
 )
 
 type Msg struct {
-	MType   msgType  `json:"m_type"`
-	Content IContent `json:"content"`
-	Status  bool     `json:"status"`
-	Msg     string   `json:"msg"`
+	MType   msgType     `json:"m_type"`
+	Content interface{} `json:"content"`
+	Status  bool        `json:"status"`
+	Msg     string      `json:"msg"`
+	client  IClient     `json:"-"`
 }
 
 func (msg *Msg) send() {
 
 }
 func (msg *Msg) receive() {
+	c := msg.client.(*HumanClient)
+	switch msg.MType {
+	case roomMsg:
+		m := RcvRoomMsg{}
+		_ = mapstructure.Decode(msg.Content, &m)
 
+		switch m.Action {
+		case RoomCreate:
+			if roomNumber, err := c.Hub.CreateRoom(c); err == nil {
+				m.RoomNumber = roomNumber
+				msg.Status = true
+			} else if roomNumber == 0 {
+				msg.Msg = err.Error()
+			} else {
+				msg.Msg = err.Error()
+			}
+			msg.Content = m
+			c.Send <- msg
+		case RoomJoin:
+			if err := c.Hub.JoinRoom(c, m.RoomNumber); err != nil {
+				log.Println(err)
+				msg.Msg = err.Error()
+				c.Send <- msg
+			}
+			enemy := c.getEnemy().(*HumanClient)
+			msg.Content = ResRoomJoinMsg{Name: enemy.ID, Action: RoomJoin}
+			c.Send <- msg
+			if c.Room != nil && enemy != nil {
+				msg.Content = ResRoomJoinMsg{Name: c.ID, Action: RoomJoin}
+				msg.Status = true
+				msg.Msg = "对手加入成功"
+				enemy.Send <- msg
+			}
+		case RoomLeave:
+			if c.Room != nil {
+				enemy := c.getEnemy().(*HumanClient)
+				isMaster := false
+				if c.Room.Master != nil && c.Room.Master == c {
+					isMaster = true
+				}
+				if enemy != nil {
+					msg.Content = ResRoomLeaveMsg{IsMaster: isMaster, Action: RoomLeave}
+					enemy.Send <- msg
+				}
+				c.Room.LeaveRoom(c)
+			}
+			msg.Content = m
+			msg.Status = true
+			msg.Msg = "您离开房间了"
+			c.Send <- msg
+		case RoomStart:
+			if c.Room != nil {
+				var err error
+				if err = c.Room.Start(c); err != nil {
+					msg.Msg = err.Error()
+				} else {
+					msg.Status = true
+				}
+				m.RoomNumber = int(c.Room.ID)
+
+				if c.Room.FirstMove == c {
+					m.IsBlack = true
+				}
+				msg.Content = m
+				c.Send <- msg
+				enemy := c.getEnemy().(*HumanClient)
+				if enemy != nil && err == nil {
+					if c.Room.FirstMove == enemy {
+						m.IsBlack = true
+					} else {
+						m.IsBlack = false
+					}
+					msg.Content = m
+					msg.Msg = "房主开始了游戏"
+					enemy.Send <- msg
+				}
+			}
+		case RoomRestart:
+		case RoomReset:
+			if c.Room != nil && c.Room.Master == c {
+				msg.Status = true
+				c.Room.GameReset()
+				c.Send <- msg
+			}
+			msg.Status = false
+			msg.Msg = "房间不存在或您不是房主"
+			c.Send <- msg
+		}
+	case chessWalk:
+		m := RcvChessMsg{}
+		_ = mapstructure.Decode(msg.Content, &m)
+
+		if c.Room.GetTarget(c) == nil {
+			msg.Msg = "对手断开连接了"
+			msg.Content = m
+			c.Send <- msg
+		}
+		if c.Room == nil {
+		}
+		if err := c.Room.GoSet(c, &m); err == nil {
+			msg.Status = true
+			msg.Msg = "SUCCESS"
+		} else {
+			msg.Msg = err.Error()
+		}
+		msg.Content = m
+		c.Send <- msg
+		enemy := c.getEnemy().(*HumanClient)
+		if enemy != nil && msg.Status {
+			enemy.Send <- msg
+		}
+	case roomList:
+		msg.Content = c.Hub.GetRooms()
+		c.Send <- msg
+	case clientInfoMsg:
+		msg.Content = ClientInfo{Name: c.ID}
+		c.Send <- msg
+	}
 }
 func (msg *Msg) ToBytes() []byte {
 	message, _ := json.Marshal(msg)
@@ -55,11 +181,36 @@ type MsgRoomInfo struct {
 	IsFull     bool `json:"is_full" mapstructure:"is_full"` //是否满了
 }
 
-func (msg *MsgRoomInfo) decode() {
-}
-
 type MsgRoomInfoList []MsgRoomInfo
 
-func (msg *MsgRoomInfoList) decode() {
+type RcvRoomMsg struct {
+	Action     RoomAction `json:"action" mapstructure:"action"`
+	RoomNumber int        `json:"room_number" mapstructure:"room_number"` //房间编号
+	IsBlack    bool       `json:"is_black" mapstructure:"is_black"`
+}
 
+type RcvChessMsg struct {
+	X          int  `json:"x" mapstructure:"x"` //横坐标
+	Y          int  `json:"y" mapstructure:"y"` //纵坐标
+	RoomNumber int  `json:"room_number" mapstructure:"room_number"`
+	IsBlack    bool `json:"is_black" mapstructure:"is_black"` //是否先手
+}
+
+type MainMsg struct {
+	ID  string `json:"id"`
+	Msg []byte `json:"msg"`
+}
+
+type ClientInfo struct {
+	Name string `json:"name" mapstructure:"name"`
+}
+
+type ResRoomJoinMsg struct {
+	Action RoomAction `json:"action"`
+	Name   string     `json:"name"`
+}
+
+type ResRoomLeaveMsg struct {
+	Action   RoomAction `json:"action"`
+	IsMaster bool       `json:"is_master"`
 }

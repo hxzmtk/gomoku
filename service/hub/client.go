@@ -2,6 +2,7 @@ package hub
 
 import (
 	"bytes"
+	"encoding/json"
 	"github.com/gorilla/websocket"
 	"log"
 	"time"
@@ -30,7 +31,7 @@ type HumanClient struct {
 	ID   string
 	Hub  *Hub
 	Conn *websocket.Conn
-	send chan IMsg
+	Send chan IMsg
 	Room *Room
 }
 
@@ -52,18 +53,15 @@ func (c *HumanClient) ReadPump() {
 		}
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
 
-		c.Hub.broadcast <- message
-		msg := &Msg{}
-		switch msg.MType {
-		case roomList:
-			list := MsgRoomInfoList{}
-			list = append(list, MsgRoomInfo{
-				RoomNumber: 1,
-				IsFull:     true,
-			})
-			msg.Content = &list
+		//c.Hub.broadcast <- message
+		msg := &Msg{
+			client: c,
 		}
-		c.send <- msg
+		if err := json.Unmarshal(message, msg); err != nil {
+			log.Println("非法的消息格式", err)
+			continue
+		}
+		msg.receive()
 	}
 }
 
@@ -75,7 +73,7 @@ func (c *HumanClient) WritePump() {
 	}()
 	for {
 		select {
-		case message, ok := <-c.send:
+		case message, ok := <-c.Send:
 			c.Conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
 				// The hub closed the channel.
@@ -90,10 +88,10 @@ func (c *HumanClient) WritePump() {
 			w.Write(message.ToBytes())
 
 			// Add queued chat messages to the current websocket message.
-			n := len(c.send)
+			n := len(c.Send)
 			for i := 0; i < n; i++ {
 				w.Write(newline)
-				msg := <-c.send
+				msg := <-c.Send
 				w.Write(msg.ToBytes())
 			}
 
@@ -106,5 +104,21 @@ func (c *HumanClient) WritePump() {
 				return
 			}
 		}
+	}
+}
+
+func (c *HumanClient) getEnemy() IClient {
+	if c.Room.Master != c {
+		return c.Room.Master
+	}
+	if c.Room.Target != c {
+		return c.Room.Target
+	}
+	return nil
+}
+
+func (c *HumanClient) leaveRoom() {
+	if c.Room != nil {
+
 	}
 }
