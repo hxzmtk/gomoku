@@ -1,4 +1,4 @@
-package ws
+package wsHandler
 
 import (
 	"errors"

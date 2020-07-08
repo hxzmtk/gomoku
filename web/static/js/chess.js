@@ -384,7 +384,7 @@ $(document).ready(function(){
         $(".container").removeClass("d-none");
     });
 
-    ws = new WebSocket("ws://"+ document.location.host + "/v1/ws");
+    ws = new WebSocket("ws://"+ document.location.host + "/ws/human");
     ws.onopen = function(){
         console.log("CONNECT");
         ws.send(JSON.stringify({

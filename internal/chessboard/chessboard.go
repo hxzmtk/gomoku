@@ -8,6 +8,10 @@ const (
 	WhiteHand             //白手
 )
 
+type Node interface {
+	Go(x, y int, value Hand) bool
+}
+
 type node struct {
 	value  Hand
 	left   *node

@@ -1,16 +1,22 @@
-package wsHandler
+package ws
 
 import (
-	serviceWs "github.com/bzyy/gomoku/service/ws"
+	serviceHub "github.com/bzyy/gomoku/service/hub"
+	"github.com/gorilla/websocket"
 	"sync"
 )
 
-var hub *serviceWs.Hub
+var hub *serviceHub.Hub
 var once sync.Once
 
 func init() {
 	once.Do(func() {
-		hub = serviceWs.NewHub()
+		hub = serviceHub.NewHub()
 		go hub.Run()
 	})
+}
+
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
 }
