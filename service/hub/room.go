@@ -32,6 +32,9 @@ func (room *Room) GoSet(c IClient, msg *RcvChessMsg) error {
 	if room.NextWho != nil && room.NextWho != c {
 		return errors.New("请等待对手落子")
 	}
+	if room.FirstMove == nil {
+		return errors.New("请等待房主开始游戏")
+	}
 
 	if room.FirstMove == c {
 		msg.IsBlack = true
@@ -45,7 +48,7 @@ func (room *Room) GoSet(c IClient, msg *RcvChessMsg) error {
 		} else {
 			return errors.New("该位置已有棋子")
 		}
-	} else if room.Enemy == c {
+	} else {
 		if room.chessboard.Go(msg.X, msg.Y, chessboard.WhiteHand) {
 			room.nextWhoReverse()
 			if room.chessboard.IsWin(msg.X, msg.Y) {

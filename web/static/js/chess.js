@@ -282,6 +282,7 @@ function handleRoomMsg(msg){
                 is_master = true;
                 break;
             case roomAction.join:
+                $("#room-number-info").html(msg['content']['room_number']);
                 console.log(msg['content'],$("#myName").html());
                 if (is_master) {
                     ConfirmGameStart();

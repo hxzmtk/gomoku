@@ -16,6 +16,11 @@ type IClient interface {
 	WritePump()
 }
 
+var (
+	_ IClient = &HumanClient{}
+	_ IClient = &AIClient{}
+)
+
 type Hub struct {
 	clients    map[string]IClient
 	broadcast  chan []byte
