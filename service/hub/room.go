@@ -39,7 +39,8 @@ func (room *Room) GoSet(c IClient, msg *RcvChessMsg) error {
 			room.nextWhoReverse()
 			if room.chessboard.IsWin(msg.X, msg.Y) {
 				room.isWin = true
-				return errors.New("黑手赢")
+				//return errors.New("黑手赢")
+				return nil
 			}
 		} else {
 			return errors.New("该位置已有棋子")
@@ -49,7 +50,8 @@ func (room *Room) GoSet(c IClient, msg *RcvChessMsg) error {
 			room.nextWhoReverse()
 			if room.chessboard.IsWin(msg.X, msg.Y) {
 				room.isWin = true
-				return errors.New("白手赢")
+				//return errors.New("白手赢")
+				return nil
 			}
 		} else {
 			return errors.New("该位置已有棋子")
