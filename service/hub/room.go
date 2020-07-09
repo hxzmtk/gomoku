@@ -124,7 +124,7 @@ func (room *Room) GetTarget(me IClient) IClient {
 
 //检查房间是否为空
 func (room *Room) IsEmpty() bool {
-	if room.Master == nil && room.FirstMove == nil && room.Enemy == nil {
+	if room.Master == nil && room.Enemy == nil {
 		return true
 	}
 	return false

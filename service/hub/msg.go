@@ -110,11 +110,10 @@ func (msg *Msg) receive() {
 						enemy.Send <- &newMsg
 					}
 				}
-				c.Room.LeaveRoom(c)
 			}
 
 			newMsg := *msg
-			newMsg.Content = m
+			newMsg.Content = ResRoomLeaveMsg{IsMaster: false, Action: RoomLeave}
 			newMsg.Status = true
 			newMsg.Msg = "您离开房间了"
 			c.Send <- msg
