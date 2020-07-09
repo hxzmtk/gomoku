@@ -36,7 +36,7 @@ func (room *Room) GoSet(c IClient, msg *RcvChessMsg) error {
 	if room.FirstMove == c {
 		msg.IsBlack = true
 		if room.chessboard.Go(msg.X, msg.Y, chessboard.BlackHand) {
-			room.NextWho = room.Enemy
+			room.nextWhoReverse()
 			if room.chessboard.IsWin(msg.X, msg.Y) {
 				room.isWin = true
 				return errors.New("黑手赢")
@@ -46,7 +46,7 @@ func (room *Room) GoSet(c IClient, msg *RcvChessMsg) error {
 		}
 	} else if room.Enemy == c {
 		if room.chessboard.Go(msg.X, msg.Y, chessboard.WhiteHand) {
-			room.NextWho = room.Enemy
+			room.nextWhoReverse()
 			if room.chessboard.IsWin(msg.X, msg.Y) {
 				room.isWin = true
 				return errors.New("白手赢")
@@ -151,4 +151,14 @@ func (room *Room) GameReset() {
 	room.chessboard.Reset()
 	room.FirstMove = nil
 	room.NextWho = nil
+}
+
+//更新下一步该谁落棋
+func (room *Room) nextWhoReverse() {
+	nextWho := room.NextWho
+	if nextWho == room.Master {
+		room.NextWho = room.Enemy
+	} else {
+		room.NextWho = room.Master
+	}
 }

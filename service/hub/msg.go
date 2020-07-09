@@ -81,10 +81,14 @@ func (msg *Msg) receive() {
 
 			//通知对方，“我”已加入房间
 			if c.Room != nil && enemy != nil {
-				msg.Content = ResRoomJoinMsg{Name: c.ID, Action: RoomJoin}
-				msg.Status = true
-				msg.Msg = "对手加入成功"
-				enemy.Send <- msg
+
+				// 因为msg是一个指针，当我们修改了该指针指向的字段内容，并写入enemy.Send时，有可能c.Send在阻塞，
+				// 但测试msg的内容已被更改了，会导致c.Send接收到的数据和enemy.Send收到的数据一样，所以我们copy msg
+				newMsg := *msg
+				newMsg.Content = ResRoomJoinMsg{Name: c.ID, Action: RoomJoin}
+				newMsg.Status = true
+				newMsg.Msg = "对手加入成功"
+				enemy.Send <- &newMsg
 			}
 		case RoomLeave:
 			if c.Room != nil {
@@ -94,14 +98,17 @@ func (msg *Msg) receive() {
 					isMaster = true
 				}
 				if enemy != nil {
-					msg.Content = ResRoomLeaveMsg{IsMaster: isMaster, Action: RoomLeave}
-					enemy.Send <- msg
+					newMsg := *msg
+					newMsg.Content = ResRoomLeaveMsg{IsMaster: isMaster, Action: RoomLeave}
+					enemy.Send <- &newMsg
 				}
 				c.Room.LeaveRoom(c)
 			}
-			msg.Content = m
-			msg.Status = true
-			msg.Msg = "您离开房间了"
+
+			newMsg := *msg
+			newMsg.Content = m
+			newMsg.Status = true
+			newMsg.Msg = "您离开房间了"
 			c.Send <- msg
 		case RoomStart:
 			if c.Room != nil {
@@ -128,9 +135,10 @@ func (msg *Msg) receive() {
 					} else {
 						m.IsBlack = false
 					}
-					msg.Content = m
-					msg.Msg = "房主开始了游戏"
-					enemy.Send <- msg
+					newMsg := *msg
+					newMsg.Content = m
+					newMsg.Msg = "房主开始了游戏"
+					enemy.Send <- &newMsg
 				}
 			}
 		case RoomRestart:
@@ -138,10 +146,10 @@ func (msg *Msg) receive() {
 			if c.Room != nil && c.Room.Master == c {
 				msg.Status = true
 				c.Room.GameReset()
-				c.Send <- msg
+			} else {
+				msg.Status = false
+				msg.Msg = "房间不存在或您不是房主"
 			}
-			msg.Status = false
-			msg.Msg = "房间不存在或您不是房主"
 			c.Send <- msg
 		}
 	case chessWalk:
@@ -152,6 +160,7 @@ func (msg *Msg) receive() {
 			msg.Msg = "对手断开连接了"
 			msg.Content = m
 			c.Send <- msg
+			return
 		}
 		if c.Room == nil {
 		}

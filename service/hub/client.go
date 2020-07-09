@@ -38,6 +38,9 @@ type HumanClient struct {
 func (c *HumanClient) ReadPump() {
 	defer func() {
 		c.Hub.unregister <- c
+		if c.Room != nil {
+			c.Room.LeaveRoom(c)
+		}
 		c.Conn.Close()
 	}()
 	c.Conn.SetReadLimit(maxMessageSize)
