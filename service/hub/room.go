@@ -147,7 +147,12 @@ func (room *Room) Start(c IClient) error {
 
 //重开游戏
 func (room *Room) Restart(c IClient) error {
-	return room.Start(c)
+	if room.Master != nil && room.Master != c {
+		return errors.New("您不是房主")
+	}
+	room.FirstMove = nil
+	room.chessboard.Reset()
+	return nil
 }
 
 //重置

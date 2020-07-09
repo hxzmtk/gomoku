@@ -159,7 +159,7 @@ function ResetAll(){
 function ResetGrid(){
     for (let i = 0; i < 15; i++) {
         for (let j = 0; j < 15; j++) {
-            $(`#go-{i}-{j}`.removeClass("b w"));
+            $(`#go-${i}-${j}`).removeClass("b w");
         }
     }
 }
@@ -167,6 +167,9 @@ function ResetGrid(){
 //重新开局
 function Restart(){
     ResetGrid();
+    $(".go-board i").removeClass("w b chess-spinner");
+    initPlace(15,15);
+    updateStatus(hand.nilHand);
 }
 
 //确认开始游戏
@@ -312,6 +315,9 @@ function handleRoomMsg(msg){
                     $(".container").addClass("d-none");
                     $('#dialog').modal('show');
                 }
+                break;
+            case roomAction.restart:
+                Restart();
                 break;
             case roomAction.reset:
                 ResetAll();

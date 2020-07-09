@@ -114,7 +114,7 @@ func (c *HumanClient) getEnemy() IClient {
 	if c.Room.Master != c {
 		return c.Room.Master
 	}
-	if c.Room.Enemy != c {
+	if c.Room.Enemy != nil && c.Room.Enemy != c {
 		return c.Room.Enemy
 	}
 	return nil

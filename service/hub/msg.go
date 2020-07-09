@@ -142,6 +142,34 @@ func (msg *Msg) receive() {
 				}
 			}
 		case RoomRestart:
+			if c.Room != nil {
+				if err := c.Room.Restart(c); err != nil {
+					msg.Status = false
+					msg.Msg = err.Error()
+					c.Send <- msg
+					return
+				}
+				msg.Status = true
+				msg.Msg = "SUCCESS"
+				isBlack := false
+				if c.Room.FirstMove == c {
+					isBlack = true
+				}
+				msg.Content = RcvRoomMsg{Action: RoomRestart, RoomNumber: int(c.Room.ID), IsBlack: isBlack}
+				c.Send <- msg
+
+				client := c.getEnemy()
+				if client != nil {
+					enemy := client.(*HumanClient)
+					newMsg := *msg
+					isBlack := false
+					if c.Room.FirstMove == c {
+						isBlack = true
+					}
+					newMsg.Content = RcvRoomMsg{Action: RoomRestart, RoomNumber: int(c.Room.ID), IsBlack: isBlack}
+					enemy.Send <- &newMsg
+				}
+			}
 		case RoomReset:
 			if c.Room != nil && c.Room.Master == c {
 				msg.Status = true
@@ -163,6 +191,16 @@ func (msg *Msg) receive() {
 			return
 		}
 		if c.Room == nil {
+			return
+		}
+		if c.Room.FirstMove == nil {
+			msg.Status = false
+			if c.Room.Master == c {
+				msg.Msg = "请开始游戏"
+			} else {
+				msg.Msg = "请等待房主开始游戏"
+			}
+			c.Send <- msg
 			return
 		}
 		if err := c.Room.GoSet(c, &m); err == nil {
