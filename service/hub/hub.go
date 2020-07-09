@@ -3,6 +3,7 @@ package hub
 import (
 	"encoding/json"
 	"errors"
+	"github.com/bzyy/gomoku/internal/chessboard"
 	"sort"
 )
 
@@ -24,11 +25,15 @@ type Hub struct {
 }
 
 func NewHub() *Hub {
+	rooms := make(map[uint]*Room)
+	for i := 1; i <= MaxRoomCount; i++ {
+		rooms[uint(i)] = nil
+	}
 	return &Hub{
 		clients:    make(map[string]IClient),
 		register:   make(chan IClient),
 		unregister: make(chan IClient),
-		Rooms:      make(map[uint]*Room, MaxRoomCount),
+		Rooms:      rooms,
 	}
 }
 
@@ -72,7 +77,27 @@ func (h *Hub) Run() {
 }
 
 func (h *Hub) CreateRoom(c IClient) (roomID int, err error) {
-	return 0, nil
+	client, ok := c.(*HumanClient)
+	if !ok {
+		return 0, errors.New("FAIL")
+	}
+	if client.Room != nil {
+		return 0, errors.New("您已创建过房间啦")
+	}
+
+	for ID, room := range h.Rooms {
+		if room == nil || room.IsEmpty() {
+			room := &Room{
+				ID:         ID,
+				Master:     client,
+				chessboard: chessboard.NewChessboard(15),
+			}
+			h.Rooms[ID] = room
+			client.Room = room
+			return int(ID), nil
+		}
+	}
+	return 0, errors.New("房间数已满,不能创建更多房间啦")
 }
 
 func (h *Hub) RegisterClient(c IClient) {
@@ -90,7 +115,7 @@ func (h *Hub) GetRooms() MsgRoomInfoList {
 			continue
 		}
 		isFull := false
-		if room.Master != nil && room.Target != nil {
+		if room.Master != nil && room.Enemy != nil {
 			isFull = true
 		}
 		rooms = append(rooms, MsgRoomInfo{

@@ -10,7 +10,9 @@ const (
 
 type Node interface {
 	Go(x, y int, value Hand) bool
+	IsWin(x, y int) bool
 	IsEmpty() bool
+	IsFull() bool
 	Reset()
 }
 
@@ -43,7 +45,7 @@ func (n *node) rightTop() *node {
 	return nil
 }
 
-func (n *node) lightBottom() *node {
+func (n *node) rightBottom() *node {
 	if n.right != nil {
 		return n.right.bottom
 	}
@@ -115,6 +117,174 @@ func (n *node) getHeight() int {
 	return height
 }
 
+func (n *node) IsEmpty() bool {
+	for x := 0; x < n.getWidth(); x++ {
+		for y := 0; y < n.getHeight(); y++ {
+			offset := n.get(x, y)
+			if offset != nil && offset.value != NilHand {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+func (n *node) Reset() {
+	for x := 0; x < n.getWidth(); x++ {
+		for y := 0; y < n.getHeight(); y++ {
+			offset := n.get(x, y)
+			offset.value = NilHand
+		}
+	}
+}
+
+//检查是否已分出胜负
+func (n *node) IsWin(x, y int) bool {
+	offset := n.get(x, y)
+	h := offset.value
+	if h == NilHand {
+		return false
+	}
+
+	//检查行
+	count := 1
+	left := offset.left
+	right := offset.right
+	for {
+		if left == nil {
+			break
+		}
+		if left.value == h {
+			count++
+		} else {
+			break
+		}
+		left = left.left
+	}
+	for {
+		if right == nil {
+			break
+		}
+		if right.value == h {
+			count++
+		} else {
+			break
+		}
+		right = right.right
+	}
+	if count >= 5 {
+		return true
+	}
+
+	//检查列
+	count = 1
+	top := offset.top
+	bottom := offset.bottom
+	for {
+		if top == nil {
+			break
+		}
+		if top.value == h {
+			count++
+		} else {
+			break
+		}
+		top = top.top
+	}
+	for {
+		if bottom == nil {
+			break
+		}
+		if bottom.value == h {
+			count++
+		} else {
+			break
+		}
+		bottom = bottom.bottom
+	}
+	if count >= 5 {
+		return true
+	}
+
+	//检查左斜边
+	count = 1
+	leftTop := offset.leftTop()
+	rightBottom := offset.rightBottom()
+	for {
+		if leftTop == nil {
+			break
+		}
+		if leftTop.value == h {
+			count++
+		} else {
+			break
+		}
+		leftTop = leftTop.leftTop()
+	}
+	for {
+		if rightBottom == nil {
+			break
+		}
+		if rightBottom.value == h {
+			count++
+		} else {
+			break
+		}
+		rightBottom = rightBottom.rightBottom()
+	}
+	if count >= 5 {
+		return true
+	}
+
+	//检查右斜边
+	count = 1
+	rightTop := offset.rightTop()
+	leftBottom := offset.leftBottom()
+	for {
+		if rightTop == nil {
+			break
+		}
+		if rightTop.value == h {
+			count++
+		} else {
+			break
+		}
+		rightTop = rightTop.rightTop()
+	}
+	for {
+		if leftBottom == nil {
+			break
+		}
+		if leftBottom.value == h {
+			count++
+		} else {
+			break
+		}
+		leftBottom = leftBottom.leftBottom()
+	}
+	if count >= 5 {
+		return true
+	}
+	if n.IsFull() {
+		return true
+	} else {
+		return false
+	}
+}
+
+//棋盘是否已满？
+func (n *node) IsFull() bool {
+	for x := 0; x < n.getWidth(); x++ {
+		for y := 0; y < n.getHeight(); y++ {
+			offset := n.get(x, y)
+			if offset != nil && offset.value == NilHand {
+				return false
+			}
+		}
+	}
+	return true
+}
+
 // size为棋盘有几格
 func NewChessboard(size int) *node {
 	root := new(node)
@@ -157,25 +327,4 @@ func NewChessboard(size int) *node {
 		}
 	}
 	return root
-}
-
-func (n *node) IsEmpty() bool {
-	for x := 0; x < n.getWidth(); x++ {
-		for y := 0; y < n.getHeight(); y++ {
-			offset := n.get(x, y)
-			if offset != nil && offset.value != NilHand {
-				return false
-			}
-		}
-	}
-	return true
-}
-
-func (n *node) Reset() {
-	for x := 0; x < n.getWidth(); x++ {
-		for y := 0; y < n.getHeight(); y++ {
-			offset := n.get(x, y)
-			offset.value = NilHand
-		}
-	}
 }

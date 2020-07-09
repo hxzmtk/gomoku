@@ -74,11 +74,12 @@ func (msg *Msg) receive() {
 			if err := c.Hub.JoinRoom(c, m.RoomNumber); err != nil {
 				log.Println(err)
 				msg.Msg = err.Error()
-				c.Send <- msg
 			}
 			enemy := c.getEnemy().(*HumanClient)
 			msg.Content = ResRoomJoinMsg{Name: enemy.ID, Action: RoomJoin}
 			c.Send <- msg
+
+			//通知对方，“我”已加入房间
 			if c.Room != nil && enemy != nil {
 				msg.Content = ResRoomJoinMsg{Name: c.ID, Action: RoomJoin}
 				msg.Status = true
@@ -116,7 +117,10 @@ func (msg *Msg) receive() {
 					m.IsBlack = true
 				}
 				msg.Content = m
-				c.Send <- msg
+				msg.Msg = "SUCCESS"
+				c.Send <- msg // 返回开始游戏成功
+
+				// 通知对手， 游戏要开始了
 				enemy := c.getEnemy().(*HumanClient)
 				if enemy != nil && err == nil {
 					if c.Room.FirstMove == enemy {
