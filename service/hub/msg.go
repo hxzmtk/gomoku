@@ -75,7 +75,11 @@ func (msg *Msg) receive() {
 				log.Println(err)
 				msg.Msg = err.Error()
 			}
-			enemy := c.getEnemy().(*HumanClient)
+			enemyClient := c.getEnemy()
+			enemy, ok := enemyClient.(*HumanClient)
+			if !ok {
+				return
+			}
 			msg.Content = ResRoomJoinMsg{RoomNumber: m.RoomNumber, Name: enemy.ID, Action: RoomJoin}
 			c.Send <- msg
 
@@ -92,15 +96,19 @@ func (msg *Msg) receive() {
 			}
 		case RoomLeave:
 			if c.Room != nil {
-				enemy := c.getEnemy().(*HumanClient)
-				isMaster := false
-				if c.Room.Master != nil && c.Room.Master == c {
-					isMaster = true
-				}
-				if enemy != nil {
-					newMsg := *msg
-					newMsg.Content = ResRoomLeaveMsg{IsMaster: isMaster, Action: RoomLeave}
-					enemy.Send <- &newMsg
+				c.Room.LeaveRoom(c)
+				enemyClient := c.getEnemy()
+				enemy, ok := enemyClient.(*HumanClient)
+				if ok {
+					isMaster := false
+					if c.Room.Master != nil && c.Room.Master == c {
+						isMaster = true
+					}
+					if enemy != nil {
+						newMsg := *msg
+						newMsg.Content = ResRoomLeaveMsg{IsMaster: isMaster, Action: RoomLeave}
+						enemy.Send <- &newMsg
+					}
 				}
 				c.Room.LeaveRoom(c)
 			}

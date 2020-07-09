@@ -77,6 +77,10 @@ func (room *Room) electWhoFirst() {
 
 // 加入房间
 func (room *Room) Join(c IClient) error {
+	if room.IsEmpty() {
+		room.Master = c
+		return nil
+	}
 	if room.Master == c || room.Enemy == c {
 		return errors.New("您已在房间")
 	} else if room.Master != nil && room.Enemy != nil {
@@ -98,7 +102,6 @@ func (room *Room) initChessboard() {
 //离开房间
 func (room *Room) LeaveRoom(c IClient) {
 	if room.Master == c {
-
 		room.Master = room.GetTarget(c) //转移房主
 	}
 	if room.Enemy == c {
