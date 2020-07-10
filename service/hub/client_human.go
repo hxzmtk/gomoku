@@ -3,20 +3,35 @@ package hub
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"log"
+	"sync"
 	"time"
+)
+
+var PongWait time.Duration = 60 * time.Second
+var once sync.Once
+
+func init() {
+	once.Do(func() {
+		if gin.IsDebugging() {
+			PongWait = 10 * time.Minute
+		}
+	})
+}
+
+var (
+	// Time allowed to read the next pong message from the peer.
+	pongWait = PongWait
+
+	// Send pings to peer with this period. Must be less than pongWait.
+	pingPeriod = (pongWait * 9) / 10
 )
 
 const (
 	// Time allowed to write a message to the peer.
 	writeWait = 10 * time.Second
-
-	// Time allowed to read the next pong message from the peer.
-	pongWait = 60 * time.Second
-
-	// Send pings to peer with this period. Must be less than pongWait.
-	pingPeriod = (pongWait * 9) / 10
 
 	// Maximum message size allowed from peer.
 	maxMessageSize = 512
@@ -111,11 +126,25 @@ func (c *HumanClient) WritePump() {
 }
 
 func (c *HumanClient) getEnemy() IClient {
-	if c.Room.Master != c {
+	if c.Room == nil {
+		return nil
+	}
+	if c.Room.Master != nil && c.Room.Master != c {
 		return c.Room.Master
 	}
 	if c.Room.Enemy != nil && c.Room.Enemy != c {
 		return c.Room.Enemy
 	}
 	return nil
+}
+
+// 检查是否是房主
+func (c *HumanClient) isMaster() bool {
+	if c.Room == nil {
+		return false
+	}
+	if c.Room.Master != nil && c.Room.Master == c {
+		return true
+	}
+	return false
 }

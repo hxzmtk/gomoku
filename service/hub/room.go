@@ -104,11 +104,7 @@ func (room *Room) LeaveRoom(c IClient) {
 	if room.Master == c {
 		room.Master = room.GetTarget(c) //转移房主
 	}
-	if room.Enemy == c {
-		room.Enemy = nil
-	} else {
-		room.Master = nil
-	}
+	room.Enemy = nil
 }
 
 //返回"对手"的指针

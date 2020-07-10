@@ -222,6 +222,10 @@ function  ConfirmLeaveHome(){
                         "room_number":parseInt($("#room-number-info").html())
                     }
                 }))
+                is_master = false;
+                ResetAll();
+                $(".container").addClass("d-none");
+                $('#dialog').modal('show');
             }
         }
     });
@@ -287,7 +291,7 @@ function handleRoomMsg(msg){
             case roomAction.join:
                 $("#room-number-info").html(msg['content']['room_number']);
                 console.log(msg['content'],$("#myName").html());
-                if (is_master) {
+                if (msg['content']['is_master']) {
                     ConfirmGameStart();
                 }
                 $("#targetName").html(msg['content'].hasOwnProperty('name')?msg['content']['name']:"待加入");
@@ -306,7 +310,9 @@ function handleRoomMsg(msg){
             case roomAction.leave:
                 if (msg['content'].hasOwnProperty('is_master')) {
                     if (msg['content']['is_master']){
+                        is_master = true;
                     }else {
+                        is_master = false;
                     }
                     ConfirmGameReset();
                      

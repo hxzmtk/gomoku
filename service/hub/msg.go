@@ -80,7 +80,7 @@ func (msg *Msg) receive() {
 			if !ok {
 				return
 			}
-			msg.Content = ResRoomJoinMsg{RoomNumber: m.RoomNumber, Name: enemy.ID, Action: RoomJoin}
+			msg.Content = ResRoomJoinMsg{IsMaster: c.isMaster(), RoomNumber: m.RoomNumber, Name: enemy.ID, Action: RoomJoin}
 			c.Send <- msg
 
 			//通知对方，“我”已加入房间
@@ -89,7 +89,7 @@ func (msg *Msg) receive() {
 				// 因为msg是一个指针，当我们修改了该指针指向的字段内容，并写入enemy.Send时，有可能c.Send在阻塞，
 				// 但测试msg的内容已被更改了，会导致c.Send接收到的数据和enemy.Send收到的数据一样，所以我们copy msg
 				newMsg := *msg
-				newMsg.Content = ResRoomJoinMsg{RoomNumber: m.RoomNumber, Name: c.ID, Action: RoomJoin}
+				newMsg.Content = ResRoomJoinMsg{IsMaster: enemy.isMaster(), RoomNumber: m.RoomNumber, Name: c.ID, Action: RoomJoin}
 				newMsg.Status = true
 				newMsg.Msg = "对手加入成功"
 				enemy.Send <- &newMsg
@@ -110,13 +110,14 @@ func (msg *Msg) receive() {
 						enemy.Send <- &newMsg
 					}
 				}
+				c.Room = nil
 			}
 
 			newMsg := *msg
 			newMsg.Content = ResRoomLeaveMsg{IsMaster: false, Action: RoomLeave}
 			newMsg.Status = true
 			newMsg.Msg = "您离开房间了"
-			c.Send <- msg
+			//c.Send <- &newMsg
 		case RoomStart:
 			if c.Room != nil {
 				var err error
@@ -265,6 +266,7 @@ type ClientInfo struct {
 }
 
 type ResRoomJoinMsg struct {
+	IsMaster   bool       `json:"is_master"`
 	RoomNumber int        `json:"room_number" mapstructure:"room_number"`
 	Action     RoomAction `json:"action"`
 	Name       string     `json:"name"`
