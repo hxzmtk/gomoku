@@ -282,7 +282,7 @@ function BootboxAlert(msg){
 
 //处理RoomMsg消息
 function handleRoomMsg(msg){
-    if (msg.status = true) {
+    if (msg.status) {
         switch (msg['content']['action']) {
             case roomAction.create:
                 $("#room-number-info").html(msg['content']['room_number']);
@@ -290,11 +290,13 @@ function handleRoomMsg(msg){
                 break;
             case roomAction.join:
                 $("#room-number-info").html(msg['content']['room_number']);
+
                 console.log(msg['content'],$("#myName").html());
                 if (msg['content']['is_master']) {
                     ConfirmGameStart();
                 }
                 $("#targetName").html(msg['content'].hasOwnProperty('name')?msg['content']['name']:"待加入");
+
                 break;
             case roomAction.start:
                 $("#room-number-info").html(msg['content']['room_number']);
@@ -330,6 +332,13 @@ function handleRoomMsg(msg){
                 BootboxAlert("游戏重置成功");
                 break;
             default:
+                break;
+        }
+    } else {
+        switch (msg['content']['action']) {
+            case roomAction.join:
+                $(".container").addClass("d-none");
+                $('#dialog').modal('show');
                 break;
         }
     }

@@ -4,9 +4,13 @@ import (
 	"github.com/bzyy/gomoku/handler/html"
 	wsHandler "github.com/bzyy/gomoku/handler/ws"
 	"github.com/gin-gonic/gin"
+	"runtime"
 )
 
 func RegisterRouter() *gin.Engine {
+	if runtime.GOOS == "windows" {
+		gin.DisableConsoleColor()
+	}
 	engine := gin.Default()
 
 	// load static

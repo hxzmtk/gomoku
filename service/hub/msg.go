@@ -3,7 +3,6 @@ package hub
 import (
 	"encoding/json"
 	"github.com/mitchellh/mapstructure"
-	"log"
 )
 
 type IMsg interface {
@@ -52,7 +51,10 @@ func (msg *Msg) send() {
 
 }
 func (msg *Msg) receive() {
-	c := msg.client.(*HumanClient)
+	c, ok := msg.client.(*HumanClient)
+	if !ok{
+		return
+	}
 	switch msg.MType {
 	case roomMsg:
 		m := RcvRoomMsg{}
@@ -72,9 +74,13 @@ func (msg *Msg) receive() {
 			c.Send <- msg
 		case RoomJoin:
 			if err := c.Hub.JoinRoom(c, m.RoomNumber); err != nil {
-				log.Println(err)
 				msg.Msg = err.Error()
+				msg.Status = false
+				msg.Content = ResRoomJoinMsg{IsMaster: false, RoomNumber: m.RoomNumber, Name: "", Action: RoomJoin}
+				c.Send <- msg
+				return
 			}
+			msg.Status = true
 			enemyClient := c.getEnemy()
 			enemy, ok := enemyClient.(*HumanClient)
 			if !ok {
@@ -189,6 +195,9 @@ func (msg *Msg) receive() {
 			c.Send <- msg
 		}
 	case chessWalk:
+		if c.Room == nil {
+			return
+		}
 		m := RcvChessMsg{}
 		_ = mapstructure.Decode(msg.Content, &m)
 

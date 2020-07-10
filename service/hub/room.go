@@ -109,10 +109,10 @@ func (room *Room) LeaveRoom(c IClient) {
 
 //返回"对手"的指针
 func (room *Room) GetTarget(me IClient) IClient {
-	if room.Master != me {
+	if room.Master != nil && room.Master != me {
 		return room.Master
 	}
-	if room.Enemy != me {
+	if room.Enemy != nil && room.Enemy != me {
 		return room.Enemy
 	}
 	return nil
