@@ -8,14 +8,15 @@ import (
 )
 
 type Room struct {
-	ID         uint               //房间编号
-	isWin      bool               //是否分出胜负
-	Master     IClient            //房主
-	Enemy      IClient            //对手
-	FirstMove  IClient            //先手, 用于判断 谁是黑子 谁是白子
-	chessboard chessboard.Node    //棋盘
-	NextWho    IClient            //下一步该谁落棋
-	Watching   map[string]IClient //观战者
+	ID               uint            //房间编号
+	isWin            bool            //是否分出胜负
+	Master           IClient         //房主
+	Enemy            IClient         //对手
+	FirstMove        IClient         //先手, 用于判断 谁是黑子 谁是白子
+	chessboard       chessboard.Node //棋盘
+	NextWho          IClient         //下一步该谁落棋
+	WatchSubject     ISubject        //观战者主题，订阅了该主题的客户端都会收到消息
+	WatchSubjectChan chan Msg
 }
 
 // 落子
@@ -171,4 +172,8 @@ func (room *Room) nextWhoReverse() {
 	} else {
 		room.NextWho = room.Master
 	}
+}
+
+// 离开观战
+func (room *Room) LeaveWatch(client IClient) {
 }

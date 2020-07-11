@@ -3,6 +3,7 @@ package hub
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/bzyy/gomoku/internal/chessboard"
 	"sort"
 )
@@ -93,13 +94,23 @@ func (h *Hub) CreateRoom(c IClient) (roomID int, err error) {
 	for ID, room := range h.Rooms {
 		if room == nil || room.IsEmpty() {
 			room := &Room{
-				ID:         ID,
-				Master:     client,
-				chessboard: chessboard.NewChessboard(15),
-				Watching:   make(map[string]IClient),
+				ID:               ID,
+				Master:           client,
+				chessboard:       chessboard.NewChessboard(15),
+				WatchSubject:     NewSubject(),
+				WatchSubjectChan: make(chan Msg, 256),
 			}
 			h.Rooms[ID] = room
 			client.Room = room
+
+			// 监听chan，向观战的客户端推送消息
+			go func() {
+				for msg := range room.WatchSubjectChan {
+					if err := room.WatchSubject.Notify(msg); err != nil {
+						fmt.Println(err)
+					}
+				}
+			}()
 			return int(ID), nil
 		}
 	}

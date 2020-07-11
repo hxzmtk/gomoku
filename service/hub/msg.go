@@ -204,22 +204,36 @@ func (msg *Msg) receive() {
 		case RoomWatch:
 			roomNumber := m.RoomNumber
 			if room := c.Hub.GetRoomByID(uint(roomNumber)); room != nil {
-				if _, ok := room.Watching[c.ID]; !ok {
-					room.Watching[c.ID] = c
-					msg.Status = true
-					msg.Msg = "加入成功"
-					m := RcvRoomMsg{
-						Action:     RoomWatch,
-						RoomNumber: roomNumber,
-						IsBlack:    false,
-					}
-					msg.Content = m
-					c.Send <- msg
-					return
-				} else {
-					msg.Status = false
-					msg.Msg = "您已在房间中"
+				room.WatchSubject.Attach(&ObserverChessWalk{
+					client: c,
+				})
+				msg.Status = true
+				msg.Msg = "加入成功"
+				m := RcvRoomMsg{
+					Action:     RoomWatch,
+					RoomNumber: roomNumber,
+					IsBlack:    false,
 				}
+				msg.Content = m
+				c.Send <- msg
+
+				xy := room.chessboard.GetState()
+				mm := ResRoomMsg{
+					Action:     RoomWatchChessWalk,
+					RoomNumber: 0,
+					IsBlack:    false,
+					XY:         xy,
+					NowWalk: chessboard.XY{
+						X:    -1,
+						Y:    -1,
+						Hand: 0,
+					},
+				}
+				newMsg := *msg
+				newMsg.Content = mm
+				newMsg.MType = roomMsg
+				room.WatchSubjectChan <- newMsg
+				return
 			}
 			msg.Content = RcvRoomMsg{Action: RoomRestart, RoomNumber: roomNumber, IsBlack: false}
 			c.Send <- msg
@@ -255,25 +269,21 @@ func (msg *Msg) receive() {
 			msg.Status = true
 			msg.Msg = "SUCCESS"
 			xy := c.Room.chessboard.GetState()
-			for _, subject := range c.Room.Watching {
-				if _, ok := subject.(*HumanClient); ok {
-					mm := ResRoomMsg{
-						Action:     RoomWatchChessWalk,
-						RoomNumber: 0,
-						IsBlack:    false,
-						XY:         xy,
-						NowWalk: chessboard.XY{
-							X:    m.X,
-							Y:    m.Y,
-							Hand: 0,
-						},
-					}
-					newMsg := *msg
-					newMsg.Content = mm
-					newMsg.MType = roomMsg
-					subject.(*HumanClient).Send <- &newMsg
-				}
+			mm := ResRoomMsg{
+				Action:     RoomWatchChessWalk,
+				RoomNumber: 0,
+				IsBlack:    false,
+				XY:         xy,
+				NowWalk: chessboard.XY{
+					X:    m.X,
+					Y:    m.Y,
+					Hand: 0,
+				},
 			}
+			newMsg := *msg
+			newMsg.Content = mm
+			newMsg.MType = roomMsg
+			c.Room.WatchSubjectChan <- newMsg
 		} else {
 			msg.Msg = err.Error()
 		}
@@ -314,11 +324,6 @@ type RcvChessMsg struct {
 	Y          int  `json:"y" mapstructure:"y"` //纵坐标
 	RoomNumber int  `json:"room_number" mapstructure:"room_number"`
 	IsBlack    bool `json:"is_black" mapstructure:"is_black"` //是否先手
-}
-
-type MainMsg struct {
-	ID  string `json:"id"`
-	Msg []byte `json:"msg"`
 }
 
 type ClientInfo struct {
