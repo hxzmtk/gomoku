@@ -8,13 +8,14 @@ import (
 )
 
 type Room struct {
-	ID         uint            //房间编号
-	isWin      bool            //是否分出胜负
-	Master     IClient         //房主
-	Enemy      IClient         //对手
-	FirstMove  IClient         //先手, 用于判断 谁是黑子 谁是白子
-	chessboard chessboard.Node //棋盘
-	NextWho    IClient         //下一步该谁落棋
+	ID         uint               //房间编号
+	isWin      bool               //是否分出胜负
+	Master     IClient            //房主
+	Enemy      IClient            //对手
+	FirstMove  IClient            //先手, 用于判断 谁是黑子 谁是白子
+	chessboard chessboard.Node    //棋盘
+	NextWho    IClient            //下一步该谁落棋
+	Watching   map[string]IClient //观战者
 }
 
 // 落子

@@ -18,6 +18,8 @@ let roomAction = {
     "leave": 3,
     "restart": 4,
     "reset": 5,
+    "watch": 6,
+    "watchChessWalk": 7,
 }
 
 let player = hand.nilHand;  //记录 “我”是 '黑子'还是'白子';
@@ -253,6 +255,8 @@ function ConfirmGameRestart(){
                         "action":roomAction.restart,
                     }
                 }))
+            } else {
+
             }
         }
     });
@@ -273,6 +277,37 @@ function ConfirmGameReset(){
             }))
         }
     })
+}
+
+//观战
+function ConfirmWatch(){
+    bootbox.confirm({
+        message: "确认要观战吗",
+        buttons: {
+            confirm: {
+                label: 'Yes',
+                className: 'btn-success'
+            },
+            cancel: {
+                label: 'No',
+                className: 'btn-danger'
+            }
+        },
+        callback: function (result) {
+            if (result){
+                ws.send(JSON.stringify({
+                    "m_type": msgType.roomMsg,
+                    "content": {
+                        "action":roomAction.watch,
+                        "room_number":parseInt($("#room-list :selected")[0].value)
+                    }
+                }))
+            } else {
+                $(".container").addClass("d-none");
+                $('#dialog').modal('show');
+            }
+        }
+    });
 }
 
 //消息提示
@@ -331,14 +366,26 @@ function handleRoomMsg(msg){
                 ResetAll();
                 BootboxAlert("游戏重置成功");
                 break;
+            case roomAction.watch:
+                $("#room-number-info").html(msg['content']['room_number']);
+                $("#chess-status").empty().append("观战中")
+                BootboxAlert("观战中");
+                break;
+            case roomAction.watchChessWalk:
+                let xy = msg['content']['xy']
+                console.log(xy)
+                for (let i = 0;i<xy.length;i++) {
+                    Setup(xy[i].x, xy[i].y,xy[i].hand);
+                }
+                remain(msg['content']["now_walk"].x, msg['content']["now_walk"].y)
+                break;
             default:
                 break;
         }
     } else {
         switch (msg['content']['action']) {
-            case roomAction.join:
-                $(".container").addClass("d-none");
-                $('#dialog').modal('show');
+            case roomAction.watch:
+                ConfirmWatch()
                 break;
         }
     }

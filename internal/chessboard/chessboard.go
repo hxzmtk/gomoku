@@ -14,4 +14,17 @@ type Node interface {
 	IsEmpty() bool
 	IsFull() bool
 	Reset()
+	GetState() []XY
+}
+
+var (
+	_ Node = &node{}
+	_ Node = &nodeArray{}
+)
+
+// 棋盘坐标信息
+type XY struct {
+	X    int  `json:"x"`
+	Y    int  `json:"y"`
+	Hand Hand `json:"hand"`
 }

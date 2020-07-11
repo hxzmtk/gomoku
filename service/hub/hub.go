@@ -96,6 +96,7 @@ func (h *Hub) CreateRoom(c IClient) (roomID int, err error) {
 				ID:         ID,
 				Master:     client,
 				chessboard: chessboard.NewChessboard(15),
+				Watching:   make(map[string]IClient),
 			}
 			h.Rooms[ID] = room
 			client.Room = room
@@ -147,6 +148,13 @@ func (h *Hub) JoinRoom(c IClient, roomID int) error {
 		}
 	} else {
 		return errors.New("房间不存在")
+	}
+	return nil
+}
+
+func (h *Hub) GetRoomByID(roomNumber uint) *Room {
+	if room, ok := h.Rooms[roomNumber]; ok {
+		return room
 	}
 	return nil
 }

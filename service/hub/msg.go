@@ -2,6 +2,7 @@ package hub
 
 import (
 	"encoding/json"
+	"github.com/bzyy/gomoku/internal/chessboard"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -37,6 +38,8 @@ const (
 	RoomLeave
 	RoomRestart
 	RoomReset
+	RoomWatch
+	RoomWatchChessWalk
 )
 
 type Msg struct {
@@ -52,7 +55,7 @@ func (msg *Msg) send() {
 }
 func (msg *Msg) receive() {
 	c, ok := msg.client.(*HumanClient)
-	if !ok{
+	if !ok {
 		return
 	}
 	switch msg.MType {
@@ -76,7 +79,12 @@ func (msg *Msg) receive() {
 			if err := c.Hub.JoinRoom(c, m.RoomNumber); err != nil {
 				msg.Msg = err.Error()
 				msg.Status = false
-				msg.Content = ResRoomJoinMsg{IsMaster: false, RoomNumber: m.RoomNumber, Name: "", Action: RoomJoin}
+				m := ResRoomJoinMsg{IsMaster: false, RoomNumber: m.RoomNumber, Name: "", Action: RoomJoin}
+				m.Action = RoomJoin
+				if msg.Msg == "房间已满" {
+					m.Action = RoomWatch
+				}
+				msg.Content = m
 				c.Send <- msg
 				return
 			}
@@ -193,6 +201,29 @@ func (msg *Msg) receive() {
 				msg.Msg = "房间不存在或您不是房主"
 			}
 			c.Send <- msg
+		case RoomWatch:
+			roomNumber := m.RoomNumber
+			if room := c.Hub.GetRoomByID(uint(roomNumber)); room != nil {
+				if _, ok := room.Watching[c.ID]; !ok {
+					room.Watching[c.ID] = c
+					msg.Status = true
+					msg.Msg = "加入成功"
+					m := RcvRoomMsg{
+						Action:     RoomWatch,
+						RoomNumber: roomNumber,
+						IsBlack:    false,
+					}
+					msg.Content = m
+					c.Send <- msg
+					return
+				} else {
+					msg.Status = false
+					msg.Msg = "您已在房间中"
+				}
+			}
+			msg.Content = RcvRoomMsg{Action: RoomRestart, RoomNumber: roomNumber, IsBlack: false}
+			c.Send <- msg
+
 		}
 	case chessWalk:
 		if c.Room == nil {
@@ -223,6 +254,26 @@ func (msg *Msg) receive() {
 		if err := c.Room.GoSet(c, &m); err == nil {
 			msg.Status = true
 			msg.Msg = "SUCCESS"
+			xy := c.Room.chessboard.GetState()
+			for _, subject := range c.Room.Watching {
+				if _, ok := subject.(*HumanClient); ok {
+					mm := ResRoomMsg{
+						Action:     RoomWatchChessWalk,
+						RoomNumber: 0,
+						IsBlack:    false,
+						XY:         xy,
+						NowWalk: chessboard.XY{
+							X:    m.X,
+							Y:    m.Y,
+							Hand: 0,
+						},
+					}
+					newMsg := *msg
+					newMsg.Content = mm
+					newMsg.MType = roomMsg
+					subject.(*HumanClient).Send <- &newMsg
+				}
+			}
 		} else {
 			msg.Msg = err.Error()
 		}

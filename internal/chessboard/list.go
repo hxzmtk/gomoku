@@ -316,3 +316,19 @@ func NewChessboard(size int) *node {
 	}
 	return root
 }
+
+func (n *node) GetState() (xy []XY) {
+	for x := 0; x < n.getWidth(); x++ {
+		for y := 0; y < n.getHeight(); y++ {
+			offset := n.get(x, y)
+			if offset != nil && offset.value != NilHand {
+				xy = append(xy, XY{
+					X:    x,
+					Y:    y,
+					Hand: offset.value,
+				})
+			}
+		}
+	}
+	return
+}

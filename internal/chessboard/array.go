@@ -25,6 +25,10 @@ func (n *nodeArray) IsFull() bool {
 func (n *nodeArray) Reset() {
 }
 
+func (n *nodeArray) GetState() (xy []XY) {
+	return
+}
+
 func NewChessboardWithArray(size int) *nodeArray {
 	array := make(nodeArray, size)
 	for i, _ := range array {
