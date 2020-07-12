@@ -108,6 +108,10 @@ func (msg *Msg) receive() {
 				newMsg.Msg = "对手加入成功"
 				enemy.Send <- &newMsg
 			}
+
+			if c.subject != nil && c.observer != nil {
+				c.subject.Detach(c.observer)
+			}
 		case RoomLeave:
 			if c.Room != nil {
 				c.Room.LeaveRoom(c)
@@ -204,9 +208,12 @@ func (msg *Msg) receive() {
 		case RoomWatch:
 			roomNumber := m.RoomNumber
 			if room := c.Hub.GetRoomByID(uint(roomNumber)); room != nil {
-				room.WatchSubject.Attach(&ObserverChessWalk{
+				observerChessWalk := &ObserverChessWalk{
 					client: c,
-				})
+				}
+				room.WatchSubject.Attach(observerChessWalk)
+				c.subject = room.WatchSubject
+				c.observer = observerChessWalk
 				msg.Status = true
 				msg.Msg = "加入成功"
 				m := RcvRoomMsg{

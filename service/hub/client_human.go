@@ -43,20 +43,18 @@ var (
 )
 
 type HumanClient struct {
-	ID   string
-	Hub  *Hub
-	Conn *websocket.Conn
-	Send chan IMsg
-	Room *Room
+	ID       string
+	Hub      *Hub
+	Conn     *websocket.Conn
+	Send     chan IMsg
+	Room     *Room
+	subject  ISubject  // 订阅的主题
+	observer IObserver // ↑↑↑
 }
 
 func (c *HumanClient) ReadPump() {
 	defer func() {
-		c.Hub.unregister <- c
-		if c.Room != nil {
-			c.Room.LeaveRoom(c)
-		}
-		c.Conn.Close()
+		c.close()
 	}()
 	c.Conn.SetReadLimit(maxMessageSize)
 	c.Conn.SetReadDeadline(time.Now().Add(pongWait))
@@ -147,4 +145,16 @@ func (c *HumanClient) isMaster() bool {
 		return true
 	}
 	return false
+}
+
+// 断开连接后，自动离开房间，退订主题等
+func (c *HumanClient) close() {
+	c.Hub.unregister <- c
+	if c.Room != nil {
+		c.Room.LeaveRoom(c)
+	}
+	if c.subject != nil && c.observer != nil {
+		c.subject.Attach(c.observer)
+	}
+	c.Conn.Close()
 }
