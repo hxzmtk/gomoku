@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/bzyy/gomoku/pkg/util"
 	"github.com/bzyy/gomoku/router"
 	"net/http"
 	"os"
@@ -19,7 +20,7 @@ func main() {
 	signal.Notify(quit, syscall.SIGHUP, syscall.SIGTERM, syscall.SIGINT)
 
 	server := &http.Server{
-		Addr:    ":8000",
+		Addr:    util.GetEnv("ADDR", ":8000"),
 		Handler: engine,
 	}
 	go func() {
