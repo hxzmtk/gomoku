@@ -99,6 +99,7 @@ func (h *Hub) CreateRoom(c IClient) (roomID int, err error) {
 				chessboard:       chessboard.NewChessboard(15),
 				WatchSubject:     NewSubject(),
 				WatchSubjectChan: make(chan Msg, 256),
+				walkHistory:      NewWalkHistory(3),
 			}
 			h.Rooms[ID] = room
 			client.Room = room

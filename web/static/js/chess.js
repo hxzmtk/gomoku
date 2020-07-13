@@ -20,6 +20,7 @@ let roomAction = {
     "reset": 5,
     "watch": 6,
     "watchChessWalk": 7,
+    "roomRegret": 8,
 }
 
 let player = hand.nilHand;  //记录 “我”是 '黑子'还是'白子';
@@ -310,6 +311,32 @@ function ConfirmWatch(){
     });
 }
 
+//悔棋
+function  ConfirmRegret(){
+    bootbox.confirm({
+        message: "您真的要悔棋吗",
+        buttons: {
+            confirm: {
+                label: 'Yes',
+                className: 'btn-success'
+            },
+            cancel: {
+                label: 'No',
+                className: 'btn-danger'
+            }
+        },
+        callback: function (result) {
+            if (result){
+                ws.send(JSON.stringify({
+                    "m_type": msgType.roomMsg,
+                    "content": {
+                        "action":roomAction.roomRegret
+                    }
+                }))
+            }
+        }
+    });
+}
 //消息提示
 function BootboxAlert(msg){
     bootbox.alert(msg);
@@ -378,6 +405,8 @@ function handleRoomMsg(msg){
                     Setup(xy[i].x, xy[i].y,xy[i].hand);
                 }
                 remain(msg['content']["now_walk"].x, msg['content']["now_walk"].y)
+                break;
+            case roomAction.roomRegret:
                 break;
             default:
                 break;

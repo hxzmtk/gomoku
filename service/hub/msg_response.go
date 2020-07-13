@@ -9,3 +9,8 @@ type ResRoomMsg struct {
 	XY         []chessboard.XY `json:"xy"`
 	NowWalk    chessboard.XY   `json:"now_walk"`
 }
+
+type ResRoomMsgRegret struct {
+	Action RoomAction      `json:"action"`
+	XY     []chessboard.XY `json:"xy"`
+}

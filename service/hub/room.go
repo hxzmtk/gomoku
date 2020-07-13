@@ -16,7 +16,8 @@ type Room struct {
 	chessboard       chessboard.Node //棋盘
 	NextWho          IClient         //下一步该谁落棋
 	WatchSubject     ISubject        //观战者主题，订阅了该主题的客户端都会收到消息
-	WatchSubjectChan chan Msg
+	WatchSubjectChan chan Msg        //推送订阅
+	walkHistory      IWalkHistory    //下棋步骤记录，用于悔棋操作
 }
 
 // 落子
@@ -176,4 +177,26 @@ func (room *Room) nextWhoReverse() {
 
 // 离开观战
 func (room *Room) LeaveWatch(client IClient) {
+}
+
+// 悔棋
+func (room *Room) Regret() error {
+	if len(room.walkHistory.GetWalks()) != 3 {
+		return errors.New("暂不能悔棋")
+	}
+	walks := room.walkHistory.GetWalks()
+	for _, walk := range walks {
+		room.chessboard.Go(walk.X, walk.Y, chessboard.NilHand)
+	}
+	return nil
+}
+
+func (room *Room) WhoImHand(c IClient) chessboard.Hand {
+	if room.FirstMove == nil {
+		return chessboard.NilHand
+	}
+	if room.FirstMove == c {
+		return chessboard.BlackHand
+	}
+	return chessboard.WhiteHand
 }

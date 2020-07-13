@@ -40,6 +40,7 @@ const (
 	RoomReset
 	RoomWatch
 	RoomWatchChessWalk
+	RoomRegret //请求悔棋
 )
 
 type Msg struct {
@@ -245,6 +246,19 @@ func (msg *Msg) receive() {
 			msg.Content = RcvRoomMsg{Action: RoomRestart, RoomNumber: roomNumber, IsBlack: false}
 			c.Send <- msg
 
+			//请求悔棋
+		case RoomRegret:
+			// TODO 逻辑待补充
+			if c.Room != nil {
+				enemy := c.getEnemy()
+				if c.Room.NextWho == c && enemy != nil && len(c.Room.walkHistory.GetWalks()) == 3 {
+				} else {
+					//暂不能悔棋
+					msg.Status = false
+					msg.Msg = "暂不能悔棋"
+					c.Send <- msg
+				}
+			}
 		}
 	case chessWalk:
 		if c.Room == nil {
@@ -273,6 +287,11 @@ func (msg *Msg) receive() {
 			return
 		}
 		if err := c.Room.GoSet(c, &m); err == nil {
+			c.Room.walkHistory.Push(chessboard.XY{
+				X:    m.X,
+				Y:    m.Y,
+				Hand: c.Room.WhoImHand(c),
+			})
 			msg.Status = true
 			msg.Msg = "SUCCESS"
 			xy := c.Room.chessboard.GetState()
