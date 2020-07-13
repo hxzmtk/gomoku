@@ -154,7 +154,7 @@ func (c *HumanClient) close() {
 		c.Room.LeaveRoom(c)
 	}
 	if c.subject != nil && c.observer != nil {
-		c.subject.Attach(c.observer)
+		c.subject.Detach(c.observer)
 	}
 	c.Conn.Close()
 }
