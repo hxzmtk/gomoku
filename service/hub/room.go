@@ -185,7 +185,7 @@ func (room *Room) Regret() error {
 		return errors.New("暂不能悔棋")
 	}
 	walks := room.walkHistory.GetWalks()
-	for _, walk := range walks {
+	for _, walk := range walks[:2] {
 		room.chessboard.Go(walk.X, walk.Y, chessboard.NilHand)
 	}
 	return nil

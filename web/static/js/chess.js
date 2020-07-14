@@ -21,6 +21,8 @@ let roomAction = {
     "watch": 6,
     "watchChessWalk": 7,
     "roomRegret": 8,
+    "roomRegretAgree": 9,
+    "roomRegretReject": 10,
 }
 
 let player = hand.nilHand;  //记录 “我”是 '黑子'还是'白子';
@@ -68,6 +70,8 @@ function Setup(x, y, color) {
         $(`#go-${x}-${y}`).addClass("b");
     } else if(color==2){
         $(`#go-${x}-${y}`).addClass("w");
+    } else {
+        $(`#go-${x}-${y}`).removeClass("w b chess-spinner");
     }
 }
 
@@ -337,6 +341,41 @@ function  ConfirmRegret(){
         }
     });
 }
+
+// 对方请求悔棋
+function  AgreeRegret(){
+    bootbox.confirm({
+        message: "对方请求悔棋",
+        buttons: {
+            confirm: {
+                label: '同意',
+                className: 'btn-success'
+            },
+            cancel: {
+                label: '拒绝',
+                className: 'btn-danger'
+            }
+        },
+        callback: function (result) {
+            if (result){
+                ws.send(JSON.stringify({
+                    "m_type": msgType.roomMsg,
+                    "content": {
+                        "action":roomAction.roomRegretAgree
+                    }
+                }))
+            } else {
+                ws.send(JSON.stringify({
+                    "m_type": msgType.roomMsg,
+                    "content": {
+                        "action":roomAction.roomRegretReject
+                    }
+                }))
+            }
+        }
+    });
+}
+
 //消息提示
 function BootboxAlert(msg){
     bootbox.alert(msg);
@@ -407,6 +446,14 @@ function handleRoomMsg(msg){
                 remain(msg['content']["now_walk"].x, msg['content']["now_walk"].y)
                 break;
             case roomAction.roomRegret:
+                AgreeRegret()
+                break;
+            case roomAction.roomRegretAgree:
+                BootboxAlert(msg["msg"])
+                let xy1 = msg['content']['xy']
+                for (let i = 0;i<xy1.length;i++) {
+                    Setup(xy1[i].x, xy1[i].y,hand.nilHand);
+                }
                 break;
             default:
                 break;
@@ -415,6 +462,9 @@ function handleRoomMsg(msg){
         switch (msg['content']['action']) {
             case roomAction.watch:
                 ConfirmWatch()
+                break;
+            case roomAction.roomRegret:
+                BootboxAlert(msg["msg"])
                 break;
         }
     }

@@ -41,6 +41,8 @@ const (
 	RoomWatch
 	RoomWatchChessWalk
 	RoomRegret //请求悔棋
+	RoomRegretAgree
+	RoomRegretReject
 )
 
 type Msg struct {
@@ -251,7 +253,11 @@ func (msg *Msg) receive() {
 			// TODO 逻辑待补充
 			if c.Room != nil {
 				enemy := c.getEnemy()
-				if c.Room.NextWho == c && enemy != nil && len(c.Room.walkHistory.GetWalks()) == 3 {
+				walkHistory := c.Room.walkHistory.GetWalks()
+				if c.Room.NextWho == c && enemy != nil && len(walkHistory) == 3 {
+					msg.Status = true
+					msg.Content = ResRoomMsgRegret{Action: RoomRegret}
+					enemy.(*HumanClient).Send <- msg
 				} else {
 					//暂不能悔棋
 					msg.Status = false
@@ -259,6 +265,39 @@ func (msg *Msg) receive() {
 					c.Send <- msg
 				}
 			}
+
+			//同意悔棋
+		case RoomRegretAgree:
+			if c.Room == nil {
+				return
+			}
+			enemy := c.getEnemy() //指发起悔棋的一方
+			if c.Room.NextWho == enemy && enemy != nil {
+				if err := c.Room.Regret(); err != nil {
+					msg.Content = ResRoomMsgRegret{Action: RoomRegret}
+					msg.Status = false
+					enemy.(*HumanClient).Send <- msg
+				} else {
+					msg.Content = ResRoomMsgRegret{Action: RoomRegretAgree, XY: c.Room.walkHistory.GetWalks()[:2]}
+					msg.Status = true
+					newMsg := *msg
+					newMsg.Msg = "对方同意了您的悔棋"
+					enemy.(*HumanClient).Send <- &newMsg
+
+					msg.Msg = "您同意了悔棋"
+					c.Send <- msg
+				}
+			}
+
+		case RoomRegretReject:
+			if c.Room == nil {
+				return
+			}
+			enemy := c.getEnemy()
+			msg.Content = ResRoomMsgRegret{Action: RoomRegret}
+			msg.Status = false
+			msg.Msg = "对方拒绝您的悔棋请求"
+			enemy.(*HumanClient).Send <- msg
 		}
 	case chessWalk:
 		if c.Room == nil {
