@@ -18,6 +18,7 @@ type Room struct {
 	WatchSubject     ISubject        //观战者主题，订阅了该主题的客户端都会收到消息
 	WatchSubjectChan chan Msg        //推送订阅
 	walkHistory      IWalkHistory    //下棋步骤记录，用于悔棋操作
+	pause            bool            //是否暂停
 }
 
 // 落子

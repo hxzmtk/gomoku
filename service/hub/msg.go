@@ -252,6 +252,7 @@ func (msg *Msg) receive() {
 		case RoomRegret:
 			// TODO 逻辑待补充
 			if c.Room != nil {
+				c.Room.pause = true
 				enemy := c.getEnemy()
 				walkHistory := c.Room.walkHistory.GetWalks()
 				if c.Room.NextWho == c && enemy != nil && len(walkHistory) == 3 {
@@ -263,6 +264,7 @@ func (msg *Msg) receive() {
 					msg.Status = false
 					msg.Msg = "暂不能悔棋"
 					c.Send <- msg
+					c.Room.pause = false
 				}
 			}
 
@@ -287,12 +289,14 @@ func (msg *Msg) receive() {
 					msg.Msg = "您同意了悔棋"
 					c.Send <- msg
 				}
+				c.Room.pause = false
 			}
 
 		case RoomRegretReject:
 			if c.Room == nil {
 				return
 			}
+			c.Room.pause = false
 			enemy := c.getEnemy()
 			msg.Content = ResRoomMsgRegret{Action: RoomRegret}
 			msg.Status = false
@@ -312,9 +316,6 @@ func (msg *Msg) receive() {
 			c.Send <- msg
 			return
 		}
-		if c.Room == nil {
-			return
-		}
 		if c.Room.FirstMove == nil {
 			msg.Status = false
 			if c.Room.Master == c {
@@ -322,6 +323,12 @@ func (msg *Msg) receive() {
 			} else {
 				msg.Msg = "请等待房主开始游戏"
 			}
+			c.Send <- msg
+			return
+		}
+		if c.Room.pause {
+			msg.Status = false
+			msg.Msg = "您发起了悔棋请求,请等待答复..."
 			c.Send <- msg
 			return
 		}

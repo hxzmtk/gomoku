@@ -331,15 +331,25 @@ function  ConfirmRegret(){
         },
         callback: function (result) {
             if (result){
+                // waitingAgreeRegret();
                 ws.send(JSON.stringify({
                     "m_type": msgType.roomMsg,
                     "content": {
                         "action":roomAction.roomRegret
                     }
-                }))
+                }));
             }
         }
     });
+}
+
+function waitingAgreeRegret() {
+    bootbox.dialog({
+        message: '<div class="text-center"><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>\n' +
+            '  请求悔棋中...</div>',
+        closeButton: false,
+        className: "waiting-agree-regret"
+    })
 }
 
 // 对方请求悔棋
@@ -449,6 +459,7 @@ function handleRoomMsg(msg){
                 AgreeRegret()
                 break;
             case roomAction.roomRegretAgree:
+                $('#request-regret').modal('hide');
                 BootboxAlert(msg["msg"])
                 let xy1 = msg['content']['xy']
                 for (let i = 0;i<xy1.length;i++) {
@@ -464,7 +475,7 @@ function handleRoomMsg(msg){
                 ConfirmWatch()
                 break;
             case roomAction.roomRegret:
-                BootboxAlert(msg["msg"])
+                BootboxAlert(msg["msg"]);
                 break;
         }
     }
@@ -475,10 +486,12 @@ function handleRoomMsg(msg){
 
 //处理下棋消息
 function handleChessWalkMsg(msg){
-    if (msg.status == true) {
+    if (msg.status === true) {
         Setup(msg['content'].x, msg['content'].y,msg['content'].is_black == true?1:2);
         updateStatus(msg['content'].is_black == true?hand.blackHand:hand.whiteHand);
         remain(msg['content'].x, msg['content'].y);
+    } else  {
+        BootboxAlert(msg["msg"]);
     }
     if (msg.msg != ""){
         alertMsg(msg.msg);

@@ -53,7 +53,7 @@ V
 */
 func (n *node) Go(x, y int, value Hand) bool {
 	offset := n.get(x, y)
-	if offset != nil && offset.value == NilHand {
+	if offset != nil {
 		offset.value = value
 		return true
 	}
