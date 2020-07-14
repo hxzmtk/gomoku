@@ -331,7 +331,6 @@ function  ConfirmRegret(){
         },
         callback: function (result) {
             if (result){
-                // waitingAgreeRegret();
                 ws.send(JSON.stringify({
                     "m_type": msgType.roomMsg,
                     "content": {
@@ -341,15 +340,6 @@ function  ConfirmRegret(){
             }
         }
     });
-}
-
-function waitingAgreeRegret() {
-    bootbox.dialog({
-        message: '<div class="text-center"><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>\n' +
-            '  请求悔棋中...</div>',
-        closeButton: false,
-        className: "waiting-agree-regret"
-    })
 }
 
 // 对方请求悔棋
@@ -573,8 +563,7 @@ $(document).ready(function(){
                 break;
             case msgType.clientInfoMsg:
                 console.log(dic);
-                $("#myname").html(dic.content.name);
-                $("#myName").html(dic.content.name);
+                $("#myname").html(dic.content.name)
                 break;
         }
         alertMsg(dic.msg);
