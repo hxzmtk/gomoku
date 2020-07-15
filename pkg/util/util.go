@@ -2,6 +2,7 @@ package util
 
 import (
 	"math/rand"
+	"os"
 	"time"
 )
 
@@ -20,4 +21,11 @@ func GetRandomName() string {
 		result = append(result, bytes[r.Intn(len(bytes))])
 	}
 	return string(result)
+}
+
+func GetEnv(key, Default string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	return Default
 }

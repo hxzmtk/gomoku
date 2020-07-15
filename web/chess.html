@@ -33,7 +33,7 @@
                             昵称: <span id="myname" style="font-size:0.5rem">无</span>
                         </h6>
                         <h6 class="mr-3">
-                            状态: <span id="chess-status">无</span>
+                            状态: <span id="chess-status" class="text-danger">无</span>
                         </h6>
                     </div>
 
@@ -68,10 +68,10 @@
                         <div class="dropdown-menu btn-block border-0" aria-labelledby="room-panel">
                             <button type="button" class="btn btn-secondary btn-sm btn-block" onclick="ConfirmGameStart()">开始游戏</button>
                             <button type="button" class="btn btn-secondary btn-sm btn-block" onclick="ConfirmLeaveHome()">离开房间</button>
-                            <button type="button" class="btn btn-secondary btn-sm btn-block">重开</button>
+                            <button type="button" class="btn btn-danger btn-sm btn-block" onclick="ConfirmGameRestart()">重开</button>
                         </div>
                     </div>
-                    <button type="button" class="btn btn-secondary btn-sm btn-block">悔棋</button>
+                    <button type="button" class="btn btn-danger btn-sm btn-block"onclick="ConfirmRegret()" >悔棋</button>
                     <button type="button" class="btn btn-secondary btn-sm btn-block mb-0">About</button>
                 </div>
             </div>

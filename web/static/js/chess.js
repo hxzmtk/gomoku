@@ -18,6 +18,11 @@ let roomAction = {
     "leave": 3,
     "restart": 4,
     "reset": 5,
+    "watch": 6,
+    "watchChessWalk": 7,
+    "roomRegret": 8,
+    "roomRegretAgree": 9,
+    "roomRegretReject": 10,
 }
 
 let player = hand.nilHand;  //记录 “我”是 '黑子'还是'白子';
@@ -65,6 +70,8 @@ function Setup(x, y, color) {
         $(`#go-${x}-${y}`).addClass("b");
     } else if(color==2){
         $(`#go-${x}-${y}`).addClass("w");
+    } else {
+        $(`#go-${x}-${y}`).removeClass("w b chess-spinner");
     }
 }
 
@@ -159,7 +166,7 @@ function ResetAll(){
 function ResetGrid(){
     for (let i = 0; i < 15; i++) {
         for (let j = 0; j < 15; j++) {
-            $(`#go-{i}-{j}`.removeClass("b w"));
+            $(`#go-${i}-${j}`).removeClass("b w");
         }
     }
 }
@@ -167,6 +174,9 @@ function ResetGrid(){
 //重新开局
 function Restart(){
     ResetGrid();
+    $(".go-board i").removeClass("w b chess-spinner");
+    initPlace(15,15);
+    updateStatus(hand.nilHand);
 }
 
 //确认开始游戏
@@ -219,6 +229,10 @@ function  ConfirmLeaveHome(){
                         "room_number":parseInt($("#room-number-info").html())
                     }
                 }))
+                is_master = false;
+                ResetAll();
+                $(".container").addClass("d-none");
+                $('#dialog').modal('show');
             }
         }
     });
@@ -246,6 +260,8 @@ function ConfirmGameRestart(){
                         "action":roomAction.restart,
                     }
                 }))
+            } else {
+
             }
         }
     });
@@ -268,6 +284,98 @@ function ConfirmGameReset(){
     })
 }
 
+//观战
+function ConfirmWatch(){
+    bootbox.confirm({
+        message: "确认要观战吗",
+        buttons: {
+            confirm: {
+                label: 'Yes',
+                className: 'btn-success'
+            },
+            cancel: {
+                label: 'No',
+                className: 'btn-danger'
+            }
+        },
+        callback: function (result) {
+            if (result){
+                ws.send(JSON.stringify({
+                    "m_type": msgType.roomMsg,
+                    "content": {
+                        "action":roomAction.watch,
+                        "room_number":parseInt($("#room-list :selected")[0].value)
+                    }
+                }))
+            } else {
+                $(".container").addClass("d-none");
+                $('#dialog').modal('show');
+            }
+        }
+    });
+}
+
+//悔棋
+function  ConfirmRegret(){
+    bootbox.confirm({
+        message: "您真的要悔棋吗",
+        buttons: {
+            confirm: {
+                label: 'Yes',
+                className: 'btn-success'
+            },
+            cancel: {
+                label: 'No',
+                className: 'btn-danger'
+            }
+        },
+        callback: function (result) {
+            if (result){
+                ws.send(JSON.stringify({
+                    "m_type": msgType.roomMsg,
+                    "content": {
+                        "action":roomAction.roomRegret
+                    }
+                }));
+            }
+        }
+    });
+}
+
+// 对方请求悔棋
+function  AgreeRegret(){
+    bootbox.confirm({
+        message: "对方请求悔棋",
+        buttons: {
+            confirm: {
+                label: '同意',
+                className: 'btn-success'
+            },
+            cancel: {
+                label: '拒绝',
+                className: 'btn-danger'
+            }
+        },
+        callback: function (result) {
+            if (result){
+                ws.send(JSON.stringify({
+                    "m_type": msgType.roomMsg,
+                    "content": {
+                        "action":roomAction.roomRegretAgree
+                    }
+                }))
+            } else {
+                ws.send(JSON.stringify({
+                    "m_type": msgType.roomMsg,
+                    "content": {
+                        "action":roomAction.roomRegretReject
+                    }
+                }))
+            }
+        }
+    });
+}
+
 //消息提示
 function BootboxAlert(msg){
     bootbox.alert(msg);
@@ -275,18 +383,21 @@ function BootboxAlert(msg){
 
 //处理RoomMsg消息
 function handleRoomMsg(msg){
-    if (msg.status = true) {
+    if (msg.status) {
         switch (msg['content']['action']) {
             case roomAction.create:
                 $("#room-number-info").html(msg['content']['room_number']);
                 is_master = true;
                 break;
             case roomAction.join:
+                $("#room-number-info").html(msg['content']['room_number']);
+
                 console.log(msg['content'],$("#myName").html());
-                if (is_master) {
+                if (msg['content']['is_master']) {
                     ConfirmGameStart();
                 }
                 $("#targetName").html(msg['content'].hasOwnProperty('name')?msg['content']['name']:"待加入");
+
                 break;
             case roomAction.start:
                 $("#room-number-info").html(msg['content']['room_number']);
@@ -302,7 +413,9 @@ function handleRoomMsg(msg){
             case roomAction.leave:
                 if (msg['content'].hasOwnProperty('is_master')) {
                     if (msg['content']['is_master']){
+                        is_master = true;
                     }else {
+                        is_master = false;
                     }
                     ConfirmGameReset();
                      
@@ -312,11 +425,47 @@ function handleRoomMsg(msg){
                     $('#dialog').modal('show');
                 }
                 break;
+            case roomAction.restart:
+                Restart();
+                break;
             case roomAction.reset:
                 ResetAll();
                 BootboxAlert("游戏重置成功");
                 break;
+            case roomAction.watch:
+                $("#room-number-info").html(msg['content']['room_number']);
+                $("#chess-status").empty().append("观战中")
+                BootboxAlert("观战中");
+                break;
+            case roomAction.watchChessWalk:
+                let xy = msg['content']['xy']
+                console.log(xy)
+                for (let i = 0;i<xy.length;i++) {
+                    Setup(xy[i].x, xy[i].y,xy[i].hand);
+                }
+                remain(msg['content']["now_walk"].x, msg['content']["now_walk"].y)
+                break;
+            case roomAction.roomRegret:
+                AgreeRegret()
+                break;
+            case roomAction.roomRegretAgree:
+                $('#request-regret').modal('hide');
+                BootboxAlert(msg["msg"])
+                let xy1 = msg['content']['xy']
+                for (let i = 0;i<xy1.length;i++) {
+                    Setup(xy1[i].x, xy1[i].y,hand.nilHand);
+                }
+                break;
             default:
+                break;
+        }
+    } else {
+        switch (msg['content']['action']) {
+            case roomAction.watch:
+                ConfirmWatch()
+                break;
+            case roomAction.roomRegret:
+                BootboxAlert(msg["msg"]);
                 break;
         }
     }
@@ -327,10 +476,12 @@ function handleRoomMsg(msg){
 
 //处理下棋消息
 function handleChessWalkMsg(msg){
-    if (msg.status == true) {
+    if (msg.status === true) {
         Setup(msg['content'].x, msg['content'].y,msg['content'].is_black == true?1:2);
         updateStatus(msg['content'].is_black == true?hand.blackHand:hand.whiteHand);
         remain(msg['content'].x, msg['content'].y);
+    } else  {
+        BootboxAlert(msg["msg"]);
     }
     if (msg.msg != ""){
         alertMsg(msg.msg);
@@ -384,7 +535,7 @@ $(document).ready(function(){
         $(".container").removeClass("d-none");
     });
 
-    ws = new WebSocket("ws://"+ document.location.host + "/v1/ws");
+    ws = new WebSocket("ws://"+ document.location.host + "/ws/human");
     ws.onopen = function(){
         console.log("CONNECT");
         ws.send(JSON.stringify({
@@ -412,8 +563,7 @@ $(document).ready(function(){
                 break;
             case msgType.clientInfoMsg:
                 console.log(dic);
-                $("#myname").html(dic.content.name);
-                $("#myName").html(dic.content.name);
+                $("#myname").html(dic.content.name)
                 break;
         }
         alertMsg(dic.msg);
