@@ -155,6 +155,9 @@ func (room *Room) Restart(c IClient) error {
 	}
 	room.FirstMove = nil
 	room.chessboard.Reset()
+	room.isWin = false
+	room.pause = false
+	room.walkHistory.Clean()
 	return nil
 }
 
@@ -164,6 +167,8 @@ func (room *Room) GameReset() {
 	room.chessboard.Reset()
 	room.FirstMove = nil
 	room.NextWho = nil
+	room.pause = false
+	room.walkHistory.Clean()
 }
 
 //更新下一步该谁落棋
@@ -186,7 +191,7 @@ func (room *Room) Regret() error {
 		return errors.New("暂不能悔棋")
 	}
 	walks := room.walkHistory.GetWalks()
-	for _, walk := range walks[:2] {
+	for _, walk := range walks[:len(walks)-1] {
 		room.chessboard.Go(walk.X, walk.Y, chessboard.NilHand)
 	}
 	return nil
