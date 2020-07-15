@@ -25,8 +25,12 @@ func (n *nodeArray) IsFull() bool {
 func (n *nodeArray) Reset() {
 }
 
-func (n *nodeArray) GetState() (xy []XY) {
+func (n *nodeArray) GetState() (xy XYS) {
 	return
+}
+
+func (n *nodeArray) Copy() Node {
+	return nil
 }
 
 func NewChessboardWithArray(size int) *nodeArray {

@@ -8,13 +8,25 @@ const (
 	WhiteHand             //白手
 )
 
+func (h Hand) Reverse() Hand {
+	switch h {
+	case BlackHand:
+		return WhiteHand
+	case WhiteHand:
+		return BlackHand
+	default:
+		return NilHand
+	}
+}
+
 type Node interface {
 	Go(x, y int, value Hand) bool
 	IsWin(x, y int) bool
 	IsEmpty() bool
 	IsFull() bool
 	Reset()
-	GetState() []XY
+	GetState() XYS
+	Copy() Node
 }
 
 var (
@@ -27,4 +39,15 @@ type XY struct {
 	X    int  `json:"x"`
 	Y    int  `json:"y"`
 	Hand Hand `json:"hand"`
+}
+
+type XYS []XY
+
+func (xys XYS) NoNilHand() (data []XY) {
+	for _, x := range xys {
+		if x.Hand != NilHand {
+			data = append(data, x)
+		}
+	}
+	return
 }

@@ -317,11 +317,11 @@ func NewChessboard(size int) *node {
 	return root
 }
 
-func (n *node) GetState() (xy []XY) {
+func (n *node) GetState() (xy XYS) {
 	for x := 0; x < n.getWidth(); x++ {
 		for y := 0; y < n.getHeight(); y++ {
 			offset := n.get(x, y)
-			if offset != nil && offset.value != NilHand {
+			if offset != nil {
 				xy = append(xy, XY{
 					X:    x,
 					Y:    y,
@@ -331,4 +331,12 @@ func (n *node) GetState() (xy []XY) {
 		}
 	}
 	return
+}
+
+func (n *node) Copy() Node {
+	newNode := NewChessboard(n.getHeight())
+	for _, xy := range n.GetState() {
+		newNode.Go(xy.X, xy.Y, xy.Hand)
+	}
+	return newNode
 }

@@ -227,7 +227,7 @@ func (msg *Msg) receive() {
 				msg.Content = m
 				c.Send <- msg
 
-				xy := room.chessboard.GetState()
+				xy := room.chessboard.GetState().NoNilHand()
 				mm := ResRoomMsg{
 					Action:     RoomWatchChessWalk,
 					RoomNumber: 0,
@@ -250,7 +250,6 @@ func (msg *Msg) receive() {
 
 			//请求悔棋
 		case RoomRegret:
-			// TODO 逻辑待补充
 			if c.Room != nil {
 				c.Room.pause = true
 				enemy := c.getEnemy()
