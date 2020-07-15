@@ -95,6 +95,12 @@ func (msg *Msg) receive() {
 			enemyClient := c.getEnemy()
 			enemy, ok := enemyClient.(*HumanClient)
 			if !ok {
+				msg.Content = RcvRoomMsg{
+					Action:     RoomCreate,
+					RoomNumber: m.RoomNumber,
+					IsBlack:    false,
+				}
+				c.Send <- msg
 				return
 			}
 			msg.Content = ResRoomJoinMsg{IsMaster: c.isMaster(), RoomNumber: m.RoomNumber, Name: enemy.ID, Action: RoomJoin}

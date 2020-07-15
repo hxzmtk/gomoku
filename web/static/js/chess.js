@@ -124,14 +124,14 @@ function updateIdentity(who){
 //更新状态
 function updateStatus(who){
     playing = who;
-    if (playing == hand.nilHand) {
+    if (playing === hand.nilHand) {
         $("#chess-status").empty();
         $("#chess-status").append("无")
         return
     }
     let content = "";
     let style = "";
-    if (playing != player) {
+    if (playing !== player) {
         style = "spinner-grow";
         content = "轮到你了"
     }else {
@@ -387,6 +387,7 @@ function handleRoomMsg(msg){
         switch (msg['content']['action']) {
             case roomAction.create:
                 $("#room-number-info").html(msg['content']['room_number']);
+                updateStatus(hand.nilHand);
                 is_master = true;
                 break;
             case roomAction.join:
@@ -477,8 +478,8 @@ function handleRoomMsg(msg){
 //处理下棋消息
 function handleChessWalkMsg(msg){
     if (msg.status === true) {
-        Setup(msg['content'].x, msg['content'].y,msg['content'].is_black == true?1:2);
-        updateStatus(msg['content'].is_black == true?hand.blackHand:hand.whiteHand);
+        Setup(msg['content'].x, msg['content'].y,msg['content']['is_black'] === true?1:2);
+        updateStatus(msg['content']['is_black'] === true?hand.blackHand:hand.whiteHand);
         remain(msg['content'].x, msg['content'].y);
     } else  {
         BootboxAlert(msg["msg"]);

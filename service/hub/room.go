@@ -83,6 +83,7 @@ func (room *Room) electWhoFirst() {
 func (room *Room) Join(c IClient) error {
 	if room.IsEmpty() {
 		room.Master = c
+		c.(*HumanClient).Room = room
 		return nil
 	}
 	if room.Master == c || room.Enemy == c {
