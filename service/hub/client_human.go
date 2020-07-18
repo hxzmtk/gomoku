@@ -44,7 +44,6 @@ var (
 
 type HumanClient struct {
 	ID       string
-	Hub      *Hub
 	Conn     *websocket.Conn
 	Send     chan IMsg
 	Room     *Room
@@ -149,7 +148,7 @@ func (c *HumanClient) isMaster() bool {
 
 // 断开连接后，自动离开房间，退订主题等
 func (c *HumanClient) close() {
-	c.Hub.unregister <- c
+	Hub.unregister <- c
 	if c.Room != nil {
 		c.Room.LeaveRoom(c)
 	}

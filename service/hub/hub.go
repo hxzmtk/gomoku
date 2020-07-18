@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/bzyy/gomoku/internal/chessboard"
 	"sort"
+	"sync"
 )
 
 const (
@@ -22,7 +23,19 @@ var (
 	_ IClient = &AIClient{}
 )
 
-type Hub struct {
+var (
+	Hub     *hub
+	hubOnce sync.Once
+)
+
+func init() {
+	hubOnce.Do(func() {
+		Hub = NewHub()
+		go Hub.Run()
+	})
+}
+
+type hub struct {
 	clients    map[string]IClient
 	broadcast  chan []byte
 	register   chan IClient
@@ -30,12 +43,12 @@ type Hub struct {
 	Rooms      map[uint]*Room
 }
 
-func NewHub() *Hub {
+func NewHub() *hub {
 	rooms := make(map[uint]*Room)
 	for i := 1; i <= MaxRoomCount; i++ {
 		rooms[uint(i)] = nil
 	}
-	return &Hub{
+	return &hub{
 		clients:    make(map[string]IClient),
 		register:   make(chan IClient),
 		unregister: make(chan IClient),
@@ -43,7 +56,7 @@ func NewHub() *Hub {
 	}
 }
 
-func (h *Hub) Run() {
+func (h *hub) Run() {
 	for {
 		select {
 		case client := <-h.register:
@@ -82,7 +95,7 @@ func (h *Hub) Run() {
 	}
 }
 
-func (h *Hub) CreateRoom(c IClient) (roomID int, err error) {
+func (h *hub) CreateRoom(c IClient) (roomID int, err error) {
 	client, ok := c.(*HumanClient)
 	if !ok {
 		return 0, errors.New("FAIL")
@@ -118,15 +131,15 @@ func (h *Hub) CreateRoom(c IClient) (roomID int, err error) {
 	return 0, errors.New("房间数已满,不能创建更多房间啦")
 }
 
-func (h *Hub) RegisterClient(c IClient) {
+func (h *hub) RegisterClient(c IClient) {
 	h.register <- c
 }
 
-func (h *Hub) UnregisterClient(c IClient) {
+func (h *hub) UnregisterClient(c IClient) {
 	h.unregister <- c
 }
 
-func (h *Hub) GetRooms() MsgRoomInfoList {
+func (h *hub) GetRooms() MsgRoomInfoList {
 	rooms := make(MsgRoomInfoList, 0)
 	for _, room := range h.Rooms {
 		if room == nil {
@@ -152,7 +165,7 @@ func (h *Hub) GetRooms() MsgRoomInfoList {
 	return rooms
 }
 
-func (h *Hub) JoinRoom(c IClient, roomID int) error {
+func (h *hub) JoinRoom(c IClient, roomID int) error {
 	roomNumber := uint(roomID)
 	if room, ok := h.Rooms[roomNumber]; ok {
 		if err := room.Join(c); err != nil {
@@ -164,7 +177,7 @@ func (h *Hub) JoinRoom(c IClient, roomID int) error {
 	return nil
 }
 
-func (h *Hub) GetRoomByID(roomNumber uint) *Room {
+func (h *hub) GetRoomByID(roomNumber uint) *Room {
 	if room, ok := h.Rooms[roomNumber]; ok {
 		return room
 	}

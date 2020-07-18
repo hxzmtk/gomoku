@@ -5,13 +5,9 @@ import (
 	serviceHub "github.com/bzyy/gomoku/service/hub"
 	"github.com/gin-gonic/gin"
 	"log"
-	"net/http"
 )
 
 func Human(c *gin.Context) {
-	upgrader.CheckOrigin = func(r *http.Request) bool {
-		return true
-	}
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		log.Println(err)
@@ -19,7 +15,6 @@ func Human(c *gin.Context) {
 	}
 	client := &serviceHub.HumanClient{
 		Conn: conn,
-		Hub:  hub,
 		Send: make(chan serviceHub.IMsg, 256),
 	}
 
@@ -27,7 +22,7 @@ func Human(c *gin.Context) {
 	clientID := util.GetRandomName()
 	client.ID = clientID
 
-	client.Hub.RegisterClient(client)
+	serviceHub.Hub.RegisterClient(client)
 
 	go client.WritePump()
 	go client.ReadPump()

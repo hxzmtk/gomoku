@@ -68,7 +68,7 @@ func (msg *Msg) receive() {
 
 		switch m.Action {
 		case RoomCreate:
-			if roomNumber, err := c.Hub.CreateRoom(c); err == nil {
+			if roomNumber, err := Hub.CreateRoom(c); err == nil {
 				m.RoomNumber = roomNumber
 				msg.Status = true
 			} else if roomNumber == 0 {
@@ -79,7 +79,7 @@ func (msg *Msg) receive() {
 			msg.Content = m
 			c.Send <- msg
 		case RoomJoin:
-			if err := c.Hub.JoinRoom(c, m.RoomNumber); err != nil {
+			if err := Hub.JoinRoom(c, m.RoomNumber); err != nil {
 				msg.Msg = err.Error()
 				msg.Status = false
 				m := ResRoomJoinMsg{IsMaster: false, RoomNumber: m.RoomNumber, Name: "", Action: RoomJoin}
@@ -216,7 +216,7 @@ func (msg *Msg) receive() {
 			c.Send <- msg
 		case RoomWatch:
 			roomNumber := m.RoomNumber
-			if room := c.Hub.GetRoomByID(uint(roomNumber)); room != nil {
+			if room := Hub.GetRoomByID(uint(roomNumber)); room != nil {
 				observerChessWalk := &ObserverChessWalk{
 					client: c,
 				}
@@ -371,7 +371,7 @@ func (msg *Msg) receive() {
 			enemy.Send <- msg
 		}
 	case roomList:
-		msg.Content = c.Hub.GetRooms()
+		msg.Content = Hub.GetRooms()
 		c.Send <- msg
 	case clientInfoMsg:
 		msg.Content = ClientInfo{Name: c.ID}
