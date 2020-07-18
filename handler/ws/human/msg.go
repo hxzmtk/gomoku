@@ -371,13 +371,6 @@ func (msg *Msg) ToBytes() []byte {
 	return message
 }
 
-type MsgRoomInfo struct {
-	RoomNumber uint `json:"room_number" mapstructure:"room_number"`
-	IsFull     bool `json:"is_full" mapstructure:"is_full"` //是否满了
-}
-
-type MsgRoomInfoList []MsgRoomInfo
-
 type RcvRoomMsg struct {
 	Action     RoomAction `json:"action" mapstructure:"action"`
 	RoomNumber int        `json:"room_number" mapstructure:"room_number"` //房间编号

@@ -17,6 +17,7 @@ type concreteSubject struct {
 func (s *concreteSubject) Attach(observers ...IObserver) {
 	s.observers = append(s.observers, observers...)
 }
+
 func (s *concreteSubject) Detach(observer IObserver) {
 	for k, item := range s.observers {
 		if item == observer {
