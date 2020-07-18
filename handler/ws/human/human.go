@@ -1,19 +1,20 @@
-package ws
+package human
 
 import (
+	"github.com/bzyy/gomoku/handler/ws"
 	"github.com/bzyy/gomoku/pkg/util"
 	serviceHub "github.com/bzyy/gomoku/service/hub"
 	"github.com/gin-gonic/gin"
 	"log"
 )
 
-func Human(c *gin.Context) {
-	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+func Handler(c *gin.Context) {
+	conn, err := ws.Upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	client := &serviceHub.HumanClient{
+	client := &Client{
 		Conn: conn,
 		Send: make(chan serviceHub.IMsg, 256),
 	}

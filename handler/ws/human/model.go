@@ -1,4 +1,4 @@
-package hub
+package human
 
 import "github.com/bzyy/gomoku/internal/chessboard"
 

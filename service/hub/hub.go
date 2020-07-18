@@ -1,7 +1,6 @@
 package hub
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/bzyy/gomoku/internal/chessboard"
@@ -16,12 +15,11 @@ const (
 type IClient interface {
 	ReadPump()
 	WritePump()
+	GetRoom() *Room
+	SetRoom(room *Room)
+	GetID() string
+	CloseChan()
 }
-
-var (
-	_ IClient = &HumanClient{}
-	_ IClient = &AIClient{}
-)
 
 var (
 	Hub     *hub
@@ -60,34 +58,21 @@ func (h *hub) Run() {
 	for {
 		select {
 		case client := <-h.register:
-			humanClient, ok := client.(*HumanClient)
-			if !ok {
-				continue
-			}
-			h.clients[humanClient.ID] = client
+
+			h.clients[client.GetID()] = client
 		case client := <-h.unregister:
-			humanClient, ok := client.(*HumanClient)
-			if !ok {
-				continue
-			}
-			if _, ok := h.clients[humanClient.ID]; ok {
-				delete(h.clients, humanClient.ID)
-				close(humanClient.Send)
+
+			if _, ok := h.clients[client.GetID()]; ok {
+				delete(h.clients, client.GetID())
+				client.CloseChan()
 			}
 		case message := <-h.broadcast:
 			_ = message
-			msg := Msg{}
-			_ = json.Unmarshal(message, &msg)
 			for _, client := range h.clients {
-				humanClient, ok := client.(*HumanClient)
-				if !ok {
-					continue
-				}
 				select {
-				case humanClient.Send <- &msg:
 				default:
-					close(humanClient.Send)
-					delete(h.clients, humanClient.ID)
+					client.CloseChan()
+					delete(h.clients, client.GetID())
 				}
 			}
 
@@ -96,11 +81,9 @@ func (h *hub) Run() {
 }
 
 func (h *hub) CreateRoom(c IClient) (roomID int, err error) {
-	client, ok := c.(*HumanClient)
-	if !ok {
-		return 0, errors.New("FAIL")
-	}
-	if client.Room != nil {
+	client := c
+	room := c.GetRoom()
+	if room != nil {
 		return 0, errors.New("您已创建过房间啦")
 	}
 
@@ -111,11 +94,11 @@ func (h *hub) CreateRoom(c IClient) (roomID int, err error) {
 				Master:           client,
 				chessboard:       chessboard.NewChessboard(15),
 				WatchSubject:     NewSubject(),
-				WatchSubjectChan: make(chan Msg, 256),
+				WatchSubjectChan: make(chan IMsg, 256),
 				walkHistory:      NewWalkHistory(3),
 			}
 			h.Rooms[ID] = room
-			client.Room = room
+			client.SetRoom(room)
 
 			// 监听chan，向观战的客户端推送消息
 			go func() {

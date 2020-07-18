@@ -2,7 +2,8 @@ package router
 
 import (
 	"github.com/bzyy/gomoku/handler/html"
-	wsHandler "github.com/bzyy/gomoku/handler/ws"
+	"github.com/bzyy/gomoku/handler/ws/human"
+	"github.com/bzyy/gomoku/handler/ws/robot"
 	"github.com/gin-gonic/gin"
 	"runtime"
 )
@@ -23,7 +24,7 @@ func RegisterRouter() *gin.Engine {
 	engine.GET("/ai", html.AI)
 
 	ws := engine.Group("/ws")
-	ws.GET("/human", wsHandler.Human)
-	ws.GET("/ai", wsHandler.Robot)
+	ws.GET("/human", human.Handler)
+	ws.GET("/ai", robot.Handler)
 	return engine
 }

@@ -1,8 +1,9 @@
-package hub
+package human
 
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/bzyy/gomoku/service/hub"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"log"
@@ -10,8 +11,11 @@ import (
 	"time"
 )
 
-var PongWait time.Duration = 60 * time.Second
-var once sync.Once
+var (
+	PongWait time.Duration = 60 * time.Second
+	once     sync.Once
+	_        hub.IClient = &Client{}
+)
 
 func init() {
 	once.Do(func() {
@@ -42,16 +46,16 @@ var (
 	space   = []byte{' '}
 )
 
-type HumanClient struct {
+type Client struct {
 	ID       string
 	Conn     *websocket.Conn
-	Send     chan IMsg
-	Room     *Room
-	subject  ISubject  // 订阅的主题
-	observer IObserver // ↑↑↑
+	Send     chan hub.IMsg
+	Room     *hub.Room
+	subject  hub.ISubject  // 订阅的主题
+	observer hub.IObserver // ↑↑↑
 }
 
-func (c *HumanClient) ReadPump() {
+func (c *Client) ReadPump() {
 	defer func() {
 		c.close()
 	}()
@@ -76,11 +80,11 @@ func (c *HumanClient) ReadPump() {
 			log.Println("非法的消息格式", err)
 			continue
 		}
-		msg.receive()
+		msg.Receive()
 	}
 }
 
-func (c *HumanClient) WritePump() {
+func (c *Client) WritePump() {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		ticker.Stop()
@@ -122,7 +126,7 @@ func (c *HumanClient) WritePump() {
 	}
 }
 
-func (c *HumanClient) getEnemy() IClient {
+func (c *Client) getEnemy() hub.IClient {
 	if c.Room == nil {
 		return nil
 	}
@@ -136,7 +140,7 @@ func (c *HumanClient) getEnemy() IClient {
 }
 
 // 检查是否是房主
-func (c *HumanClient) isMaster() bool {
+func (c *Client) isMaster() bool {
 	if c.Room == nil {
 		return false
 	}
@@ -147,8 +151,8 @@ func (c *HumanClient) isMaster() bool {
 }
 
 // 断开连接后，自动离开房间，退订主题等
-func (c *HumanClient) close() {
-	Hub.unregister <- c
+func (c *Client) close() {
+	hub.Hub.UnregisterClient(c)
 	if c.Room != nil {
 		c.Room.LeaveRoom(c)
 	}
@@ -156,4 +160,27 @@ func (c *HumanClient) close() {
 		c.subject.Detach(c.observer)
 	}
 	c.Conn.Close()
+}
+
+func (c *Client) isBlack() bool {
+	if room := c.Room; room != nil {
+		return room.FirstMove == c
+	}
+	return false
+}
+
+func (c *Client) GetRoom() *hub.Room {
+	return c.Room
+}
+
+func (c *Client) SetRoom(room *hub.Room) {
+	c.Room = room
+}
+
+func (c *Client) GetID() (clientID string) {
+	return c.ID
+}
+
+func (c *Client) CloseChan() {
+	close(c.Send)
 }

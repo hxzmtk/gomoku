@@ -16,16 +16,13 @@ type Room struct {
 	chessboard       chessboard.Node //棋盘
 	NextWho          IClient         //下一步该谁落棋
 	WatchSubject     ISubject        //观战者主题，订阅了该主题的客户端都会收到消息
-	WatchSubjectChan chan Msg        //推送订阅
+	WatchSubjectChan chan IMsg       //推送订阅
 	walkHistory      IWalkHistory    //下棋步骤记录，用于悔棋操作
-	pause            bool            //是否暂停
+	Pause            bool            //是否暂停
 }
 
 // 落子
-func (room *Room) GoSet(c IClient, msg *RcvChessMsg) error {
-	if msg.RoomNumber <= 0 || room.ID != uint(msg.RoomNumber) {
-		return errors.New("无效的房间号")
-	}
+func (room *Room) GoSet(c IClient, x, y int) error {
 
 	if room.isWin {
 		return errors.New("已分出胜负了")
@@ -41,10 +38,9 @@ func (room *Room) GoSet(c IClient, msg *RcvChessMsg) error {
 	}
 
 	if room.FirstMove == c {
-		msg.IsBlack = true
-		if room.chessboard.Go(msg.X, msg.Y, chessboard.BlackHand) {
+		if room.chessboard.Go(x, y, chessboard.BlackHand) {
 			room.nextWhoReverse()
-			if room.chessboard.IsWin(msg.X, msg.Y) {
+			if room.chessboard.IsWin(x, y) {
 				room.isWin = true
 				//return errors.New("黑手赢")
 				return nil
@@ -53,9 +49,9 @@ func (room *Room) GoSet(c IClient, msg *RcvChessMsg) error {
 			return errors.New("该位置已有棋子")
 		}
 	} else {
-		if room.chessboard.Go(msg.X, msg.Y, chessboard.WhiteHand) {
+		if room.chessboard.Go(x, y, chessboard.WhiteHand) {
 			room.nextWhoReverse()
-			if room.chessboard.IsWin(msg.X, msg.Y) {
+			if room.chessboard.IsWin(x, y) {
 				room.isWin = true
 				//return errors.New("白手赢")
 				return nil
@@ -83,7 +79,7 @@ func (room *Room) electWhoFirst() {
 func (room *Room) Join(c IClient) error {
 	if room.IsEmpty() {
 		room.Master = c
-		c.(*HumanClient).Room = room
+		c.SetRoom(room)
 		return nil
 	}
 	if room.Master == c || room.Enemy == c {
@@ -92,11 +88,7 @@ func (room *Room) Join(c IClient) error {
 		return errors.New("房间已满")
 	}
 	room.Enemy = c
-	switch c.(type) {
-	case *HumanClient:
-		client := c.(*HumanClient)
-		client.Room = room
-	}
+	c.SetRoom(room)
 	return nil
 }
 
@@ -157,7 +149,7 @@ func (room *Room) Restart(c IClient) error {
 	room.FirstMove = nil
 	room.chessboard.Reset()
 	room.isWin = false
-	room.pause = false
+	room.Pause = false
 	room.walkHistory.Clean()
 	return nil
 }
@@ -168,7 +160,7 @@ func (room *Room) GameReset() {
 	room.chessboard.Reset()
 	room.FirstMove = nil
 	room.NextWho = nil
-	room.pause = false
+	room.Pause = false
 	room.walkHistory.Clean()
 }
 
@@ -206,4 +198,20 @@ func (room *Room) WhoImHand(c IClient) chessboard.Hand {
 		return chessboard.BlackHand
 	}
 	return chessboard.WhiteHand
+}
+
+func (room *Room) GetWalks() (data []chessboard.XY) {
+	return room.walkHistory.GetWalks()
+}
+func (room *Room) RecordWalk(xy chessboard.XY) {
+	if room.walkHistory != nil {
+		room.walkHistory.Push(xy)
+	}
+}
+
+func (room *Room) GetChessBoardState() (xys chessboard.XYS) {
+	if room.chessboard != nil {
+		return room.chessboard.GetState()
+	}
+	return
 }
