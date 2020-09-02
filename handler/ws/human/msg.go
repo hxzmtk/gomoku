@@ -144,7 +144,8 @@ func (msg *Msg) Receive() {
 				c.Send <- msg // 返回开始游戏成功
 
 				// 通知对手， 游戏要开始了
-				enemy := c.getEnemy().(*Client)
+				enemyClient := c.getEnemy()
+				enemy, _ := enemyClient.(*Client)
 				if enemy != nil && err == nil {
 					if c.Room.FirstMove == enemy {
 						m.IsBlack = true
@@ -354,7 +355,8 @@ func (msg *Msg) Receive() {
 		}
 		msg.Content = m
 		c.Send <- msg
-		enemy := c.getEnemy().(*Client)
+		enemyClient := c.getEnemy()
+		enemy, _ := enemyClient.(*Client)
 		if enemy != nil && msg.Status {
 			enemy.Send <- msg
 		}
