@@ -3,9 +3,10 @@ package hub
 import (
 	"errors"
 	"fmt"
-	"github.com/bzyy/gomoku/internal/chessboard"
 	"sort"
 	"sync"
+
+	"github.com/hxzmtk/gomoku/internal/chessboard"
 )
 
 const (

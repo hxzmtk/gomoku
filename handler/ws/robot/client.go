@@ -1,6 +1,6 @@
 package robot
 
-import "github.com/bzyy/gomoku/service/hub"
+import "github.com/hxzmtk/gomoku/service/hub"
 
 var (
 	_ hub.IClient = &Client{}

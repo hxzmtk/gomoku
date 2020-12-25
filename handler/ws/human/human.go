@@ -1,11 +1,12 @@
 package human
 
 import (
-	"github.com/bzyy/gomoku/handler/ws"
-	"github.com/bzyy/gomoku/pkg/util"
-	"github.com/bzyy/gomoku/service/hub"
-	"github.com/gin-gonic/gin"
 	"log"
+
+	"github.com/gin-gonic/gin"
+	"github.com/hxzmtk/gomoku/handler/ws"
+	"github.com/hxzmtk/gomoku/pkg/util"
+	"github.com/hxzmtk/gomoku/service/hub"
 )
 
 func Handler(c *gin.Context) {

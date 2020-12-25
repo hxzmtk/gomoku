@@ -3,12 +3,13 @@ package human
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/bzyy/gomoku/service/hub"
-	"github.com/gin-gonic/gin"
-	"github.com/gorilla/websocket"
 	"log"
 	"sync"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
+	"github.com/hxzmtk/gomoku/service/hub"
 )
 
 var (

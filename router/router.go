@@ -1,11 +1,12 @@
 package router
 
 import (
-	"github.com/bzyy/gomoku/handler/html"
-	"github.com/bzyy/gomoku/handler/ws/human"
-	"github.com/bzyy/gomoku/handler/ws/robot"
-	"github.com/gin-gonic/gin"
 	"runtime"
+
+	"github.com/gin-gonic/gin"
+	"github.com/hxzmtk/gomoku/handler/html"
+	"github.com/hxzmtk/gomoku/handler/ws/human"
+	"github.com/hxzmtk/gomoku/handler/ws/robot"
 )
 
 func RegisterRouter() *gin.Engine {

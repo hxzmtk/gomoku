@@ -2,8 +2,9 @@ package human
 
 import (
 	"encoding/json"
-	"github.com/bzyy/gomoku/internal/chessboard"
-	"github.com/bzyy/gomoku/service/hub"
+
+	"github.com/hxzmtk/gomoku/internal/chessboard"
+	"github.com/hxzmtk/gomoku/service/hub"
 	"github.com/mitchellh/mapstructure"
 )
 

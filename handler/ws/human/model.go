@@ -1,6 +1,6 @@
 package human
 
-import "github.com/bzyy/gomoku/internal/chessboard"
+import "github.com/hxzmtk/gomoku/internal/chessboard"
 
 type ResRoomMsg struct {
 	Action     RoomAction      `json:"action"`

@@ -1,6 +1,6 @@
 package human
 
-import "github.com/bzyy/gomoku/service/hub"
+import "github.com/hxzmtk/gomoku/service/hub"
 
 type ObserverChessWalk struct {
 	client *Client

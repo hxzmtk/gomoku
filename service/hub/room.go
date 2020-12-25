@@ -2,9 +2,10 @@ package hub
 
 import (
 	"errors"
-	"github.com/bzyy/gomoku/internal/chessboard"
 	"math/rand"
 	"time"
+
+	"github.com/hxzmtk/gomoku/internal/chessboard"
 )
 
 type Room struct {

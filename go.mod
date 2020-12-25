@@ -1,4 +1,4 @@
-module github.com/bzyy/gomoku
+module github.com/hxzmtk/gomoku
 
 go 1.13
 

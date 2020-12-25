@@ -2,7 +2,8 @@ package hub
 
 import (
 	"container/list"
-	"github.com/bzyy/gomoku/internal/chessboard"
+
+	"github.com/hxzmtk/gomoku/internal/chessboard"
 )
 
 type IWalkHistory interface {
