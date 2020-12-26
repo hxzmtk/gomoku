@@ -9,15 +9,20 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/hxzmtk/gomoku/model"
 	"github.com/hxzmtk/gomoku/pkg/util"
 	"github.com/hxzmtk/gomoku/router"
 )
+
+func init() {
+	model.Start()
+}
 
 func main() {
 	engine := router.RegisterRouter()
 
 	// 优雅关闭http服务
-	quit := make(chan os.Signal)
+	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGHUP, syscall.SIGTERM, syscall.SIGINT)
 
 	server := &http.Server{
