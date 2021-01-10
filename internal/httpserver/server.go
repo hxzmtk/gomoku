@@ -9,14 +9,15 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type HandleFunc func(Conn)
 type Server struct {
 	upgrader   websocket.Upgrader
 	httpServer *http.Server
 	Addr       string
 	hub        *Hub
 	engine     *gin.Engine
+	handlers   map[MsgId]HandleFunc
 }
-
 
 func (server *Server) handleWebsocket(c *gin.Context) {
 	conn, err := server.upgrader.Upgrade(c.Writer, c.Request, nil)
@@ -53,6 +54,14 @@ func (server *Server) Start() error {
 	return server.httpServer.ListenAndServe()
 }
 
+func (server *Server) Register(msgId MsgId, handle HandleFunc) {
+	if _, ok := server.handlers[msgId]; ok {
+		log.Errorf("handle %d is existed", msgId)
+		return
+	}
+	server.handlers[msgId] = handle
+}
+
 func NewServer(Addr string) Server {
 	return Server{
 		upgrader: websocket.Upgrader{
@@ -60,7 +69,8 @@ func NewServer(Addr string) Server {
 			WriteBufferSize: 1024,
 			CheckOrigin:     func(r *http.Request) bool { return true },
 		},
-		Addr: Addr,
-		hub:  NewHub(),
+		Addr:     Addr,
+		hub:      NewHub(),
+		handlers: make(map[MsgId]HandleFunc),
 	}
 }
