@@ -6,7 +6,7 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/hxzmtk/gomoku/internal/chessboard"
+	"github.com/zqhhh/gomoku/internal/chessboard"
 )
 
 const (

@@ -3,9 +3,9 @@ package human
 import (
 	"encoding/json"
 
-	"github.com/hxzmtk/gomoku/internal/chessboard"
-	"github.com/hxzmtk/gomoku/service/hub"
 	"github.com/mitchellh/mapstructure"
+	"github.com/zqhhh/gomoku/internal/chessboard"
+	"github.com/zqhhh/gomoku/service/hub"
 )
 
 type msgType uint

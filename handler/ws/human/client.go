@@ -9,7 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
-	"github.com/hxzmtk/gomoku/service/hub"
+	"github.com/zqhhh/gomoku/service/hub"
 )
 
 var (

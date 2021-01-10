@@ -4,9 +4,9 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
-	"github.com/hxzmtk/gomoku/handler/ws"
-	"github.com/hxzmtk/gomoku/pkg/util"
-	"github.com/hxzmtk/gomoku/service/hub"
+	"github.com/zqhhh/gomoku/handler/ws"
+	"github.com/zqhhh/gomoku/pkg/util"
+	"github.com/zqhhh/gomoku/service/hub"
 )
 
 func Handler(c *gin.Context) {

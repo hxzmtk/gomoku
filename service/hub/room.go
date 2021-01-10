@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/hxzmtk/gomoku/internal/chessboard"
+	"github.com/zqhhh/gomoku/internal/chessboard"
 )
 
 type Room struct {
