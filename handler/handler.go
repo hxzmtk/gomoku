@@ -1,11 +1,19 @@
 package handler
 
-import "github.com/zqhhh/gomoku/internal/httpserver"
+import (
+	"github.com/zqhhh/gomoku/internal/httpserver"
+)
 
-
-func init() {
+func HandleListRoom(conn httpserver.IConn, msg interface{}) (httpserver.IMessage, error) {
+	ack := &httpserver.MsgRoomListAck{}
+	return ack, nil
 }
 
-func HandleListRoom(httpserver.Conn) {
+func HandleCreateRoom(c httpserver.IConn, msg interface{}) (httpserver.IMessage, error) {
+	ack := &httpserver.MsgCreateRoomAck{}
+	return ack, nil
+}
 
+func Register() {
+	httpserver.Register(httpserver.MsgListRoom, HandleListRoom)
 }

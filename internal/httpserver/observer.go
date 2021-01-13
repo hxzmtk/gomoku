@@ -1,18 +1,14 @@
-package conn
+package httpserver
 
-type IMsg interface {
-	Receive()
-	ToBytes() []byte
-}
 
 type IObserver interface {
-	Do(subject ISubject, msg IMsg) error
+	Do(subject ISubject, msg IMessage) error
 }
 
 type ISubject interface {
 	Attach(observers ...IObserver)
 	Detach(observer IObserver)
-	Notify(msg IMsg) error
+	Notify(msg IMessage) error
 }
 
 type concreteSubject struct {
@@ -30,7 +26,7 @@ func (s *concreteSubject) Detach(observer IObserver) {
 		}
 	}
 }
-func (s *concreteSubject) Notify(msg IMsg) error {
+func (s *concreteSubject) Notify(msg IMessage) error {
 	for _, item := range s.observers {
 		if err := item.Do(s, msg); err != nil {
 			return err

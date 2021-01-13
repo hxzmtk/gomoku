@@ -2,29 +2,32 @@ package httpserver
 
 import (
 	"net/http"
+	"reflect"
 	"runtime"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
 )
 
-type HandleFunc func(Conn)
+type HandleFunc func(conn IConn, msg interface{}) (IMessage, error)
 type Server struct {
 	upgrader   websocket.Upgrader
 	httpServer *http.Server
 	Addr       string
 	hub        *Hub
 	engine     *gin.Engine
-	handlers   map[MsgId]HandleFunc
+	handlers   map[int]HandleFunc
 }
 
 func (server *Server) handleWebsocket(c *gin.Context) {
-	conn, err := server.upgrader.Upgrade(c.Writer, c.Request, nil)
+	ws, err := server.upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		log.Info(err)
 	}
-	_ = conn
+	newConn := NewConn(ws, server.hub)
+	newConn.Start()
 }
 
 func (server *Server) init() {
@@ -51,26 +54,49 @@ func (server *Server) init() {
 func (server *Server) Start() error {
 	server.init()
 	server.httpServer = &http.Server{Addr: server.Addr, Handler: server.engine}
-	return server.httpServer.ListenAndServe()
+	go func() {
+		server.httpServer.ListenAndServe()
+	}()
+	return nil
 }
 
-func (server *Server) Register(msgId MsgId, handle HandleFunc) {
-	if _, ok := server.handlers[msgId]; ok {
+var (
+	srv     *Server
+	onceSrv sync.Once
+)
+
+func NewServer(Addr string) *Server {
+	onceSrv.Do(func() {
+		srv = &Server{
+			upgrader: websocket.Upgrader{
+				ReadBufferSize:  1024,
+				WriteBufferSize: 1024,
+				CheckOrigin:     func(r *http.Request) bool { return true },
+			},
+			Addr:     Addr,
+			hub:      NewHub(),
+			handlers: make(map[int]HandleFunc),
+		}
+	})
+	return srv
+}
+
+func Register(msgId int, handle HandleFunc) {
+	if _, ok := srv.handlers[msgId]; ok {
 		log.Errorf("handle %d is existed", msgId)
 		return
 	}
-	server.handlers[msgId] = handle
+	log.Infof("register msgId:%d, name:%s success", msgId, runtime.FuncForPC(reflect.ValueOf(handle).Pointer()).Name())
+	srv.handlers[msgId] = handle
 }
 
-func NewServer(Addr string) Server {
-	return Server{
-		upgrader: websocket.Upgrader{
-			ReadBufferSize:  1024,
-			WriteBufferSize: 1024,
-			CheckOrigin:     func(r *http.Request) bool { return true },
-		},
-		Addr:     Addr,
-		hub:      NewHub(),
-		handlers: make(map[MsgId]HandleFunc),
+func DoHandle(conn Conn, p IMessage) (IMessage, error) {
+	handle, ok := srv.handlers[p.GetMsgId()]
+	if !ok {
+		log.Errorf("handle not existed,msgId:%d", p.GetMsgId())
+		return nil, nil
 	}
+	msg, err := handle(conn, p)
+	return msg, err
+
 }

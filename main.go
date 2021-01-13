@@ -8,6 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/zqhhh/gomoku/manager"
 	"github.com/zqhhh/gomoku/model"
+	"github.com/zqhhh/gomoku/handler"
 )
 
 func init() {
@@ -20,6 +21,7 @@ func main() {
 		log.Infoln(err)
 		return
 	}
+	handler.Register()
 
 	// 优雅关闭http服务
 	quit := make(chan os.Signal, 1)
