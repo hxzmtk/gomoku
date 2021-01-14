@@ -24,6 +24,10 @@ type IMessage interface {
 }
 
 const (
+	MsgConnect =  99999
+)
+
+const (
 	// 定义消息类型
 	MsgListRoom = iota + 1
 	MsgCreateRoom

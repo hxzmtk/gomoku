@@ -94,7 +94,7 @@ func (c Conn) writePump() {
 		}
 	}
 }
-func (c Conn) readPump() {
+func (c *Conn) readPump() {
 	defer func() {
 		c.hub.unregister <- c
 		c.ws.Close()
@@ -121,9 +121,22 @@ func (c Conn) readPump() {
 	}
 }
 
+func (c *Conn) WriteMessage(msg IMessage) {
+	msg.SetMsgId(msg.GetMsgId())
+	c.send <- msg
+}
+
+func (c *Conn) Init() {
+	DoHandle(c, &MsgConnectReq{})
+}
+
 func NewConn(c *websocket.Conn, hub *Hub) *Conn {
 	username := util.GetRandomName()
-	conn := &Conn{ws: c, hub: hub, Username: username}
+	conn := &Conn{ws: c,
+		hub:      hub,
+		Username: username,
+		send:     make(chan IMessage, 1024),
+	}
 	hub.register <- conn
 	return conn
 }

@@ -50,3 +50,12 @@ type MsgCreateRoomAck struct {
 	msgUtil
 	Number int `json:"number"`
 }
+
+type MsgConnectReq struct {
+	msgUtil
+	Name string `json:"name"`
+}
+
+func (MsgConnectReq) GetMsgId() int {
+	return MsgConnect
+}

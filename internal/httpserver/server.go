@@ -28,6 +28,7 @@ func (server *Server) handleWebsocket(c *gin.Context) {
 	}
 	newConn := NewConn(ws, server.hub)
 	newConn.Start()
+	newConn.Init()
 }
 
 func (server *Server) init() {
@@ -90,7 +91,7 @@ func Register(msgId int, handle HandleFunc) {
 	srv.handlers[msgId] = handle
 }
 
-func DoHandle(conn Conn, p IMessage) (IMessage, error) {
+func DoHandle(conn *Conn, p IMessage) (IMessage, error) {
 	handle, ok := srv.handlers[p.GetMsgId()]
 	if !ok {
 		log.Errorf("handle not existed,msgId:%d", p.GetMsgId())
