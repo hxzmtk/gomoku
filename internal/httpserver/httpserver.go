@@ -9,8 +9,17 @@ import (
 var msgTypes = make(map[int]reflect.Type)
 
 func init() {
+	msgTypes[MsgConnect] = reflect.TypeOf((*MsgConnectReq)(nil)).Elem()
+	msgTypes[-MsgConnect] = reflect.TypeOf((*MsgConnectAck)(nil)).Elem()
+	msgTypes[MsgError] = reflect.TypeOf((*MsgErrorAck)(nil)).Elem()
 	msgTypes[MsgCreateRoom] = reflect.TypeOf((*MsgCreateRoomReq)(nil)).Elem()
+	msgTypes[-MsgCreateRoom] = reflect.TypeOf((*MsgCreateRoomAck)(nil)).Elem()
 	msgTypes[MsgListRoom] = reflect.TypeOf((*MsgRoomListReq)(nil)).Elem()
+	msgTypes[-MsgListRoom] = reflect.TypeOf((*MsgRoomListAck)(nil)).Elem()
+	msgTypes[MsgJoinRoom] = reflect.TypeOf((*MsgJoinRoomReq)(nil)).Elem()
+	msgTypes[-MsgJoinRoom] = reflect.TypeOf((*MsgJoinRoomAck)(nil)).Elem()
+	msgTypes[MsgChessboardWalk] = reflect.TypeOf((*MsgChessboardWalkReq)(nil)).Elem()
+	msgTypes[-MsgChessboardWalk] = reflect.TypeOf((*MsgChessboardWalkAck)(nil)).Elem()
 }
 
 type IConn interface {
@@ -24,13 +33,16 @@ type IMessage interface {
 }
 
 const (
-	MsgConnect =  99999
+	MsgConnect = 99999
 )
 
 const (
 	// 定义消息类型
-	MsgListRoom = iota + 1
+	MsgError = iota
+	MsgListRoom
 	MsgCreateRoom
+	MsgJoinRoom
+	MsgChessboardWalk
 )
 
 var (

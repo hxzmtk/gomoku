@@ -17,41 +17,56 @@
         <!-- <script src="static/js/chess.js"></script> -->
         <script src="static/js/bootbox.all.min.js"></script>
         <script src="static/js/core.js"></script>
-        <link rel="stylesheet" href="static/css/chess.css">
+        <link rel="stylesheet" href="static/css/core.css">
     </head>
     <body>
         <div class="container-sm">
-            <table class="table table-hover">
+          <div class="row"  id="dating">
+              <h3 class="text-center">大厅</h3>
+              <table class="table table-hover">
                 <thead>
-              <tr>
-                <th scope="col">#</th>
-                <th scope="col">First</th>
-                <th scope="col">Last</th>
-                <th scope="col">Handle</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <th scope="row">1</th>
-                <td>Mark</td>
-                <td>Otto</td>
-                <td>@mdo</td>
-              </tr>
-              <tr>
-                <th scope="row">2</th>
-                <td>Jacob</td>
-                <td>Thornton</td>
-                <td>@fat</td>
-              </tr>
-              <tr>
-                <th scope="row">3</th>
-                <td colspan="2">Larry the Bird</td>
-                <td>@twitter</td>
-              </tr>
-            </tbody>
-          
-            </table>
+                  <tr>
+                    <th scope="col">编号</th>
+                    <th scope="col">房主</th>
+                    <th scope="col">对手</th>
+                    <th scope="col">动作</th>
+                  </tr>
+                </thead>
+                <tbody id="dating-data">
+                </tbody>
+              </table>
             <button type="button" class="btn btn-primary" onclick="createRoom()">创建房间</button>
+          </div>
+          <div class="row d-none" id="room">
+            <div class="col-lg-3 d-grid gap-2 col-sm-8 mx-auto">
+              <div class="col d-flex flex-lg-wrap">
+                <h6 class="mr-3">
+                    房间号: <span id="room-number-info">0</span>
+                </h6>
+                <h6 class="mr-3">
+                    昵称: <span id="myname" style="font-size:0.5rem">无</span>
+                </h6>
+                <h6 class="mr-3">
+                    状态: <span id="chess-status" class="text-danger">无</span>
+                </h6>
+              </div>
+            </div>
+            <div class="col-lg-7 d-flex justify-content-center"><div id="go-board"></div></div>
+            <div class="col-lg-2 d-sm-grid gap-2 col-sm-8 mx-auto">
+              <div class="btn-group d-grid gap-2" role="group">
+                <button id="room-panel" type="button" class="btn btn-primary btn-smdropdown-toggle  col-12" data-bs-toggle="dropdown" aria-expanded="false">
+                  控制面板
+                </button>
+                <div class="dropdown-menu border-0" aria-labelledby="room-panel">
+                    <button type="button" class="btn btn-secondary btn-sm d-grid gap-2" onclick="ConfirmGameStart()">开始游戏</button>
+                    <button type="button" class="btn btn-secondary btn-sm d-grid gap-2" onclick="ConfirmLeaveHome()">离开房间</button>
+                    <button type="button" class="btn btn-danger btn-sm d-grid gap-2" onclick="ConfirmGameRestart()">重开</button>
+                </div>
+              </div>
+              <button type="button" class="btn btn-danger btn-sm"onclick="ConfirmRegret()" >悔棋</button>
+              <button type="button" class="btn btn-secondary btn-sm mb-0">About</button>
+            </div>
+          </div>
         </div>
     </body>
 </html>

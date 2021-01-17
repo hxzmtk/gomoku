@@ -6,6 +6,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
+	"github.com/zqhhh/gomoku/errex"
 	"github.com/zqhhh/gomoku/pkg/util"
 )
 
@@ -76,13 +77,11 @@ func (c Conn) writePump() {
 			w.Write(message.ToBytes())
 
 			// Add queued chat messages to the current websocket message.
-			n := len(c.send)
-			for i := 0; i < n; i++ {
-				w.Write(newline)
-				msg := <-c.send
-				w.Write(msg.ToBytes())
-			}
-
+			// n := len(c.send)
+			// for i := 0; i < n; i++ {
+			// 	msg := <-c.send
+			// 	c.ws.WriteMessage(websocket.TextMessage, msg.ToBytes())
+			// }
 			if err := w.Close(); err != nil {
 				return
 			}
@@ -116,7 +115,18 @@ func (c *Conn) readPump() {
 			log.Errorf("error: %v", err)
 			continue
 		}
-		DoHandle(c, rcv)
+		rcvMsg, err := DoHandle(c, rcv)
+		if err != nil {
+			switch e := err.(type) {
+			case errex.Item:
+				c.WriteMessage(&MsgErrorAck{Msg: e.Message})
+			default:
+				c.WriteMessage(&MsgErrorAck{Msg: errex.ErrFail.Message})
+				log.Infof("handle error:%v", err)
+			}
+		} else {
+			c.WriteMessage(rcvMsg)
+		}
 		c.hub.broadcast <- message
 	}
 }
@@ -127,7 +137,6 @@ func (c *Conn) WriteMessage(msg IMessage) {
 }
 
 func (c *Conn) Init() {
-	DoHandle(c, &MsgConnectReq{})
 }
 
 func NewConn(c *websocket.Conn, hub *Hub) *Conn {

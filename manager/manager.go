@@ -36,16 +36,16 @@ func (m *Manager) Init() error {
 func (m *Manager) Stop() {
 }
 
-var m = &Manager{modules: make([]IModule, 0)}
+var manager = &Manager{modules: make([]IModule, 0)}
 
 func Get() *Manager {
-	return m
+	return manager
 }
 
 func GetRoomManager() *RoomManager {
-	return m.RoomManager
+	return manager.RoomManager
 }
 
 func GetUserManager() *UserManager {
-	return m.UserManager
+	return manager.UserManager
 }

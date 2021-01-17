@@ -5,11 +5,17 @@ import (
 )
 
 type ClientManager struct {
+	server *httpserver.Server
 }
 
-func (ClientManager) Init() error {
+func (m *ClientManager) Init() error {
 	server := httpserver.NewServer(":8000")
+	m.server = server
 	return server.Start()
+}
+
+func (m *ClientManager) IsOnline(username string) bool {
+	return m.server.CheckOnline(username)
 }
 
 func NewClientManager() *ClientManager {

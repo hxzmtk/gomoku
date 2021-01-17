@@ -24,6 +24,11 @@ func (m *UserManager) LoadUser(conn *httpserver.Conn) error {
 	return nil
 }
 
+func (m *UserManager) GetUser(conn *httpserver.Conn) *objs.User {
+	user, _ := m.users[conn.Username]
+	return user
+}
+
 func NewUserManager() *UserManager {
 	return &UserManager{
 		users: make(map[string]*objs.User),

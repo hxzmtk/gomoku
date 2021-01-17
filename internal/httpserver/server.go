@@ -61,6 +61,11 @@ func (server *Server) Start() error {
 	return nil
 }
 
+func (server *Server) CheckOnline(username string) bool {
+	_, ok := server.hub.clients[username]
+	return ok
+}
+
 var (
 	srv     *Server
 	onceSrv sync.Once
