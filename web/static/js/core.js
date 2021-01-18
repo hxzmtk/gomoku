@@ -42,6 +42,15 @@ function createRoom(){
     }))
 }
 
+function joinRoom(roomId) {
+    conn.send(JSON.stringify({
+        "msgId":msgId.joinRoom,
+        "body": {
+            "roomId": parseInt(roomId)
+        }
+    }))
+}
+
 //初始化二维数组
 function initPlace(row, col) {
     place = Array(row).fill(0).map(x => Array(col).fill(0));
@@ -93,7 +102,7 @@ function handle(event) {
                     <th scope="row">${element.roomId}</th>
                     <td>${element.master}</td>
                     <td>${element.enemy}</td>
-                    <td><button type="button" class="btn btn-sm btn-primary"  ${isDisabled}>加入</button></td>
+                    <td><button type="button" class="btn btn-sm btn-primary" onclick="joinRoom(${element.roomId})"  ${isDisabled}>加入</button></td>
                   </tr>`
                 });
                 document.getElementById("dating-data").innerHTML = tmp

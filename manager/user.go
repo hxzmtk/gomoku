@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"github.com/zqhhh/gomoku/errex"
 	"github.com/zqhhh/gomoku/internal/httpserver"
 	"github.com/zqhhh/gomoku/objs"
 )
@@ -17,6 +18,9 @@ func (m *UserManager) AddUser(user *objs.User) {
 }
 
 func (m *UserManager) LoadUser(conn *httpserver.Conn) error {
+	if err := m.reconnect(conn); err == nil {
+		return nil
+	}
 	user := objs.NewUser()
 	user.Username = conn.Username
 	user.SetConn(conn)
@@ -25,8 +29,18 @@ func (m *UserManager) LoadUser(conn *httpserver.Conn) error {
 }
 
 func (m *UserManager) GetUser(conn *httpserver.Conn) *objs.User {
-	user, _ := m.users[conn.Username]
+	user := m.users[conn.Username]
 	return user
+}
+
+func (m *UserManager) reconnect(conn *httpserver.Conn) error {
+	username := conn.Username
+	user, ok := m.users[username]
+	if ok {
+		*user = *objs.NewUserByConn(conn)
+		return nil
+	}
+	return errex.ErrReconnect
 }
 
 func NewUserManager() *UserManager {

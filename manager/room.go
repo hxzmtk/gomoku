@@ -53,6 +53,10 @@ func (m *RoomManager) JoinRoom(conn *httpserver.Conn, roomId int) error {
 	if !ok {
 		return errex.ErrNotExistedRoom
 	}
+	user := manager.UserManager.GetUser(conn)
+	if room.Master == user {
+		return errex.ErrInRoom
+	}
 	room.Enemy = manager.UserManager.GetUser(conn)
 	return nil
 
@@ -65,7 +69,7 @@ func (m *RoomManager) ChessboardWalk(conn *httpserver.Conn, roomId, x, y int) (c
 	}
 	user := manager.UserManager.GetUser(conn)
 	if room.Master != user && room.Enemy != user {
-		return chessboard.NilHand, errex.ErrInRoom
+		return chessboard.NilHand, errex.ErrNotInRoom
 	}
 	enemy := room.GetEnemy(user)
 	if enemy == nil {

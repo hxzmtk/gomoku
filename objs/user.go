@@ -14,3 +14,10 @@ func (user *User) SetConn(conn *httpserver.Conn) {
 func NewUser() *User {
 	return &User{}
 }
+
+func NewUserByConn(conn *httpserver.Conn)  *User {
+	return &User{
+		Username: conn.Username,
+		conn: conn,
+	}
+}
