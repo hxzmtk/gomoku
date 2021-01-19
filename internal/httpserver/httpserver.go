@@ -28,7 +28,6 @@ type IConn interface {
 
 type IMessage interface {
 	GetMsgId() int
-	ToBytes() []byte
 	SetMsgId(int)
 }
 
@@ -72,4 +71,18 @@ func Unmarshal(data []byte) (IMessage, error) {
 		return body, err
 	}
 	return nil, errors.New("msgId error")
+}
+
+func Marshal(msg IMessage) []byte {
+	byteArr, _ := json.Marshal(msg)
+	return byteArr
+}
+
+func getMsgId(msg IMessage) int {
+	for msgId := range msgTypes {
+		if reflect.TypeOf(msg).Elem() == msgTypes[msgId] {
+			return msgId
+		}
+	}
+	return 0
 }

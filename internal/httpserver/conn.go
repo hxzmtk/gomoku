@@ -74,7 +74,7 @@ func (c Conn) writePump() {
 			if err != nil {
 				return
 			}
-			w.Write(message.ToBytes())
+			w.Write(Marshal(message))
 
 			// Add queued chat messages to the current websocket message.
 			// n := len(c.send)
@@ -132,7 +132,7 @@ func (c *Conn) readPump() {
 }
 
 func (c *Conn) WriteMessage(msg IMessage) {
-	msg.SetMsgId(msg.GetMsgId())
+	msg.SetMsgId(getMsgId(msg))
 	c.send <- msg
 }
 
