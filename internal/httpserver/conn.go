@@ -39,6 +39,11 @@ type Conn struct {
 	hub      *Hub
 	Username string
 	send     chan IMessage
+	closed   bool
+}
+
+func (conn Conn) Online() bool {
+	return !conn.closed
 }
 
 func (conn Conn) GetId() int {
@@ -97,6 +102,7 @@ func (c *Conn) readPump() {
 	defer func() {
 		c.hub.unregister <- c
 		c.ws.Close()
+		c.closed = true
 	}()
 	c.ws.SetReadLimit(maxMessageSize)
 	c.ws.SetReadDeadline(time.Now().Add(pongWait))
@@ -112,7 +118,8 @@ func (c *Conn) readPump() {
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
 		rcv, err := Unmarshal(message)
 		if err != nil {
-			log.Errorf("error: %v", err)
+			log.Debugf("error: %v", err)
+			c.WriteMessage(&MsgErrorAck{Msg: "不支持的协议格式"})
 			continue
 		}
 		rcvMsg, err := DoHandle(c, rcv)

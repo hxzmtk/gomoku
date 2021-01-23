@@ -60,6 +60,7 @@ type MsgJoinRoomReq struct {
 
 type MsgJoinRoomAck struct {
 	msgUtil
+	RoomId int `json:"roomId"`
 }
 
 type MsgChessboardWalkReq struct {
@@ -86,3 +87,10 @@ type MsgConnectAck struct {
 	Username string `json:"username"`
 }
 
+type MsgStartGameReq struct {
+	msgUtil
+	RoomId int `json:"roomId"`
+}
+type MsgStartGameAck struct {
+	msgUtil
+}

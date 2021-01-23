@@ -61,7 +61,9 @@ func HandleJoinRoom(c httpserver.IConn, msg interface{}) (httpserver.IMessage, e
 	if err := m.RoomManager.JoinRoom(conn, req.RoomId); err != nil {
 		return nil, err
 	}
-	ack := &httpserver.MsgJoinRoomAck{}
+	ack := &httpserver.MsgJoinRoomAck{
+		RoomId: req.RoomId,
+	}
 	return ack, nil
 }
 
@@ -79,10 +81,21 @@ func HandleChessboardWalk(c httpserver.IConn, msg interface{}) (httpserver.IMess
 	return ack, nil
 }
 
+func HandleStartGame(c httpserver.IConn, msg interface{}) (httpserver.IMessage, error) {
+	conn := c.(*httpserver.Conn)
+	req := msg.(*httpserver.MsgStartGameReq)
+	if err := m.RoomManager.StartGame(conn, req.RoomId); err != nil {
+		return nil, err
+	}
+	ack := &httpserver.MsgStartGameAck{}
+	return ack, nil
+}
+
 func Register() {
 	httpserver.Register(httpserver.MsgConnect, HandleConnect)
 	httpserver.Register(httpserver.MsgListRoom, HandleListRoom)
 	httpserver.Register(httpserver.MsgCreateRoom, HandleCreateRoom)
 	httpserver.Register(httpserver.MsgJoinRoom, HandleJoinRoom)
 	httpserver.Register(httpserver.MsgChessboardWalk, HandleChessboardWalk)
+	httpserver.Register(httpserver.MsgStartGame, HandleStartGame)
 }

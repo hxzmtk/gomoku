@@ -11,12 +11,26 @@ let msgId = {
     'listRoom': 1,
     'createRoom' : 2,
     'joinRoom': 3,
-    'chessboardWalk': 4
+    'chessboardWalk': 4,
+    'startGame': 5,
+
+
+
+
+    'ntfJoinRoom': 1001,
+    'ntfStartGame': 1002,
+    'ntfWalk': 1003,
+    'ntfGameOver': 1004
 }
 
 let msgAck = {}
 
 let conn = undefined //保存websocket对象
+let user = {
+    "myhand": hand.nilHand,
+    "name": "",
+    "isMaster": false,
+}
 
 
 function connect(){
@@ -51,6 +65,15 @@ function joinRoom(roomId) {
     }))
 }
 
+function startRoom() {
+    conn.send(JSON.stringify({
+        "msgId":msgId.startGame,
+        "body": {
+            "roomId": parseInt(document.getElementById("room-number-info").innerHTML)
+        }
+    }))
+}
+
 //初始化二维数组
 function initPlace(row, col) {
     place = Array(row).fill(0).map(x => Array(col).fill(0));
@@ -64,6 +87,17 @@ function remain(x,y){
     }
     $(`#go-${x}-${y}`).addClass("chess-spinner");
     last_pos.x = x, last_pos.y = y;
+}
+
+// 落棋
+function walk(x, y, h) {
+    if (h == hand.blackHand){
+        document.getElementById(`go-${x}-${y}`).classList.add("b")
+    } else if(h == hand.whiteHand){
+        document.getElementById(`go-${x}-${y}`).classList.add("w")
+    } else {
+        document.getElementById(`go-${x}-${y}`).classList.remove("w b chess-spinner")
+    }
 }
 
 //生成棋盘
@@ -90,8 +124,12 @@ function handle(event) {
             return
         }
         switch (msg.msgId) {
+            case -msgId.error:
+                modalSystemMessage(msg.msg)
+                break;
             case -msgId.connect:
                 sessionStorage.setItem("un",msg.username)
+                user.name = msg.username
                 break;
             case -msgId.listRoom:
                 let tmp = ""
@@ -108,15 +146,34 @@ function handle(event) {
                 document.getElementById("dating-data").innerHTML = tmp
                 break;
             case -msgId.createRoom:
+                user.isMaster = true
                 generate_board(15,15)
                 document.getElementById("dating").classList.add("d-none")
                 document.getElementById("room").classList.remove("d-none")
                 document.getElementById("room-number-info").innerHTML = msg.roomId
                 break;
             case -msgId.joinRoom:
+                generate_board(15,15)
+                document.getElementById("dating").classList.add("d-none")
+                document.getElementById("room").classList.remove("d-none")
                 document.getElementById("room-number-info").innerHTML = msg.roomId
                 break;
             case -msgId.chessboardWalk:
+                break;
+            case -msgId.startGame:
+                break;
+            case msgId.ntfJoinRoom:
+                modalStartGame(msg.username)
+                break;
+            case msgId.ntfStartGame:
+                user.myhand = msgId.hand
+                if (!user.isMaster){modalSystemMessage("游戏开始了")}
+                break;
+            case msgId.ntfWalk:
+                walk(msg.x,msg.y,msg.hand)
+                break;
+            case msgId.ntfGameOver:
+                modalSystemMessage(msg.msg)
                 break;
             default:
                 break;
@@ -169,4 +226,26 @@ window.onload = function(){
             }));
         }
     }
+}
+
+function modalStartGame(username) {
+    let modalEl = document.getElementById('modalStartGame')
+    let body = modalEl.getElementsByClassName("modal-body")[0]
+    if (body != undefined && username =="") {
+        body.innerHTML = "请开始游戏"
+    }
+    body.textContent = `玩家:${username}加入游戏,可以开始游戏了`
+    let modal = new bootstrap.Modal(modalEl,{keyboard: false,backdrop:"static"})
+    modal.show()
+}
+
+function modalSystemMessage(message) {
+    let modalEl = document.getElementById('modalSystemMessage')
+    let body = modalEl.getElementsByClassName("modal-body")[0]
+    if (body == undefined || message == "" || message == undefined) {
+        return
+    }
+    body.textContent = message
+    let modal = new bootstrap.Modal(modalEl,{keyboard: false,backdrop:"static"})
+    modal.show()
 }

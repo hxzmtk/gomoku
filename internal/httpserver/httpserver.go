@@ -20,6 +20,14 @@ func init() {
 	msgTypes[-MsgJoinRoom] = reflect.TypeOf((*MsgJoinRoomAck)(nil)).Elem()
 	msgTypes[MsgChessboardWalk] = reflect.TypeOf((*MsgChessboardWalkReq)(nil)).Elem()
 	msgTypes[-MsgChessboardWalk] = reflect.TypeOf((*MsgChessboardWalkAck)(nil)).Elem()
+	msgTypes[MsgStartGame] = reflect.TypeOf((*MsgStartGameReq)(nil)).Elem()
+	msgTypes[-MsgStartGame] = reflect.TypeOf((*MsgStartGameAck)(nil)).Elem()
+
+	// ntf
+	msgTypes[ntfJoinRoom] = reflect.TypeOf((*NtfJoinRoom)(nil)).Elem()
+	msgTypes[ntfStartGame] = reflect.TypeOf((*NtfStartGame)(nil)).Elem()
+	msgTypes[ntfWalk] = reflect.TypeOf((*NtfWalk)(nil)).Elem()
+	msgTypes[ntfGameOver] = reflect.TypeOf((*NtfGameOver)(nil)).Elem()
 }
 
 type IConn interface {
@@ -42,6 +50,7 @@ const (
 	MsgCreateRoom
 	MsgJoinRoom
 	MsgChessboardWalk
+	MsgStartGame
 )
 
 var (

@@ -58,6 +58,7 @@ func (m *RoomManager) JoinRoom(conn *httpserver.Conn, roomId int) error {
 		return errex.ErrInRoom
 	}
 	room.Enemy = manager.UserManager.GetUser(conn)
+	room.NtfJoinRoom()
 	return nil
 
 }
@@ -75,10 +76,23 @@ func (m *RoomManager) ChessboardWalk(conn *httpserver.Conn, roomId, x, y int) (c
 	if enemy == nil {
 		return 0, errex.ErrNoEnemy
 	}
-	if !manager.ClientManager.IsOnline(enemy.Username) {
+	if !enemy.Online() {
 		return chessboard.NilHand, errex.ErrNotOnline
 	}
-	return chessboard.NilHand, nil
+	return room.GetMyHand(user), room.GoSet(user, x, y)
+}
+
+func (m *RoomManager) StartGame(conn *httpserver.Conn, roomId int) error {
+	room, ok := m.rooms[roomId]
+	if !ok {
+		return errex.ErrNotExistedRoom
+	}
+	user := manager.UserManager.GetUser(conn)
+	if room.Master != user {
+		return errex.ErrNotRoomMaster
+	}
+	room.Start()
+	return nil
 }
 
 func NewRoomManager() *RoomManager {
