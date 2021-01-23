@@ -7,7 +7,6 @@ import (
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
 	"github.com/zqhhh/gomoku/errex"
-	"github.com/zqhhh/gomoku/pkg/util"
 )
 
 type Pumper interface {
@@ -146,8 +145,7 @@ func (c *Conn) WriteMessage(msg IMessage) {
 func (c *Conn) Init() {
 }
 
-func NewConn(c *websocket.Conn, hub *Hub) *Conn {
-	username := util.GetRandomName()
+func NewConn(c *websocket.Conn, hub *Hub, username string) *Conn {
 	conn := &Conn{ws: c,
 		hub:      hub,
 		Username: username,

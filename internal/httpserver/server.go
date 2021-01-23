@@ -1,10 +1,12 @@
 package httpserver
 
 import (
+	"math/rand"
 	"net/http"
 	"reflect"
 	"runtime"
 	"sync"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -26,7 +28,7 @@ func (server *Server) handleWebsocket(c *gin.Context) {
 	if err != nil {
 		log.Info(err)
 	}
-	newConn := NewConn(ws, server.hub)
+	newConn := NewConn(ws, server.hub, server.RandomName())
 	newConn.Start()
 	newConn.Init()
 }
@@ -64,6 +66,22 @@ func (server *Server) Start() error {
 func (server *Server) CheckOnline(username string) bool {
 	_, ok := server.hub.clients[username]
 	return ok
+}
+
+func (server *Server) RandomName() string {
+	prefixStr := "abcdefghijklmnopqrstuvwxyz"
+	bytes := []byte(prefixStr)
+	result := []byte{}
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	for i := 0; i < 3; i++ {
+		result = append(result, bytes[r.Intn(len(bytes))])
+	}
+	str := "0123456789" + prefixStr
+	bytes = []byte(str)
+	for i := 0; i < 3; i++ {
+		result = append(result, bytes[r.Intn(len(bytes))])
+	}
+	return string(result)
 }
 
 var (
