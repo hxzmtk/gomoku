@@ -30,6 +30,7 @@ let user = {
     "myhand": hand.nilHand,
     "name": "",
     "isMaster": false,
+    "lastPos": {x:-1,y:-1}
 }
 
 
@@ -80,13 +81,12 @@ function initPlace(row, col) {
 }
 
 //使刚落下的棋子闪烁,用于提示
-function remain(x,y){
-    if (last_pos.x != -1  && last_pos.y != -1){
-        $(`#go-${last_pos.x}-${last_pos.y}`).removeClass("chess-spinner");
-        $(`#go-${x}-${y}`).addClass("chess-spinner");
+function mark(x,y){
+    if (user.lastPos.x != -1  && user.lastPos != -1){
+        document.getElementById(`go-${user.lastPos.x}-${user.lastPos.y}`).classList.remove("chess-spinner")
     }
-    $(`#go-${x}-${y}`).addClass("chess-spinner");
-    last_pos.x = x, last_pos.y = y;
+    document.getElementById(`go-${x}-${y}`).classList.add("chess-spinner");
+    user.lastPos.x = x, user.lastPos.y = y;
 }
 
 // 落棋
@@ -100,6 +100,31 @@ function walk(x, y, h) {
     }
 }
 
+function updateStatus(h){
+    let content = ""
+    let style = ""
+    if (h == hand.nilHand){
+        document.getElementById("chess-status").innerText = "无"
+        return
+    } else if (user.lastPos.x == -1 && h == hand.blackHand ){ // user.lastPos.x == -1 ，代表游戏刚刚开始，还没有棋子
+        style = "spinner-grow"
+        content = "轮到你了"
+    } else if (user.lastPos.x == -1 && h == hand.whiteHand ) { 
+        style = "spinner-border"
+        content = "对方思考中"
+    } else if (h == user.myhand){
+        style = "spinner-border"
+        content = "对方思考中"
+    } else {
+        style = "spinner-grow"
+        content = "轮到你了"
+    }
+    let elm = `<span>
+                <span class="${style} ${style}-sm text-primary" role="status" aria-hidden="true"></span>
+                <span style="font-size:0.5rem">${content}</span>
+            </span>`
+    document.getElementById("chess-status").innerHTML = elm
+}
 //生成棋盘
 function generate_board(row, col){
 
@@ -130,6 +155,7 @@ function handle(event) {
             case -msgId.connect:
                 sessionStorage.setItem("un",msg.username)
                 user.name = msg.username
+                document.getElementById("myname").innerText = user.name
                 break;
             case -msgId.listRoom:
                 let tmp = ""
@@ -166,11 +192,14 @@ function handle(event) {
                 modalStartGame(msg.username)
                 break;
             case msgId.ntfStartGame:
-                user.myhand = msgId.hand
+                user.myhand = msg.hand
                 if (!user.isMaster){modalSystemMessage("游戏开始了")}
+                updateStatus(msg.hand)
                 break;
             case msgId.ntfWalk:
                 walk(msg.x,msg.y,msg.hand)
+                mark(msg.x,msg.y)
+                updateStatus(msg.hand)
                 break;
             case msgId.ntfGameOver:
                 modalSystemMessage(msg.msg)
@@ -192,12 +221,7 @@ window.onload = function(){
         let retryTimes = 5;
         conn = createWs();
         conn.onclose = function (evt) {
-            if (retryTimes > 0) {
-                setTimeout(function(){
-                    conn = createWs()
-                },3000)
-                retryTimes--
-            }
+            conn = createWs()
         };
         conn.onmessage = function (evt) {
             // var messages = evt.data.split('\n');

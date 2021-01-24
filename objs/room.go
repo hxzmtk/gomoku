@@ -46,13 +46,12 @@ func (m *Room) Start() {
 }
 
 func (m *Room) ntfStartGame() {
-	masterHand := chessboard.WhiteHand
+	hand := chessboard.WhiteHand
 	if m.firstMove == m.Master {
-		masterHand = chessboard.BlackHand
+		hand = chessboard.BlackHand
 	}
-	enemyHand := masterHand.Reverse()
-	m.Master.Ntf(&httpserver.NtfStartGame{Hand: enemyHand})
-	m.Enemy.Ntf(&httpserver.NtfStartGame{Hand: enemyHand})
+	m.Master.Ntf(&httpserver.NtfStartGame{Hand: hand})
+	m.Enemy.Ntf(&httpserver.NtfStartGame{Hand: hand.Reverse()})
 }
 
 func (m *Room) NtfJoinRoom() {
@@ -95,7 +94,7 @@ func (m *Room) GoSet(user *User, x, y int) error {
 }
 
 func (m *Room) GetMyHand(user *User) chessboard.Hand {
-	if m.Master == user {
+	if m.firstMove == user {
 		return chessboard.BlackHand
 	}
 	return chessboard.WhiteHand

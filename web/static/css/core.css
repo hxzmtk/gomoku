@@ -47,6 +47,16 @@ i::after {
   border-right: 1px solid #333;
 }
 
+.chess-spinner {
+  display: inline-block;
+  vertical-align: text-bottom;
+  background-color: currentColor;
+  border-radius: 50%;
+  opacity: 0;
+  -webkit-animation: spinner-grow 3s linear infinite;
+  animation: spinner-grow 3s linear infinite;
+}
+
 @media (min-width: 200px) and (max-width: 500px) {
   i {
       position: relative;

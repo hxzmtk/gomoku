@@ -38,17 +38,11 @@
             <button type="button" class="btn btn-primary" onclick="createRoom()">创建房间</button>
           </div>
           <div class="row d-none" id="room">
-            <div class="col-lg-3 d-grid gap-2 col-sm-8 mx-auto">
-              <div class="col d-flex flex-lg-wrap">
-                <h6 class="mr-3">
-                    房间号: <span id="room-number-info">0</span>
-                </h6>
-                <h6 class="mr-3">
-                    昵称: <span id="myname" style="font-size:0.5rem">无</span>
-                </h6>
-                <h6 class="mr-3">
-                    状态: <span id="chess-status" class="text-danger">无</span>
-                </h6>
+            <div class="col-lg-3  col-sm-8 mx-auto">
+              <div class="row">
+                <div class="col-lg-12 col-sm-3 gy-2">房间号: <span id="room-number-info">0</span></div>
+                <div class="col-lg-12 col-sm-3 gy-2">昵称: <span id="myname" style="font-size:0.5rem">无</span></div>
+                <div class="col-lg-12 col-sm-6 gy-2">状态: <span id="chess-status" class="text-danger">无</span></div>
               </div>
             </div>
             <div class="col-lg-7 d-flex justify-content-center"><div id="go-board"></div></div>
@@ -58,9 +52,9 @@
                   控制面板
                 </button>
                 <div class="dropdown-menu border-0" aria-labelledby="room-panel">
-                    <button type="button" class="btn btn-secondary btn-sm d-grid gap-2" onclick="ConfirmGameStart()">开始游戏</button>
-                    <button type="button" class="btn btn-secondary btn-sm d-grid gap-2" onclick="ConfirmLeaveHome()">离开房间</button>
-                    <button type="button" class="btn btn-danger btn-sm d-grid gap-2" onclick="ConfirmGameRestart()">重开</button>
+                    <button type="button" class="btn btn-secondary btn-sm gy-2" onclick="ConfirmGameStart()">开始游戏</button>
+                    <button type="button" class="btn btn-secondary btn-sm gy-2" onclick="ConfirmLeaveHome()">离开房间</button>
+                    <button type="button" class="btn btn-danger btn-sm gy-2" onclick="ConfirmGameRestart()">重开</button>
                 </div>
               </div>
               <button type="button" class="btn btn-danger btn-sm"onclick="ConfirmRegret()" >悔棋</button>
