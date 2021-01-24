@@ -43,7 +43,7 @@ func (server *Server) init() {
 	engine.Static("/static", "web/static")
 
 	// load html template
-	engine.LoadHTMLFiles("web/chess.html", "web/ai.html", "web/index.html")
+	engine.LoadHTMLFiles("web/index.html")
 
 	engine.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.html", gin.H{
