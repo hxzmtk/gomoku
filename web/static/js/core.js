@@ -273,3 +273,19 @@ function modalSystemMessage(message) {
     let modal = new bootstrap.Modal(modalEl,{keyboard: false,backdrop:"static"})
     modal.show()
 }
+
+function btnGameStart() {
+
+}
+
+function btnLeaveRoom() {
+
+}
+
+function btnLeaveRoom() {
+
+}
+
+function btnRegret() {
+    
+}

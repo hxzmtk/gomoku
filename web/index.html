@@ -43,19 +43,16 @@
               </div>
             </div>
             <div class="col-lg-7 d-flex justify-content-center"><div id="go-board"></div></div>
-            <div class="col-lg-2 d-sm-grid gap-2 col-sm-8 mx-auto">
-              <div class="btn-group d-grid gap-2" role="group">
-                <button id="room-panel" type="button" class="btn btn-primary btn-smdropdown-toggle  col-12" data-bs-toggle="dropdown" aria-expanded="false">
-                  控制面板
-                </button>
-                <div class="dropdown-menu border-0" aria-labelledby="room-panel">
-                    <button type="button" class="btn btn-secondary btn-sm gy-2" onclick="ConfirmGameStart()">开始游戏</button>
-                    <button type="button" class="btn btn-secondary btn-sm gy-2" onclick="ConfirmLeaveHome()">离开房间</button>
-                    <button type="button" class="btn btn-danger btn-sm gy-2" onclick="ConfirmGameRestart()">重开</button>
-                </div>
+            <div class="col-lg-2 col-sm-10 mx-auto">
+              <div class="row">
+                <div class="col-lg-12 col-sm-3 gy-1 d-lg-grid"><button type="button" class="btn btn-secondary btn-sm" onclick="btnGameStart()">开始游戏</button></div>
+                <div class="col-lg-12 col-sm-3 gy-1 d-lg-grid"><button type="button" class="btn btn-secondary btn-sm" onclick="btnLeaveRoom()">离开房间</button></div>
+                <div class="col-lg-12 col-sm-3 gy-1 d-lg-grid"><button type="button" class="btn btn-danger btn-sm" onclick="btnGameRestart()">重开</button></div>
+                <div class="col-lg-12 col-sm-3 gy-1 d-lg-grid"><button type="button" class="btn btn-danger btn-sm" onclick="btnRegret()" >悔棋</button></div>
               </div>
-              <button type="button" class="btn btn-danger btn-sm"onclick="ConfirmRegret()" >悔棋</button>
-              <button type="button" class="btn btn-secondary btn-sm mb-0">About</button>
+              <div class="row">
+                <div class="col-lg-12 gy-1 d-grid"><button type="button" class="btn btn-secondary btn-sm mb-0">About</button></div>
+              </div>
             </div>
           </div>
 
