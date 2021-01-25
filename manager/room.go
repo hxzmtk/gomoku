@@ -57,7 +57,12 @@ func (m *RoomManager) JoinRoom(conn *httpserver.Conn, roomId int) error {
 	if room.Master == user {
 		return errex.ErrInRoom
 	}
-	room.Enemy = manager.UserManager.GetUser(conn)
+
+	if room.Master == nil && room.Enemy == nil {
+		room.Master = user
+	} else {
+		room.Enemy = manager.UserManager.GetUser(conn)
+	}
 	room.NtfJoinRoom()
 	return nil
 
@@ -83,9 +88,12 @@ func (m *RoomManager) ChessboardWalk(conn *httpserver.Conn, roomId, x, y int) (c
 }
 
 func (m *RoomManager) StartGame(conn *httpserver.Conn, roomId int) error {
-	room, ok := m.rooms[roomId]
-	if !ok {
-		return errex.ErrNotExistedRoom
+	room, err := m.getRoom(roomId)
+	if err != nil {
+		return err
+	}
+	if room.Started {
+		return errex.ErrGameStarted
 	}
 	user := manager.UserManager.GetUser(conn)
 	if room.Master != user {
@@ -93,6 +101,37 @@ func (m *RoomManager) StartGame(conn *httpserver.Conn, roomId int) error {
 	}
 	room.Start()
 	return nil
+}
+
+func (m *RoomManager) RestartGame(conn *httpserver.Conn, roomId int) error {
+	room, err := m.getRoom(roomId)
+	if err != nil {
+		return err
+	}
+	user := manager.UserManager.GetUser(conn)
+	if room.Master != user {
+		return errex.ErrNotRoomMaster
+	}
+	room.Restart()
+	return nil
+}
+
+func (m *RoomManager) LeaveRoom(conn *httpserver.Conn, roomId int) error {
+	room, err := m.getRoom(roomId)
+	if err != nil {
+		return err
+	}
+	user := manager.UserManager.GetUser(conn)
+	room.Leave(user)
+	return nil
+}
+
+func (m *RoomManager) getRoom(roomId int) (*objs.Room, error) {
+	room, ok := m.rooms[roomId]
+	if !ok {
+		return nil, errex.ErrNotExistedRoom
+	}
+	return room, nil
 }
 
 func NewRoomManager() *RoomManager {

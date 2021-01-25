@@ -13,4 +13,5 @@ var (
 	ErrNotCurrentYou  = Create(-10, "还没有轮到您")
 	ErrGameOver       = Create(-11, "已分出胜负了")
 	ErrInvalidPos     = Create(-12, "无效的位置")
+	ErrGameStarted    = Create(-13, "游戏已经开始了")
 )

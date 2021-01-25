@@ -91,6 +91,24 @@ func HandleStartGame(c httpserver.IConn, msg interface{}) (httpserver.IMessage, 
 	return ack, nil
 }
 
+func HandleRestartGame(c httpserver.IConn, msg interface{}) (httpserver.IMessage, error) {
+	req := msg.(*httpserver.MsgRestartGameReq)
+	if err := m.RoomManager.RestartGame(c.(*httpserver.Conn), req.RoomId); err != nil {
+		return nil, err
+	}
+	ack := &httpserver.MsgStartGameAck{}
+	return ack, nil
+}
+
+func HandleLeaveRoom(c httpserver.IConn, msg interface{}) (httpserver.IMessage, error) {
+	req := msg.(*httpserver.MsgLeaveRoomReq)
+	if err := m.RoomManager.LeaveRoom(c.(*httpserver.Conn), req.RoomId); err != nil {
+		return nil, err
+	}
+	ack := &httpserver.MsgLeaveRoomAck{}
+	return ack, nil
+}
+
 func Register() {
 	httpserver.Register(httpserver.MsgConnect, HandleConnect)
 	httpserver.Register(httpserver.MsgListRoom, HandleListRoom)
@@ -98,4 +116,6 @@ func Register() {
 	httpserver.Register(httpserver.MsgJoinRoom, HandleJoinRoom)
 	httpserver.Register(httpserver.MsgChessboardWalk, HandleChessboardWalk)
 	httpserver.Register(httpserver.MsgStartGame, HandleStartGame)
+	httpserver.Register(httpserver.MsgRestartGame, HandleRestartGame)
+	httpserver.Register(httpserver.MsgLeaveRoom, HandleLeaveRoom)
 }

@@ -17,6 +17,7 @@ type Room struct {
 	winner      *User
 	watch       map[string]*User
 	chessboard  chessboard.Node
+	Started     bool
 }
 
 func (m *Room) GetEnemy(user *User) *User {
@@ -33,8 +34,15 @@ func (m *Room) IsFull() bool {
 	return false
 }
 
-func (m *Room) Start() {
+func (m *Room) reset() {
 	m.chessboard.Reset()
+	m.Started = false
+	m.firstMove = nil
+	m.currentMove = nil
+	m.winner = nil
+}
+
+func (m *Room) random() {
 	randId := rand.Intn(2)
 	if randId == 0 {
 		m.firstMove = m.Master
@@ -42,7 +50,34 @@ func (m *Room) Start() {
 		m.firstMove = m.Enemy
 	}
 	m.currentMove = m.firstMove
+}
+
+func (m *Room) Start() {
+	m.reset()
+	m.random()
+	m.Started = true
 	m.ntfStartGame()
+}
+
+func (m *Room) Restart() {
+	m.reset()
+	m.random()
+	m.Started = true
+	m.ntfRestartGame()
+}
+
+func (m *Room) Leave(user *User) {
+	if m.Master != user && m.Enemy != user {
+		return
+	}
+	m.reset()
+	if m.Master == user { //转移房主
+		m.Master = m.Enemy
+	}
+	m.Enemy = nil
+	if m.Master != nil {
+		m.Master.Ntf(&httpserver.NtfLeaveRoom{})
+	}
 }
 
 func (m *Room) ntfStartGame() {
@@ -54,8 +89,21 @@ func (m *Room) ntfStartGame() {
 	m.Enemy.Ntf(&httpserver.NtfStartGame{Hand: hand.Reverse()})
 }
 
+func (m *Room) ntfRestartGame() {
+	hand := chessboard.WhiteHand
+	if m.firstMove == m.Master {
+		hand = chessboard.BlackHand
+	}
+	m.Master.Ntf(&httpserver.NtfRestartGame{Hand: hand})
+	m.Enemy.Ntf(&httpserver.NtfRestartGame{Hand: hand.Reverse()})
+}
+
 func (m *Room) NtfJoinRoom() {
-	m.Master.Ntf(&httpserver.NtfJoinRoom{Username: m.Enemy.Username})
+	user := m.Enemy
+	if user == nil {
+		user = m.Master
+	}
+	m.Master.Ntf(&httpserver.NtfJoinRoom{Username: user.Username})
 }
 
 func (m *Room) ntfWalk(x, y int, hand chessboard.Hand) {

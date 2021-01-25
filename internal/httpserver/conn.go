@@ -138,6 +138,9 @@ func (c *Conn) readPump() {
 }
 
 func (c *Conn) WriteMessage(msg IMessage) {
+	if msg == nil {
+		return
+	}
 	msg.SetMsgId(getMsgId(msg))
 	c.send <- msg
 }

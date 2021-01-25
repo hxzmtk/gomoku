@@ -115,6 +115,11 @@ func Register(msgId int, handle HandleFunc) {
 }
 
 func DoHandle(conn *Conn, p IMessage) (IMessage, error) {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Errorln(err)
+		}
+	}()
 	handle, ok := srv.handlers[p.GetMsgId()]
 	if !ok {
 		log.Errorf("handle not existed,msgId:%d", p.GetMsgId())

@@ -94,3 +94,21 @@ type MsgStartGameReq struct {
 type MsgStartGameAck struct {
 	msgUtil
 }
+
+type MsgRestartGameReq struct {
+	msgUtil
+	RoomId int `json:"roomId"`
+}
+
+type MsgRestartGameAck struct {
+	msgUtil
+}
+
+type MsgLeaveRoomReq struct {
+	msgUtil
+	RoomId int `json:"roomId"`
+}
+
+type MsgLeaveRoomAck struct {
+	msgUtil
+}

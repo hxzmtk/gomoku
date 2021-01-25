@@ -8,6 +8,8 @@ const (
 	ntfStartGame
 	ntfWalk
 	ntfGameOver
+	ntfRestartGame
+	ntfLeaveRoom
 )
 
 type NtfJoinRoom struct {
@@ -30,4 +32,13 @@ type NtfWalk struct {
 type NtfGameOver struct {
 	msgUtil
 	Msg string `json:"msg"`
+}
+
+type NtfRestartGame struct {
+	msgUtil
+	Hand chessboard.Hand `json:"hand"`
+}
+
+type NtfLeaveRoom struct {
+	msgUtil
 }

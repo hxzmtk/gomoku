@@ -13,6 +13,8 @@ let msgId = {
     'joinRoom': 3,
     'chessboardWalk': 4,
     'startGame': 5,
+    'restartGame': 6,
+    'leaveRoom': 7,
 
 
 
@@ -20,7 +22,9 @@ let msgId = {
     'ntfJoinRoom': 1001,
     'ntfStartGame': 1002,
     'ntfWalk': 1003,
-    'ntfGameOver': 1004
+    'ntfGameOver': 1004,
+    'ntfRestartGame': 1005,
+    'ntfLeaveRoom': 1006,
 }
 
 let msgAck = {}
@@ -31,6 +35,15 @@ let user = {
     "name": "",
     "isMaster": false,
     "lastPos": {x:-1,y:-1}
+}
+
+function resetGame() {
+    user.myhand = hand.nilHand
+    user.lastPos.x = -1
+    user.lastPos.y = -1
+    updateStatus(hand.nilHand)
+    document.getElementById("go-board").innerHTML = ""
+    generate_board(15,15)
 }
 
 
@@ -66,9 +79,18 @@ function joinRoom(roomId) {
     }))
 }
 
-function startRoom() {
+function startGame() {
     conn.send(JSON.stringify({
         "msgId":msgId.startGame,
+        "body": {
+            "roomId": parseInt(document.getElementById("room-number-info").innerHTML)
+        }
+    }))
+}
+
+function restartGame() {
+    conn.send(JSON.stringify({
+        "msgId":msgId.restartGame,
         "body": {
             "roomId": parseInt(document.getElementById("room-number-info").innerHTML)
         }
@@ -160,6 +182,7 @@ function handle(event) {
             case -msgId.listRoom:
                 let tmp = ""
                 msg.data.forEach(element => {
+                    element.master = element.master == "" ? "无":element.master
                     element.enemy = element.enemy == "" ? "无":element.enemy
                     isDisabled = element.isFull == true ? "disabled": ""
                     tmp += `<tr>
@@ -188,8 +211,23 @@ function handle(event) {
                 break;
             case -msgId.startGame:
                 break;
+            case -msgId.restartGame:
+                modalSystemMessage("游戏已重开")
+                break;
+
+            case -msgId.leaveRoom:
+                document.getElementById("dating").classList.remove("d-none")
+                document.getElementById("room").classList.add("d-none")
+                listRoom()
+                resetGame()
+                break;
+
             case msgId.ntfJoinRoom:
-                modalStartGame(msg.username)
+                if (msg.username == user.name) {
+                    modalSystemMessage("您成为房主了")
+                }else {
+                    modalStartGame(msg.username)
+                }
                 break;
             case msgId.ntfStartGame:
                 user.myhand = msg.hand
@@ -203,6 +241,21 @@ function handle(event) {
                 break;
             case msgId.ntfGameOver:
                 modalSystemMessage(msg.msg)
+                break;
+            case msgId.ntfRestartGame:
+                resetGame()
+                user.myhand = msg.hand
+                if (!user.isMaster){modalSystemMessage("房主重开了游戏")}
+                updateStatus(msg.hand)
+                break;
+            case msgId.ntfLeaveRoom:
+                if (!user.isMaster){
+                    modalSystemMessage("对方离开了,您已成为房主")
+                    user.isMaster = true
+                }else {
+                    modalSystemMessage("对方离开了该房间")
+                }
+                resetGame()
                 break;
             default:
                 break;
@@ -275,15 +328,20 @@ function modalSystemMessage(message) {
 }
 
 function btnGameStart() {
-
+    startGame()
 }
 
 function btnLeaveRoom() {
-
+    conn.send(JSON.stringify({
+        "msgId":msgId.leaveRoom,
+        "body": {
+            "roomId": parseInt(document.getElementById("room-number-info").innerHTML)
+        }
+    }))
 }
 
-function btnLeaveRoom() {
-
+function btnGameRestart() {
+    restartGame()
 }
 
 function btnRegret() {
