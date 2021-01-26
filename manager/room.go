@@ -27,6 +27,14 @@ func (m *RoomManager) addRoom(room *objs.Room) {
 	m.rooms[room.Id] = room
 }
 
+func (m *RoomManager) addUserRecord(username string, roomId int) {
+	m.users[username] = roomId
+}
+
+func (m *RoomManager) deleteUserRecord(username string) {
+	delete(m.users, username)
+}
+
 func (m *RoomManager) ListRooms() []objs.Room {
 	rooms := make([]objs.Room, 0)
 	for _, room := range m.rooms {
@@ -44,6 +52,7 @@ func (m *RoomManager) CreateRoom(conn *httpserver.Conn) (*objs.Room, error) {
 	newRoom.Id = m.newRoomId()
 	newRoom.Master = manager.UserManager.GetUser(conn)
 	m.addRoom(newRoom)
+	m.addUserRecord(newRoom.Master.Username, newRoom.Id)
 	return newRoom, nil
 
 }
@@ -64,6 +73,7 @@ func (m *RoomManager) JoinRoom(conn *httpserver.Conn, roomId int) error {
 		room.Enemy = manager.UserManager.GetUser(conn)
 	}
 	room.NtfJoinRoom()
+	m.addUserRecord(user.Username, room.Id)
 	return nil
 
 }
@@ -74,6 +84,9 @@ func (m *RoomManager) ChessboardWalk(conn *httpserver.Conn, roomId, x, y int) (c
 		return chessboard.NilHand, errex.ErrNotExistedRoom
 	}
 	user := manager.UserManager.GetUser(conn)
+	if room.CheckIsWathingUser(user.Username) {
+		return chessboard.NilHand, errex.ErrIsWatchingUser
+	}
 	if room.Master != user && room.Enemy != user {
 		return chessboard.NilHand, errex.ErrNotInRoom
 	}
@@ -123,6 +136,20 @@ func (m *RoomManager) LeaveRoom(conn *httpserver.Conn, roomId int) error {
 	}
 	user := manager.UserManager.GetUser(conn)
 	room.Leave(user)
+	m.deleteUserRecord(user.Username)
+	return nil
+}
+
+func (m *RoomManager) WatchGame(conn *httpserver.Conn, roomId int) error {
+	room, err := m.getRoom(roomId)
+	if err != nil {
+		return err
+	}
+	user := manager.UserManager.GetUser(conn)
+	if err := room.JoinWatch(user); err != nil {
+		return err
+	}
+	m.addUserRecord(user.Username, roomId)
 	return nil
 }
 

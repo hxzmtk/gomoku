@@ -109,6 +109,16 @@ func HandleLeaveRoom(c httpserver.IConn, msg interface{}) (httpserver.IMessage, 
 	return ack, nil
 }
 
+// 请求观战
+func HandleWatchGame(c httpserver.IConn, msg interface{}) (httpserver.IMessage, error) {
+	req := msg.(*httpserver.MsgWatchGameReq)
+	if err := m.RoomManager.WatchGame(c.(*httpserver.Conn), req.RoomId); err != nil {
+		return nil, err
+	}
+	ack := &httpserver.MsgWatchGameAck{RoomId: req.RoomId}
+	return ack, nil
+}
+
 func Register() {
 	httpserver.Register(httpserver.MsgConnect, HandleConnect)
 	httpserver.Register(httpserver.MsgListRoom, HandleListRoom)
@@ -118,4 +128,5 @@ func Register() {
 	httpserver.Register(httpserver.MsgStartGame, HandleStartGame)
 	httpserver.Register(httpserver.MsgRestartGame, HandleRestartGame)
 	httpserver.Register(httpserver.MsgLeaveRoom, HandleLeaveRoom)
+	httpserver.Register(httpserver.MsgWatchGame, HandleWatchGame)
 }

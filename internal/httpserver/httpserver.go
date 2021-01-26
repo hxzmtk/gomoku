@@ -26,6 +26,8 @@ func init() {
 	msgTypes[-MsgRestartGame] = reflect.TypeOf((*MsgRestartGameAck)(nil)).Elem()
 	msgTypes[MsgLeaveRoom] = reflect.TypeOf((*MsgLeaveRoomReq)(nil)).Elem()
 	msgTypes[-MsgLeaveRoom] = reflect.TypeOf((*MsgLeaveRoomAck)(nil)).Elem()
+	msgTypes[MsgWatchGame] = reflect.TypeOf((*MsgWatchGameReq)(nil)).Elem()
+	msgTypes[-MsgWatchGame] = reflect.TypeOf((*MsgWatchGameAck)(nil)).Elem()
 
 	// ntf
 	msgTypes[ntfJoinRoom] = reflect.TypeOf((*NtfJoinRoom)(nil)).Elem()
@@ -34,6 +36,7 @@ func init() {
 	msgTypes[ntfGameOver] = reflect.TypeOf((*NtfGameOver)(nil)).Elem()
 	msgTypes[ntfRestartGame] = reflect.TypeOf((*NtfRestartGame)(nil)).Elem()
 	msgTypes[ntfLeaveRoom] = reflect.TypeOf((*NtfLeaveRoom)(nil)).Elem()
+	msgTypes[ntfWalkWatchingUser] = reflect.TypeOf((*NtfWalkWatchingUser)(nil)).Elem()
 }
 
 type IConn interface {
@@ -59,6 +62,7 @@ const (
 	MsgStartGame
 	MsgRestartGame
 	MsgLeaveRoom
+	MsgWatchGame
 )
 
 var (

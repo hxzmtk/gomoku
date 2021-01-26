@@ -112,3 +112,13 @@ type MsgLeaveRoomReq struct {
 type MsgLeaveRoomAck struct {
 	msgUtil
 }
+
+type MsgWatchGameReq struct {
+	msgUtil
+	RoomId int `json:"roomId"`
+}
+
+type MsgWatchGameAck struct {
+	msgUtil
+	RoomId int `json:"roomId"`
+}

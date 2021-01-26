@@ -14,4 +14,6 @@ var (
 	ErrGameOver       = Create(-11, "已分出胜负了")
 	ErrInvalidPos     = Create(-12, "无效的位置")
 	ErrGameStarted    = Create(-13, "游戏已经开始了")
+	ErrHasInRoom      = Create(-14, "您已在房间中")
+	ErrIsWatchingUser = Create(-15, "您是观战用户")
 )

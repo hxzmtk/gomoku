@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"reflect"
 	"runtime"
+	"runtime/debug"
 	"sync"
 	"time"
 
@@ -117,7 +118,7 @@ func Register(msgId int, handle HandleFunc) {
 func DoHandle(conn *Conn, p IMessage) (IMessage, error) {
 	defer func() {
 		if err := recover(); err != nil {
-			log.Errorln(err)
+			log.Errorln(debug.Stack())
 		}
 	}()
 	handle, ok := srv.handlers[p.GetMsgId()]

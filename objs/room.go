@@ -18,6 +18,7 @@ type Room struct {
 	watch       map[string]*User
 	chessboard  chessboard.Node
 	Started     bool
+	latest      chessboard.XY
 }
 
 func (m *Room) GetEnemy(user *User) *User {
@@ -68,6 +69,7 @@ func (m *Room) Restart() {
 
 func (m *Room) Leave(user *User) {
 	if m.Master != user && m.Enemy != user {
+		delete(m.watch, user.Username)
 		return
 	}
 	m.reset()
@@ -78,6 +80,23 @@ func (m *Room) Leave(user *User) {
 	if m.Master != nil {
 		m.Master.Ntf(&httpserver.NtfLeaveRoom{})
 	}
+}
+
+func (m *Room) JoinWatch(user *User) error {
+	if m.Master == user || m.Enemy == user {
+		return errex.ErrHasInRoom
+	}
+	if _, ok := m.watch[user.Username]; ok {
+		return errex.ErrInRoom
+	}
+	m.watch[user.Username] = user
+	user.Ntf(&httpserver.NtfWalkWatchingUser{Walks: m.chessboard.GetState(), Latest: m.latest})
+	return nil
+}
+
+func (m *Room) CheckIsWathingUser(username string) bool {
+	_, ok := m.watch[username]
+	return ok
 }
 
 func (m *Room) ntfStartGame() {
@@ -109,6 +128,11 @@ func (m *Room) NtfJoinRoom() {
 func (m *Room) ntfWalk(x, y int, hand chessboard.Hand) {
 	m.Master.Ntf(&httpserver.NtfWalk{X: x, Y: y, Hand: hand})
 	m.Enemy.Ntf(&httpserver.NtfWalk{X: x, Y: y, Hand: hand})
+
+	walks := m.chessboard.GetState()
+	for _, user := range m.watch {
+		user.Ntf(&httpserver.NtfWalkWatchingUser{Walks: walks, Latest: chessboard.XY{X: x, Y: y, Hand: hand}})
+	}
 }
 
 func (m *Room) ntfGameOver() {
@@ -132,6 +156,7 @@ func (m *Room) GoSet(user *User, x, y int) error {
 	if !success {
 		return errex.ErrInvalidPos
 	}
+	m.latest.X, m.latest.Y, m.latest.Hand = x, y, m.GetMyHand(user)
 	m.currentMove = m.GetEnemy(user)
 	m.ntfWalk(x, y, m.GetMyHand(user))
 	if m.chessboard.IsWin(x, y) {

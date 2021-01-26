@@ -15,6 +15,7 @@ let msgId = {
     'startGame': 5,
     'restartGame': 6,
     'leaveRoom': 7,
+    'watchGame': 8,
 
 
 
@@ -25,6 +26,7 @@ let msgId = {
     'ntfGameOver': 1004,
     'ntfRestartGame': 1005,
     'ntfLeaveRoom': 1006,
+    'ntfWalkWatchingUser': 1007,
 }
 
 let msgAck = {}
@@ -97,6 +99,15 @@ function restartGame() {
     }))
 }
 
+function watchGame(roomId) {
+    conn.send(JSON.stringify({
+        "msgId":msgId.watchGame,
+        "body": {
+            "roomId": parseInt(roomId)
+        }
+    }))
+}
+
 //初始化二维数组
 function initPlace(row, col) {
     place = Array(row).fill(0).map(x => Array(col).fill(0));
@@ -118,7 +129,7 @@ function walk(x, y, h) {
     } else if(h == hand.whiteHand){
         document.getElementById(`go-${x}-${y}`).classList.add("w")
     } else {
-        document.getElementById(`go-${x}-${y}`).classList.remove("w b chess-spinner")
+        document.getElementById(`go-${x}-${y}`).classList.remove("w", "b", "chess-spinner")
     }
 }
 
@@ -185,11 +196,13 @@ function handle(event) {
                     element.master = element.master == "" ? "无":element.master
                     element.enemy = element.enemy == "" ? "无":element.enemy
                     isDisabled = element.isFull == true ? "disabled": ""
+                    funcName = element.isFull == true ? "watchGame": "joinRoom"
+                    info = element.isFull == true ? "观战": "加入"
                     tmp += `<tr>
                     <th scope="row">${element.roomId}</th>
                     <td>${element.master}</td>
                     <td>${element.enemy}</td>
-                    <td><button type="button" class="btn btn-sm btn-primary" onclick="joinRoom(${element.roomId})"  ${isDisabled}>加入</button></td>
+                    <td><button type="button" class="btn btn-sm btn-primary" onclick="${funcName}(${element.roomId})">${info}</button></td>
                   </tr>`
                 });
                 document.getElementById("dating-data").innerHTML = tmp
@@ -220,6 +233,11 @@ function handle(event) {
                 document.getElementById("room").classList.add("d-none")
                 listRoom()
                 resetGame()
+                break;
+            case -msgId.watchGame:
+                document.getElementById("dating").classList.add("d-none")
+                document.getElementById("room").classList.remove("d-none")
+                document.getElementById("room-number-info").innerHTML = msg.roomId
                 break;
 
             case msgId.ntfJoinRoom:
@@ -257,6 +275,12 @@ function handle(event) {
                 }
                 resetGame()
                 break;
+            case msgId.ntfWalkWatchingUser:
+                msg.walks.forEach(element =>{
+                    walk(element.x,element.y,element.hand)
+                })
+                mark(msg.latest.x,msg.latest.y)
+                break;
             default:
                 break;
         }
@@ -287,7 +311,7 @@ window.onload = function(){
           listRoom()
         };
     }
-
+    generate_board(15,15)
     document.getElementById("go-board").onclick = function(e) {
         if (e.target.id.startsWith("go-")){
             let arr = e.target.id.split("-");

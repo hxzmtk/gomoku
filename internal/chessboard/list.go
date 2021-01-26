@@ -321,7 +321,7 @@ func (n *node) GetState() (xy XYS) {
 	for x := 0; x < n.getWidth(); x++ {
 		for y := 0; y < n.getHeight(); y++ {
 			offset := n.get(x, y)
-			if offset != nil {
+			if offset != nil && offset.value != NilHand {
 				xy = append(xy, XY{
 					X:    x,
 					Y:    y,

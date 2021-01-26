@@ -10,6 +10,7 @@ const (
 	ntfGameOver
 	ntfRestartGame
 	ntfLeaveRoom
+	ntfWalkWatchingUser
 )
 
 type NtfJoinRoom struct {
@@ -41,4 +42,10 @@ type NtfRestartGame struct {
 
 type NtfLeaveRoom struct {
 	msgUtil
+}
+
+type NtfWalkWatchingUser struct {
+	msgUtil
+	Walks  chessboard.XYS `json:"walks"`
+	Latest chessboard.XY  `json:"latest"`
 }
