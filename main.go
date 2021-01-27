@@ -8,13 +8,11 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/zqhhh/gomoku/handler"
 	"github.com/zqhhh/gomoku/manager"
-	"github.com/zqhhh/gomoku/model"
 )
 
 func init() {
 	log.SetLevel(log.DebugLevel)
 	log.SetFormatter(&log.TextFormatter{})
-	model.Start()
 }
 
 func main() {
