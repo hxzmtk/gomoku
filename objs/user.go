@@ -1,10 +1,15 @@
 package objs
 
-import "github.com/zqhhh/gomoku/internal/httpserver"
+import (
+	"time"
+
+	"github.com/zqhhh/gomoku/internal/httpserver"
+)
 
 type User struct {
-	Username string
-	conn     *httpserver.Conn
+	Username   string
+	conn       *httpserver.Conn
+	CreateTime time.Time
 }
 
 func (user *User) SetConn(conn *httpserver.Conn) {
@@ -20,12 +25,15 @@ func (user *User) Online() bool {
 }
 
 func NewUser() *User {
-	return &User{}
+	return &User{
+		CreateTime: time.Now(),
+	}
 }
 
-func NewUserByConn(conn *httpserver.Conn) *User {
+func NewUserByConn(user *User, conn *httpserver.Conn) *User {
 	return &User{
-		Username: conn.Username,
-		conn:     conn,
+		Username:   conn.Username,
+		conn:       conn,
+		CreateTime: user.CreateTime,
 	}
 }

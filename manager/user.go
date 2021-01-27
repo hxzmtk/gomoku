@@ -37,7 +37,7 @@ func (m *UserManager) reconnect(conn *httpserver.Conn) error {
 	username := conn.Username
 	user, ok := m.users[username]
 	if ok {
-		*user = *objs.NewUserByConn(conn)
+		*user = *objs.NewUserByConn(user, conn)
 		return nil
 	}
 	return errex.ErrReconnect

@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"sync"
 	"sync/atomic"
 
 	"github.com/zqhhh/gomoku/errex"
@@ -13,6 +14,7 @@ type RoomManager struct {
 	rooms  map[int]*objs.Room
 	users  map[string]int // key=username, value=roomId
 	roomId int32
+	mux    sync.Mutex
 }
 
 func (RoomManager) Init() error {
@@ -48,8 +50,7 @@ func (m *RoomManager) CreateRoom(conn *httpserver.Conn) (*objs.Room, error) {
 	if ok {
 		return nil, errex.ErrDupCreateRoom
 	}
-	newRoom := objs.NewRoom()
-	newRoom.Id = m.newRoomId()
+	newRoom := m.createRoom()
 	newRoom.Master = manager.UserManager.GetUser(conn)
 	m.addRoom(newRoom)
 	m.addUserRecord(newRoom.Master.Username, newRoom.Id)
@@ -112,6 +113,9 @@ func (m *RoomManager) StartGame(conn *httpserver.Conn, roomId int) error {
 	if room.Master != user {
 		return errex.ErrNotRoomMaster
 	}
+	if room.Enemy == nil {
+		return errex.ErrNoEnemy
+	}
 	room.Start()
 	return nil
 }
@@ -124,6 +128,9 @@ func (m *RoomManager) RestartGame(conn *httpserver.Conn, roomId int) error {
 	user := manager.UserManager.GetUser(conn)
 	if room.Master != user {
 		return errex.ErrNotRoomMaster
+	}
+	if room.Enemy == nil {
+		return errex.ErrNoEnemy
 	}
 	room.Restart()
 	return nil
@@ -159,6 +166,19 @@ func (m *RoomManager) getRoom(roomId int) (*objs.Room, error) {
 		return nil, errex.ErrNotExistedRoom
 	}
 	return room, nil
+}
+
+func (m *RoomManager) createRoom() *objs.Room {
+	m.mux.Lock()
+	defer m.mux.Unlock()
+	for _, m := range m.rooms {
+		if m.IsEmpty() {
+			return m
+		}
+	}
+	newRoom := objs.NewRoom()
+	newRoom.Id = m.newRoomId()
+	return newRoom
 }
 
 func NewRoomManager() *RoomManager {

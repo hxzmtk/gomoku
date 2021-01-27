@@ -35,6 +35,10 @@ func (m *Room) IsFull() bool {
 	return false
 }
 
+func (m *Room) IsEmpty() bool {
+	return m.Master == nil && m.Enemy == nil
+}
+
 func (m *Room) reset() {
 	m.chessboard.Reset()
 	m.Started = false
