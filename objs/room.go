@@ -18,7 +18,7 @@ type Room struct {
 	watch       map[string]*User
 	chessboard  chessboard.Node
 	Started     bool
-	latest      chessboard.XY
+	Latest      chessboard.XY
 }
 
 func (m *Room) GetEnemy(user *User) *User {
@@ -94,7 +94,7 @@ func (m *Room) JoinWatch(user *User) error {
 		return errex.ErrInRoom
 	}
 	m.watch[user.Username] = user
-	user.Ntf(&httpserver.NtfWalkWatchingUser{Walks: m.chessboard.GetState(), Latest: m.latest})
+	user.Ntf(&httpserver.NtfWalkWatchingUser{Walks: m.chessboard.GetState(), Latest: m.Latest})
 	return nil
 }
 
@@ -160,7 +160,7 @@ func (m *Room) GoSet(user *User, x, y int) error {
 	if !success {
 		return errex.ErrInvalidPos
 	}
-	m.latest.X, m.latest.Y, m.latest.Hand = x, y, m.GetMyHand(user)
+	m.Latest.X, m.Latest.Y, m.Latest.Hand = x, y, m.GetMyHand(user)
 	m.currentMove = m.GetEnemy(user)
 	m.ntfWalk(x, y, m.GetMyHand(user))
 	if m.chessboard.IsWin(x, y) {
@@ -175,6 +175,15 @@ func (m *Room) GetMyHand(user *User) chessboard.Hand {
 		return chessboard.BlackHand
 	}
 	return chessboard.WhiteHand
+}
+
+func (m *Room) GetWalkState() chessboard.XYS {
+	return m.chessboard.GetState()
+}
+
+func (m *Room) IsWatcher(user *User) bool {
+	_, ok := m.watch[user.Username]
+	return ok
 }
 
 func NewRoom() *Room {

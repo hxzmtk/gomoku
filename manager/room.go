@@ -17,7 +17,7 @@ type RoomManager struct {
 	mux    sync.Mutex
 }
 
-func (RoomManager) Init() error {
+func (m *RoomManager) Init() error {
 	return nil
 }
 
@@ -179,6 +179,14 @@ func (m *RoomManager) createRoom() *objs.Room {
 	newRoom := objs.NewRoom()
 	newRoom.Id = m.newRoomId()
 	return newRoom
+}
+
+func (m *RoomManager) GetRoom(conn *httpserver.Conn) *objs.Room {
+	if roomId, ok := m.users[conn.Username]; !ok {
+		return nil
+	} else {
+		return m.rooms[roomId]
+	}
 }
 
 func NewRoomManager() *RoomManager {

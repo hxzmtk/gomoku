@@ -189,6 +189,21 @@ function handle(event) {
                 sessionStorage.setItem("un",msg.username)
                 user.name = msg.username
                 document.getElementById("myname").innerText = user.name
+                if (msg.roomId > 0) {
+                    document.getElementById("room-number-info").innerHTML = msg.roomId
+                    document.getElementById("dating").classList.add("d-none")
+                    document.getElementById("room").classList.remove("d-none")
+                    msg.walks.forEach(element =>{
+                        walk(element.x,element.y,element.hand)
+                    })
+                    if (!msg.isWatcher){
+                        user.myhand = msg.myhand
+                        user.lastPos.x = msg.latest.x
+                        user.lastPos.y = msg.latest.y
+                        updateStatus(user.myhand)
+                    }
+                    mark(msg.latest.x,msg.latest.y)
+                }
                 break;
             case -msgId.listRoom:
                 let tmp = ""

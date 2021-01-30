@@ -84,7 +84,12 @@ type MsgConnectReq struct {
 
 type MsgConnectAck struct {
 	msgUtil
-	Username string `json:"username"`
+	Username  string          `json:"username"`
+	RoomId    int             `json:"roomId"`
+	MyHand    chessboard.Hand `json:"myhand"`
+	Walks     chessboard.XYS  `json:"walks"`
+	Latest    chessboard.XY   `json:"latest"`
+	IsWatcher bool            `json:"isWatcher"`
 }
 
 type MsgStartGameReq struct {

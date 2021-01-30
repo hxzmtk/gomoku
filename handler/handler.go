@@ -19,6 +19,17 @@ func HandleConnect(c httpserver.IConn, msg interface{}) (httpserver.IMessage, er
 		return nil, err
 	}
 	ack := &httpserver.MsgConnectAck{Username: conn.Username}
+	room := m.RoomManager.GetRoom(conn)
+	if room != nil {
+		ack = &httpserver.MsgConnectAck{
+			Username:  conn.Username,
+			RoomId:    room.Id,
+			MyHand:    room.GetMyHand(m.UserManager.GetUser(conn)),
+			Walks:     room.GetWalkState(),
+			Latest:    room.Latest,
+			IsWatcher: room.IsWatcher(m.UserManager.GetUser(conn)),
+		}
+	}
 	return ack, nil
 }
 
