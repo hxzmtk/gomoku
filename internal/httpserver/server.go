@@ -59,7 +59,9 @@ func (server *Server) Start() error {
 	server.init()
 	server.httpServer = &http.Server{Addr: server.Addr, Handler: server.engine}
 	go func() {
-		server.httpServer.ListenAndServe()
+		if err := server.httpServer.ListenAndServe(); err != nil {
+			panic(err)
+		}
 	}()
 	return nil
 }

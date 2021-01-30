@@ -1,5 +1,14 @@
 package manager
 
+import "flag"
+
+var httpPort int = 8000
+
+func init() {
+	flag.IntVar(&httpPort, "port", 8000, "example: -port 8000")
+	flag.Parse()
+}
+
 type IModule interface {
 	Init() error
 }
@@ -20,7 +29,7 @@ func (m *Manager) appendModule(module IModule) IModule {
 
 func (m *Manager) Init() error {
 	if err := m.init(); err != nil {
-		return nil
+		return err
 	}
 	m.ClientManager = m.appendModule(NewClientManager()).(*ClientManager)
 	m.UserManager = m.appendModule(NewUserManager()).(*UserManager)

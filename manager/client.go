@@ -1,6 +1,9 @@
 package manager
 
 import (
+	"fmt"
+
+	log "github.com/sirupsen/logrus"
 	"github.com/zqhhh/gomoku/internal/httpserver"
 )
 
@@ -9,9 +12,14 @@ type ClientManager struct {
 }
 
 func (m *ClientManager) Init() error {
-	server := httpserver.NewServer(":8000")
+	server := httpserver.NewServer(fmt.Sprintf(":%d", httpPort))
 	m.server = server
-	return server.Start()
+	err := server.Start()
+	if err != nil {
+		return err
+	}
+	log.Infof("server in port:%d", httpPort)
+	return nil
 }
 
 func (m *ClientManager) IsOnline(username string) bool {
