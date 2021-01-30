@@ -16,4 +16,5 @@ var (
 	ErrGameStarted    = Create(-13, "游戏已经开始了")
 	ErrHasInRoom      = Create(-14, "您已在房间中")
 	ErrIsWatchingUser = Create(-15, "您是观战用户")
+	ErrJoinRoom       = Create(-16, "房间已满,请选择观战")
 )

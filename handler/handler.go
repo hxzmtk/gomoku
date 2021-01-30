@@ -27,7 +27,7 @@ func HandleConnect(c httpserver.IConn, msg interface{}) (httpserver.IMessage, er
 			MyHand:    room.GetMyHand(m.UserManager.GetUser(conn)),
 			Walks:     room.GetWalkState(),
 			Latest:    room.Latest,
-			IsWatcher: room.IsWatcher(m.UserManager.GetUser(conn)),
+			IsWatcher: room.CheckIsWathingUser(m.UserManager.GetUser(conn).Username),
 		}
 	}
 	return ack, nil

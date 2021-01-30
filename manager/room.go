@@ -70,6 +70,8 @@ func (m *RoomManager) JoinRoom(conn *httpserver.Conn, roomId int) error {
 
 	if room.Master == nil && room.Enemy == nil {
 		room.Master = user
+	} else if room.Master != nil && room.Enemy != nil {
+		return errex.ErrJoinRoom
 	} else {
 		room.Enemy = manager.UserManager.GetUser(conn)
 	}

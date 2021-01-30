@@ -156,9 +156,9 @@ func (m *Room) GoSet(user *User, x, y int) error {
 	if m.currentMove != user {
 		return errex.ErrNotCurrentYou
 	}
-	success := m.chessboard.Go(x, y, m.GetMyHand(user))
-	if !success {
-		return errex.ErrInvalidPos
+	err := m.chessboard.Go(x, y, m.GetMyHand(user))
+	if err != nil {
+		return err
 	}
 	m.Latest.X, m.Latest.Y, m.Latest.Hand = x, y, m.GetMyHand(user)
 	m.currentMove = m.GetEnemy(user)
@@ -179,11 +179,6 @@ func (m *Room) GetMyHand(user *User) chessboard.Hand {
 
 func (m *Room) GetWalkState() chessboard.XYS {
 	return m.chessboard.GetState()
-}
-
-func (m *Room) IsWatcher(user *User) bool {
-	_, ok := m.watch[user.Username]
-	return ok
 }
 
 func NewRoom() *Room {

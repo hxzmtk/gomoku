@@ -158,6 +158,17 @@ function updateStatus(h){
             </span>`
     document.getElementById("chess-status").innerHTML = elm
 }
+
+function getEnemyHand(h) {
+    switch (h){        
+        case hand.blackHand:
+            return hand.whiteHand
+        case hand.whiteHand:
+            return hand.blackHand
+        default:
+            return hand.nilHand
+    }
+}
 //生成棋盘
 function generate_board(row, col){
 
@@ -200,9 +211,11 @@ function handle(event) {
                         user.myhand = msg.myhand
                         user.lastPos.x = msg.latest.x
                         user.lastPos.y = msg.latest.y
-                        updateStatus(user.myhand)
+                        updateStatus(msg.latest.hand)
                     }
                     mark(msg.latest.x,msg.latest.y)
+                } else {
+                    listRoom()
                 }
                 break;
             case -msgId.listRoom:
@@ -323,7 +336,6 @@ window.onload = function(){
         conn.onopen = function (){
           connect()
           console.log("connected")
-          listRoom()
         };
     }
     generate_board(15,15)

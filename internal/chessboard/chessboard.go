@@ -20,7 +20,7 @@ func (h Hand) Reverse() Hand {
 }
 
 type Node interface {
-	Go(x, y int, value Hand) bool
+	Go(x, y int, value Hand) error
 	IsWin(x, y int) bool
 	IsEmpty() bool
 	IsFull() bool

@@ -6,8 +6,8 @@ package chessboard
 
 type nodeArray [][]Hand
 
-func (n *nodeArray) Go(x, y int, value Hand) bool {
-	return true
+func (n *nodeArray) Go(x, y int, value Hand) error {
+	return nil
 }
 
 func (n *nodeArray) IsWin(x, y int) bool {
