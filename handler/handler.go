@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/zqhhh/gomoku/errex"
 	"github.com/zqhhh/gomoku/internal/httpserver"
 	"github.com/zqhhh/gomoku/manager"
 )
@@ -130,6 +131,37 @@ func HandleWatchGame(c httpserver.IConn, msg interface{}) (httpserver.IMessage, 
 	return ack, nil
 }
 
+func HandleWalkRegret(c httpserver.IConn, msg interface{}) (httpserver.IMessage, error) {
+	_ = msg.(*httpserver.MsgWalkRegretReq)
+	room := m.RoomManager.GetRoom(c.(*httpserver.Conn))
+	if room == nil {
+		return nil, errex.ErrNotExistedRoom
+	}
+	user := m.UserManager.GetUser(c.(*httpserver.Conn))
+	if err := room.AckRegret(user); err != nil {
+		return nil, err
+	}
+	ack := &httpserver.MsgWalkRegretAck{}
+	return ack, nil
+}
+
+func HandleAgreeRegret(c httpserver.IConn, msg interface{}) (httpserver.IMessage, error) {
+	req := msg.(*httpserver.MsgAgreeRegretReq)
+	room := m.RoomManager.GetRoom(c.(*httpserver.Conn))
+	if room == nil {
+		return nil, errex.ErrNotExistedRoom
+	}
+	user := m.UserManager.GetUser(c.(*httpserver.Conn))
+	if room.CheckIsWathingUser(user.Username) {
+		return nil, errex.ErrIsWatchingUser
+	} else if room.Master != user && room.Enemy != user {
+		return nil, errex.ErrInRoom
+	}
+	room.AgreeRegret(user, req.Agree)
+	ack := &httpserver.MsgAgreeRegretAck{}
+	return ack, nil
+}
+
 func Register() {
 	httpserver.Register(httpserver.MsgConnect, HandleConnect)
 	httpserver.Register(httpserver.MsgListRoom, HandleListRoom)
@@ -140,4 +172,6 @@ func Register() {
 	httpserver.Register(httpserver.MsgRestartGame, HandleRestartGame)
 	httpserver.Register(httpserver.MsgLeaveRoom, HandleLeaveRoom)
 	httpserver.Register(httpserver.MsgWatchGame, HandleWatchGame)
+	httpserver.Register(httpserver.MsgWalkRegret, HandleWalkRegret)
+	httpserver.Register(httpserver.MsgAgreeRegret, HandleAgreeRegret)
 }

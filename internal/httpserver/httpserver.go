@@ -28,6 +28,10 @@ func init() {
 	msgTypes[-MsgLeaveRoom] = reflect.TypeOf((*MsgLeaveRoomAck)(nil)).Elem()
 	msgTypes[MsgWatchGame] = reflect.TypeOf((*MsgWatchGameReq)(nil)).Elem()
 	msgTypes[-MsgWatchGame] = reflect.TypeOf((*MsgWatchGameAck)(nil)).Elem()
+	msgTypes[MsgWalkRegret] = reflect.TypeOf((*MsgWalkRegretReq)(nil)).Elem()
+	msgTypes[-MsgWalkRegret] = reflect.TypeOf((*MsgWalkRegretAck)(nil)).Elem()
+	msgTypes[MsgAgreeRegret] = reflect.TypeOf((*MsgAgreeRegretReq)(nil)).Elem()
+	msgTypes[-MsgAgreeRegret] = reflect.TypeOf((*MsgAgreeRegretAck)(nil)).Elem()
 
 	// ntf
 	msgTypes[ntfJoinRoom] = reflect.TypeOf((*NtfJoinRoom)(nil)).Elem()
@@ -37,6 +41,9 @@ func init() {
 	msgTypes[ntfRestartGame] = reflect.TypeOf((*NtfRestartGame)(nil)).Elem()
 	msgTypes[ntfLeaveRoom] = reflect.TypeOf((*NtfLeaveRoom)(nil)).Elem()
 	msgTypes[ntfWalkWatchingUser] = reflect.TypeOf((*NtfWalkWatchingUser)(nil)).Elem()
+	msgTypes[ntfAskRegret] = reflect.TypeOf((*NtfAskRegret)(nil)).Elem()
+	msgTypes[ntfAgreeRegret] = reflect.TypeOf((*NtfAgreeRegret)(nil)).Elem()
+	msgTypes[ntfSyncWalk] = reflect.TypeOf((*NtfSyncWalk)(nil)).Elem()
 }
 
 type IConn interface {
@@ -63,6 +70,8 @@ const (
 	MsgRestartGame
 	MsgLeaveRoom
 	MsgWatchGame
+	MsgWalkRegret
+	MsgAgreeRegret
 )
 
 var (

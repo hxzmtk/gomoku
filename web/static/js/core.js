@@ -16,7 +16,8 @@ let msgId = {
     'restartGame': 6,
     'leaveRoom': 7,
     'watchGame': 8,
-
+    'askRegret': 9,
+    'agreeRegret': 10,
 
 
 
@@ -27,6 +28,9 @@ let msgId = {
     'ntfRestartGame': 1005,
     'ntfLeaveRoom': 1006,
     'ntfWalkWatchingUser': 1007,
+    'ntfAskRegret': 1008,
+    'ntfAgreeRegret': 1009,
+    'ntfSyncWalk': 1010
 }
 
 let msgAck = {}
@@ -108,6 +112,23 @@ function watchGame(roomId) {
     }))
 }
 
+
+function askRegret() {
+    conn.send(JSON.stringify({
+        "msgId": msgId.askRegret,
+        "body":{}
+    }))    
+}
+
+function agreeRegret(agree) {
+    conn.send(JSON.stringify({
+        "msgId": msgId.agreeRegret,
+        "body":{
+            "agree": (agree >= 1)
+        }
+    }))
+}
+
 //初始化二维数组
 function initPlace(row, col) {
     place = Array(row).fill(0).map(x => Array(col).fill(0));
@@ -131,6 +152,10 @@ function walk(x, y, h) {
     } else {
         document.getElementById(`go-${x}-${y}`).classList.remove("w", "b", "chess-spinner")
     }
+}
+
+function resetWalk(x, y) {
+    document.getElementById(`go-${x}-${y}`).classList.remove("w", "b", "chess-spinner")
 }
 
 function updateStatus(h){
@@ -255,7 +280,6 @@ function handle(event) {
             case -msgId.restartGame:
                 modalSystemMessage("游戏已重开")
                 break;
-
             case -msgId.leaveRoom:
                 document.getElementById("dating").classList.remove("d-none")
                 document.getElementById("room").classList.add("d-none")
@@ -266,6 +290,10 @@ function handle(event) {
                 document.getElementById("dating").classList.add("d-none")
                 document.getElementById("room").classList.remove("d-none")
                 document.getElementById("room-number-info").innerHTML = msg.roomId
+                break;
+            case -msgId.askRegret:
+                break;
+            case -msgId.agreeRegret:
                 break;
 
             case msgId.ntfJoinRoom:
@@ -309,6 +337,24 @@ function handle(event) {
                 })
                 mark(msg.latest.x,msg.latest.y)
                 break;
+            case msgId.ntfAskRegret:
+                modalAskRegret()
+                break;
+            case msgId.ntfAgreeRegret:
+                if (msg.agree){
+                    modalSystemMessage("对方同意了您的悔棋")
+                } else{
+                    modalSystemMessage("对方拒绝悔棋了")
+                }
+                break
+            case msgId.ntfSyncWalk:
+                generate_board(15,15)
+                msg.walks.forEach(element =>{
+                    walk(element.x,element.y,element.hand)
+                })
+                mark(msg.latest.x,msg.latest.y)
+                break;
+            case msgId.
             default:
                 break;
         }
@@ -378,6 +424,12 @@ function modalSystemMessage(message) {
     modal.show()
 }
 
+function modalAskRegret() {
+    let modalEl = document.getElementById('modalAskRegret')
+    let modal = new bootstrap.Modal(modalEl,{keyboard: false,backdrop:"static"})
+    modal.show()
+}
+
 function btnGameStart() {
     startGame()
 }
@@ -396,5 +448,5 @@ function btnGameRestart() {
 }
 
 function btnRegret() {
-    
+    askRegret()
 }

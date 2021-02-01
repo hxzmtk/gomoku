@@ -17,4 +17,7 @@ var (
 	ErrHasInRoom      = Create(-14, "您已在房间中")
 	ErrIsWatchingUser = Create(-15, "您是观战用户")
 	ErrJoinRoom       = Create(-16, "房间已满,请选择观战")
+	ErrRegretWalkLess = Create(-17, "场上棋子太少了,不支持悔棋哦")
+	ErrRegretWait     = Create(-18, "还没有轮到你哦,暂不能悔棋")
+	ErrPaused         = Create(-19, "请求悔棋中,请等待对方同意")
 )

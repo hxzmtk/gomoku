@@ -33,6 +33,10 @@ func (n *nodeArray) Copy() Node {
 	return nil
 }
 
+func (n *nodeArray)Clear(x, y int) {
+	return
+}
+
 func NewChessboardWithArray(size int) *nodeArray {
 	array := make(nodeArray, size)
 	for i, _ := range array {

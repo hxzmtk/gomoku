@@ -63,6 +63,13 @@ func (n *node) Go(x, y int, value Hand) error {
 	}
 }
 
+func (n *node) Clear(x, y int) {
+	offset := n.get(x, y)
+	if offset != nil {
+		offset.value = NilHand
+	}
+}
+
 // 根据坐标获取节点
 func (n *node) get(x, y int) *node {
 	offset := n

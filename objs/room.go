@@ -19,6 +19,8 @@ type Room struct {
 	chessboard  chessboard.Node
 	Started     bool
 	Latest      chessboard.XY
+	walkRecords chessboard.XYS
+	pause       bool
 }
 
 func (m *Room) GetEnemy(user *User) *User {
@@ -45,6 +47,8 @@ func (m *Room) reset() {
 	m.firstMove = nil
 	m.currentMove = nil
 	m.winner = nil
+	m.walkRecords = make(chessboard.XYS, 0)
+	m.pause = false
 }
 
 func (m *Room) random() {
@@ -150,6 +154,9 @@ func (m *Room) ntfGameOver() {
 }
 
 func (m *Room) GoSet(user *User, x, y int) error {
+	if m.pause {
+		return errex.ErrPaused
+	}
 	if m.winner != nil {
 		return errex.ErrGameOver
 	}
@@ -167,6 +174,7 @@ func (m *Room) GoSet(user *User, x, y int) error {
 		m.ntfGameOver()
 		m.winner = user
 	}
+	m.addRecord(m.Latest)
 	return nil
 }
 
@@ -181,9 +189,67 @@ func (m *Room) GetWalkState() chessboard.XYS {
 	return m.chessboard.GetState()
 }
 
+func (m *Room) addRecord(walk chessboard.XY) {
+	m.walkRecords = append(m.walkRecords, walk)
+}
+
+func (m *Room) delRecords(stepCount int) {
+	length := len(m.walkRecords)
+	if length <= stepCount {
+		m.walkRecords = make(chessboard.XYS, 0)
+		return
+	}
+	m.walkRecords = m.walkRecords[:length-stepCount]
+}
+
+func (m *Room) AckRegret(user *User) error {
+	if !(m.Master == user || m.Enemy == user) {
+		return errex.ErrIsWatchingUser
+	}
+	if len(m.walkRecords) < 8 {
+		return errex.ErrRegretWalkLess
+	}
+	if m.currentMove != user {
+		return errex.ErrRegretWait
+	}
+	m.GetEnemy(user).Ntf(&httpserver.NtfAskRegret{})
+	m.pause = true
+	return nil
+}
+
+func (m *Room) AgreeRegret(user *User, agree bool) {
+	m.pause = false
+
+	m.GetEnemy(user).Ntf(&httpserver.NtfAgreeRegret{Agree: agree})
+	if agree {
+		m.rollBack()
+	}
+}
+
+func (m *Room) rollBack() {
+	stepCount := 4
+
+	length := len(m.walkRecords)
+	for i := length - stepCount; i < length; i++ {
+		walk := m.walkRecords[i]
+		m.chessboard.Clear(walk.X, walk.Y)
+	}
+
+	m.delRecords(stepCount)
+
+	m.Latest = m.walkRecords[len(m.walkRecords)-1]
+	ntf := &httpserver.NtfSyncWalk{
+		Walks:  m.chessboard.GetState(),
+		Latest: m.Latest,
+	}
+	m.Master.Ntf(ntf)
+	m.Enemy.Ntf(ntf)
+}
+
 func NewRoom() *Room {
 	return &Room{
-		chessboard: chessboard.NewChessboard(15),
-		watch:      make(map[string]*User),
+		chessboard:  chessboard.NewChessboard(15),
+		watch:       make(map[string]*User),
+		walkRecords: make(chessboard.XYS, 0),
 	}
 }

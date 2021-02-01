@@ -27,6 +27,7 @@ type Node interface {
 	Reset()
 	GetState() XYS
 	Copy() Node
+	Clear(x,y int)
 }
 
 var (

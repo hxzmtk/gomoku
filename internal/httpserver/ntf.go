@@ -11,6 +11,9 @@ const (
 	ntfRestartGame
 	ntfLeaveRoom
 	ntfWalkWatchingUser
+	ntfAskRegret
+	ntfAgreeRegret
+	ntfSyncWalk
 )
 
 type NtfJoinRoom struct {
@@ -45,6 +48,21 @@ type NtfLeaveRoom struct {
 }
 
 type NtfWalkWatchingUser struct {
+	msgUtil
+	Walks  chessboard.XYS `json:"walks"`
+	Latest chessboard.XY  `json:"latest"`
+}
+
+type NtfAskRegret struct {
+	msgUtil
+}
+
+type NtfAgreeRegret struct {
+	msgUtil
+	Agree bool `json:"agree"`
+}
+
+type NtfSyncWalk struct {
 	msgUtil
 	Walks  chessboard.XYS `json:"walks"`
 	Latest chessboard.XY  `json:"latest"`

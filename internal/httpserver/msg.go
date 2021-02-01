@@ -127,3 +127,20 @@ type MsgWatchGameAck struct {
 	msgUtil
 	RoomId int `json:"roomId"`
 }
+
+type MsgWalkRegretReq struct {
+	msgUtil
+}
+
+type MsgWalkRegretAck struct {
+	msgUtil
+}
+
+type MsgAgreeRegretReq struct {
+	msgUtil
+	Agree bool `json:"agree"`
+}
+
+type MsgAgreeRegretAck struct {
+	msgUtil
+}
