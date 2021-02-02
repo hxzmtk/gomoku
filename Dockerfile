@@ -6,7 +6,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 WORKDIR /app
 COPY . .
-RUN go build -o gomoku cmd/main.go
+RUN go build -o gomoku main.go
 
 FROM alpine
 WORKDIR /app

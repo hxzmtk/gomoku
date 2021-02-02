@@ -1,5 +1,7 @@
 package chessboard
 
+import "github.com/zqhhh/gomoku/errex"
+
 /*
 链表实现的棋盘
 */
@@ -51,13 +53,21 @@ func (n *node) rightBottom() *node {
 |
 V
 */
-func (n *node) Go(x, y int, value Hand) bool {
+func (n *node) Go(x, y int, value Hand) error {
+	offset := n.get(x, y)
+	if offset == nil || offset.value != NilHand {
+		return errex.ErrInvalidPos
+	} else {
+		offset.value = value
+		return nil
+	}
+}
+
+func (n *node) Clear(x, y int) {
 	offset := n.get(x, y)
 	if offset != nil {
-		offset.value = value
-		return true
+		offset.value = NilHand
 	}
-	return false
 }
 
 // 根据坐标获取节点
@@ -321,7 +331,7 @@ func (n *node) GetState() (xy XYS) {
 	for x := 0; x < n.getWidth(); x++ {
 		for y := 0; y < n.getHeight(); y++ {
 			offset := n.get(x, y)
-			if offset != nil {
+			if offset != nil && offset.value != NilHand {
 				xy = append(xy, XY{
 					X:    x,
 					Y:    y,
