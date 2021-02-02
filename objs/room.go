@@ -2,6 +2,7 @@ package objs
 
 import (
 	"math/rand"
+	"time"
 
 	"github.com/zqhhh/gomoku/errex"
 	"github.com/zqhhh/gomoku/internal/chessboard"
@@ -21,6 +22,7 @@ type Room struct {
 	Latest      chessboard.XY
 	walkRecords chessboard.XYS
 	pause       bool
+	pauseAt     time.Time
 }
 
 func (m *Room) GetEnemy(user *User) *User {
@@ -155,7 +157,11 @@ func (m *Room) ntfGameOver() {
 
 func (m *Room) GoSet(user *User, x, y int) error {
 	if m.pause {
-		return errex.ErrPaused
+		if time.Now().Unix() - m.pauseAt.Unix() < 10  {
+			return errex.ErrPaused
+		}
+		m.pause = false
+		user.Ntf(&httpserver.NtfAgreeRegret{Agree: false})
 	}
 	if m.winner != nil {
 		return errex.ErrGameOver
@@ -214,6 +220,7 @@ func (m *Room) AckRegret(user *User) error {
 	}
 	m.GetEnemy(user).Ntf(&httpserver.NtfAskRegret{})
 	m.pause = true
+	m.pauseAt = time.Now()
 	return nil
 }
 

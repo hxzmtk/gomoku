@@ -23,7 +23,12 @@ func (m *ClientManager) Init() error {
 }
 
 func (m *ClientManager) IsOnline(username string) bool {
-	return m.server.CheckOnline(username)
+
+	user, ok := manager.UserManager.users[username]
+	if ok && user.Online() {
+		return true
+	}
+	return false
 }
 
 func NewClientManager() *ClientManager {

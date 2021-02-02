@@ -19,7 +19,6 @@ type Server struct {
 	upgrader   websocket.Upgrader
 	httpServer *http.Server
 	Addr       string
-	hub        *Hub
 	engine     *gin.Engine
 	handlers   map[int]HandleFunc
 }
@@ -29,7 +28,7 @@ func (server *Server) handleWebsocket(c *gin.Context) {
 	if err != nil {
 		log.Info(err)
 	}
-	newConn := NewConn(ws, server.hub, server.RandomName())
+	newConn := NewConn(ws,server.RandomName())
 	newConn.Start()
 	newConn.Init()
 }
@@ -66,11 +65,6 @@ func (server *Server) Start() error {
 	return nil
 }
 
-func (server *Server) CheckOnline(username string) bool {
-	_, ok := server.hub.clients[username]
-	return ok
-}
-
 func (server *Server) RandomName() string {
 	prefixStr := "abcdefghijklmnopqrstuvwxyz"
 	bytes := []byte(prefixStr)
@@ -101,7 +95,6 @@ func NewServer(Addr string) *Server {
 				CheckOrigin:     func(r *http.Request) bool { return true },
 			},
 			Addr:     Addr,
-			hub:      NewHub(),
 			handlers: make(map[int]HandleFunc),
 		}
 	})
