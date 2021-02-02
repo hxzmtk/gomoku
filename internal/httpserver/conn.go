@@ -35,7 +35,6 @@ var (
 
 type Conn struct {
 	ws       *websocket.Conn
-	hub      *Hub
 	Username string
 	send     chan IMessage
 	closed   bool
@@ -99,7 +98,6 @@ func (c Conn) writePump() {
 }
 func (c *Conn) readPump() {
 	defer func() {
-		c.hub.unregister <- c
 		c.ws.Close()
 		c.closed = true
 	}()
@@ -133,7 +131,6 @@ func (c *Conn) readPump() {
 		} else {
 			c.WriteMessage(rcvMsg)
 		}
-		c.hub.broadcast <- message
 	}
 }
 
@@ -148,12 +145,10 @@ func (c *Conn) WriteMessage(msg IMessage) {
 func (c *Conn) Init() {
 }
 
-func NewConn(c *websocket.Conn, hub *Hub, username string) *Conn {
+func NewConn(c *websocket.Conn,username string) *Conn {
 	conn := &Conn{ws: c,
-		hub:      hub,
 		Username: username,
 		send:     make(chan IMessage, 1024),
 	}
-	hub.register <- conn
 	return conn
 }
