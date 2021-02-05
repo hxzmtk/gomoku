@@ -12,5 +12,6 @@ FROM alpine
 WORKDIR /app
 COPY web ./web
 COPY --from=builder /app/gomoku ./
-ENV ADDR ":8000"
-CMD ["./gomoku"]
+ENV PORT "8000"
+ENV GIN_MODE "release"
+CMD ["sh", "-c", "./gomoku -port ${PORT}"]
