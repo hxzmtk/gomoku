@@ -421,7 +421,7 @@ function modalSystemMessage(message) {
     }
     body.textContent = message
     let modal = new bootstrap.Modal(modalEl,{keyboard: false,backdrop:"static"})
-    modal.show()
+    modal.toggle()
 }
 
 function modalAskRegret() {

@@ -328,6 +328,7 @@ func NewChessboard(size int) *node {
 }
 
 func (n *node) GetState() (xy XYS) {
+	xy = make(XYS, 0)
 	for x := 0; x < n.getWidth(); x++ {
 		for y := 0; y < n.getHeight(); y++ {
 			offset := n.get(x, y)
