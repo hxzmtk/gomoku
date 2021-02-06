@@ -29,11 +29,3 @@ func NewUser() *User {
 		CreateTime: time.Now(),
 	}
 }
-
-func NewUserByConn(user *User, conn *httpserver.Conn) *User {
-	return &User{
-		Username:   conn.Username,
-		conn:       conn,
-		CreateTime: user.CreateTime,
-	}
-}

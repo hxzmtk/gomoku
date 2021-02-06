@@ -191,6 +191,20 @@ func (m *RoomManager) GetRoom(conn *httpserver.Conn) *objs.Room {
 	}
 }
 
+func (m *RoomManager) delete(username string) {
+	roomId, ok1 := m.users[username]
+	room, ok2 := m.rooms[roomId]
+	if ok1 && ok2 {
+		if room.Enemy != nil && room.Enemy.Username == username {
+			room.Enemy = nil
+		}
+		if room.Master != nil && room.Master.Username == username {
+			room.Master = nil
+		}
+	}
+	delete(m.users, username)
+}
+
 func NewRoomManager() *RoomManager {
 	return &RoomManager{
 		rooms:  make(map[int]*objs.Room),
