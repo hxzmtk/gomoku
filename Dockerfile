@@ -13,5 +13,5 @@ WORKDIR /app
 COPY web ./web
 COPY --from=builder /app/gomoku ./
 ENV PORT "8000"
-ENV GIN_MODE "release"
+# ENV GIN_MODE "release"
 CMD ["sh", "-c", "./gomoku -port ${PORT}"]
