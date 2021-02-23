@@ -7,9 +7,11 @@ import (
 	"runtime"
 	"runtime/debug"
 	"sync"
+	"text/template"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gobuffalo/packr"
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
 )
@@ -28,7 +30,7 @@ func (server *Server) handleWebsocket(c *gin.Context) {
 	if err != nil {
 		log.Info(err)
 	}
-	newConn := NewConn(ws,server.RandomName())
+	newConn := NewConn(ws, server.RandomName())
 	newConn.Start()
 	newConn.Init()
 }
@@ -39,14 +41,19 @@ func (server *Server) init() {
 	}
 	engine := gin.Default()
 
-	// load static
-	engine.Static("/static", "web/static")
+	staticFileBox := packr.NewBox("../../web/static")
+	engine.StaticFS("/static", http.FileSystem(staticFileBox))
 
-	// load html template
-	engine.LoadHTMLFiles("web/index.html")
-
+	indexHtml, err := packr.NewBox("../../web").FindString("index.html")
+	if err != nil {
+		panic(err)
+	}
+	tmpl, err := template.New("index").Parse(indexHtml)
+	if err != nil {
+		panic(err)
+	}
 	engine.GET("/", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "index.html", gin.H{
+		tmpl.Execute(c.Writer, map[string]interface{}{
 			"debug": gin.IsDebugging(),
 		})
 	})
