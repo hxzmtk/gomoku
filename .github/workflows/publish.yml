@@ -26,7 +26,7 @@ jobs:
       # Runs a set of commands using the runners shell
       - name: build
         run: |
-          go build
+          go build -o gomoku2
       - name: Deploy to Server
         uses: easingthemes/ssh-deploy@v2.1.5
         env:
@@ -39,7 +39,7 @@ jobs:
       - name: run
         uses: appleboy/ssh-action@master
         env:
-          DIR: ${{ secrets.REMOTE_USER }}
+          DIR: ${{ secrets.REMOTE_TARGET }}
         with:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
@@ -47,5 +47,6 @@ jobs:
           port: ${{ secrets.REMOTE_PORT }}
           script: |
             supervisorctl stop gomoku
-            cp $DIR ~/app/gomoku
-            supervisorctl start gomoku
+            cd $DIR && \
+              mv $DIR/gomoku2 gomoku && \
+              supervisorctl start gomoku
