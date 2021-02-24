@@ -22,21 +22,7 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-
-      # Runs a set of commands using the runners shell
-      - name: build
-        run: |
-          go build -o gomoku2
-      - name: Deploy to Server
-        uses: easingthemes/ssh-deploy@v2.1.5
-        env:
-            SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }}
-            ARGS: "-rltgoDzvO --delete"
-            SOURCE: "gomoku2"
-            REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
-            REMOTE_USER: ${{ secrets.REMOTE_USER }}
-            TARGET: ${{ secrets.REMOTE_TARGET }}
-      - name: run
+      - name: login-build-and-run
         uses: appleboy/ssh-action@master
         env:
           DIR: ${{ secrets.REMOTE_TARGET }}
@@ -46,7 +32,11 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: ${{ secrets.REMOTE_PORT }}
           script: |
+            [ -d ~/.github/gomoku ] || cd ~/.github;git clone https://github.com/zqhhh/gomoku.git
+            cd ~/.github/gomoku && \
+              git reset --hard && \
+              git pull && \
+              go build -o gomoku
             supervisorctl stop gomoku
-            cd $DIR && \
-              mv $DIR/gomoku2 gomoku && \
+            cp gomoku ~/app/gomoku && \
               supervisorctl start gomoku
