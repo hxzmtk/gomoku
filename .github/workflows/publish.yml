@@ -36,7 +36,7 @@ jobs:
             cd ~/.github/gomoku && \
               git reset --hard && \
               git pull && \
-              go build -o gomoku && \
+              /usr/local/go/bin/go build -o gomoku && \
               supervisorctl stop gomoku && \
               cp gomoku ~/app/gomoku && \
               supervisorctl start gomoku
