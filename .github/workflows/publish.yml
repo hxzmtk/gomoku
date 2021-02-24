@@ -32,11 +32,11 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: ${{ secrets.REMOTE_PORT }}
           script: |
-            [ -d ~/.github/gomoku ] || cd ~/.github;git clone https://github.com/zqhhh/gomoku.git
+            [ -d ~/.github/gomoku ] || git clone https://github.com/zqhhh/gomoku.git ~/.github/gomoku
             cd ~/.github/gomoku && \
               git reset --hard && \
               git pull && \
-              go build -o gomoku
-            supervisorctl stop gomoku
-            cp gomoku ~/app/gomoku && \
+              go build -o gomoku && \
+              supervisorctl stop gomoku && \
+              cp gomoku ~/app/gomoku && \
               supervisorctl start gomoku
