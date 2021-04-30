@@ -6,12 +6,17 @@ import (
 
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
-	"github.com/zqhhh/gomoku/errex"
 )
 
 type Pumper interface {
 	writePump()
 	readPump()
+}
+
+type Session interface {
+	OnConnect(*Conn)
+	OnMessage([]byte)
+	OnClose(*Conn)
 }
 
 const (
@@ -38,6 +43,7 @@ type Conn struct {
 	Username string
 	send     chan IMessage
 	closed   bool
+	Session  Session
 }
 
 func (conn Conn) Online() bool {
@@ -48,20 +54,22 @@ func (conn Conn) GetId() int {
 	return 0
 }
 
-func (conn *Conn) Start() {
+func (c *Conn) Start() {
 	go func() {
-		conn.readPump()
+		c.readPump()
 	}()
 	go func() {
-		conn.writePump()
+		c.writePump()
 	}()
+	c.Session.OnConnect(c)
 }
 
-func (c Conn) writePump() {
+func (c *Conn) writePump() {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		ticker.Stop()
 		c.ws.Close()
+		c.Session.OnClose(c)
 	}()
 	for {
 		select {
@@ -113,24 +121,7 @@ func (c *Conn) readPump() {
 			break
 		}
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
-		rcv, err := Unmarshal(message)
-		if err != nil {
-			log.Debugf("error: %v", err)
-			c.WriteMessage(&MsgErrorAck{Msg: "不支持的协议格式"})
-			continue
-		}
-		rcvMsg, err := DoHandle(c, rcv)
-		if err != nil {
-			switch e := err.(type) {
-			case errex.Item:
-				c.WriteMessage(&MsgErrorAck{Msg: e.Message})
-			default:
-				c.WriteMessage(&MsgErrorAck{Msg: errex.ErrFail.Message})
-				log.Infof("handle error:%v", err)
-			}
-		} else {
-			c.WriteMessage(rcvMsg)
-		}
+		c.Session.OnMessage(message)
 	}
 }
 
@@ -145,10 +136,11 @@ func (c *Conn) WriteMessage(msg IMessage) {
 func (c *Conn) Init() {
 }
 
-func NewConn(c *websocket.Conn,username string) *Conn {
+func NewConn(c *websocket.Conn, username string, sessionCreator func(*Conn) Session) *Conn {
 	conn := &Conn{ws: c,
 		Username: username,
 		send:     make(chan IMessage, 1024),
 	}
+	conn.Session = sessionCreator(conn)
 	return conn
 }

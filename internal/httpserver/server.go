@@ -18,11 +18,12 @@ import (
 
 type HandleFunc func(conn IConn, msg interface{}) (IMessage, error)
 type Server struct {
-	upgrader   websocket.Upgrader
-	httpServer *http.Server
-	Addr       string
-	engine     *gin.Engine
-	handlers   map[int]HandleFunc
+	upgrader       websocket.Upgrader
+	httpServer     *http.Server
+	Addr           string
+	engine         *gin.Engine
+	handlers       map[int]HandleFunc
+	SessionCreator func(*Conn) Session
 }
 
 func (server *Server) handleWebsocket(c *gin.Context) {
@@ -30,7 +31,7 @@ func (server *Server) handleWebsocket(c *gin.Context) {
 	if err != nil {
 		log.Info(err)
 	}
-	newConn := NewConn(ws, server.RandomName())
+	newConn := NewConn(ws, server.RandomName(), server.SessionCreator)
 	newConn.Start()
 	newConn.Init()
 }
