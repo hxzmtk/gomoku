@@ -2,7 +2,6 @@ package manager
 
 import (
 	"flag"
-	"time"
 )
 
 var httpPort int = 8000
@@ -42,27 +41,10 @@ func (m *Manager) Init() error {
 			return nil
 		}
 	}
-	go m.exec()
 	return nil
 }
 
 func (m *Manager) Stop() {
-}
-
-func (m *Manager) exec() {
-	ticker := time.NewTicker(5 * time.Minute)
-	defer ticker.Stop()
-	for {
-		select {
-		case <-ticker.C:
-			for key, user := range m.UserManager.users {
-				if !user.Online() && time.Now().Unix()-user.CreateTime.Unix() > 5*60 { //5分钟内没有重连,删除该用户信息
-					delete(m.UserManager.users, key)
-					m.RoomManager.delete(key)
-				}
-			}
-		}
-	}
 }
 
 var manager = &Manager{modules: make([]IModule, 0)}

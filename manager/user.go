@@ -43,6 +43,10 @@ func (m *UserManager) reconnect(conn *httpserver.Conn) error {
 	return errex.ErrReconnect
 }
 
+func (m *UserManager) disconnect(username string) {
+	delete(m.users, username)
+}
+
 func NewUserManager() *UserManager {
 	return &UserManager{
 		users: make(map[string]*objs.User),

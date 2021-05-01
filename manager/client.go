@@ -68,5 +68,6 @@ func (s *Session) OnMessage(data []byte) {
 }
 
 func (s *Session) OnClose(c *httpserver.Conn) {
-
+	manager.UserManager.disconnect(c.Username)
+	manager.RoomManager.delete(c.Username)
 }
