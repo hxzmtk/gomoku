@@ -2,6 +2,7 @@ package httpserver
 
 import (
 	"bytes"
+	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -24,7 +25,7 @@ const (
 	writeWait = 10 * time.Second
 
 	// Time allowed to read the next pong message from the peer.
-	pongWait = 5 * time.Second
+	pongWait = 7 * time.Second
 
 	// Send pings to peer with this period. Must be less than pongWait.
 	pingPeriod = (pongWait * 9) / 10
@@ -44,13 +45,14 @@ type Conn struct {
 	send     chan IMessage
 	closed   bool
 	Session  Session
+	once     sync.Once
 }
 
-func (conn Conn) Online() bool {
+func (conn *Conn) Online() bool {
 	return !conn.closed
 }
 
-func (conn Conn) GetId() int {
+func (conn *Conn) GetId() int {
 	return 0
 }
 
@@ -68,8 +70,7 @@ func (c *Conn) writePump() {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		ticker.Stop()
-		c.ws.Close()
-		c.Session.OnClose(c)
+		c.Close()
 	}()
 	for {
 		select {
@@ -105,10 +106,7 @@ func (c *Conn) writePump() {
 	}
 }
 func (c *Conn) readPump() {
-	defer func() {
-		c.ws.Close()
-		c.closed = true
-	}()
+	defer c.Close()
 	c.ws.SetReadLimit(maxMessageSize)
 	c.ws.SetReadDeadline(time.Now().Add(pongWait))
 	c.ws.SetPongHandler(func(string) error { c.ws.SetReadDeadline(time.Now().Add(pongWait)); return nil })
@@ -134,6 +132,14 @@ func (c *Conn) WriteMessage(msg IMessage) {
 }
 
 func (c *Conn) Init() {
+}
+
+func (c *Conn) Close() {
+	c.once.Do(func() {
+		c.Session.OnClose(c)
+		c.ws.Close()
+		c.closed = true
+	})
 }
 
 func NewConn(c *websocket.Conn, username string, sessionCreator func(*Conn) Session) *Conn {

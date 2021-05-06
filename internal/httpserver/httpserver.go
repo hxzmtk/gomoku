@@ -75,7 +75,7 @@ const (
 )
 
 var (
-	_ IConn = Conn{}
+	_ IConn = &Conn{}
 )
 
 var (

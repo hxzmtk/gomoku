@@ -16,6 +16,10 @@ func (user *User) SetConn(conn *httpserver.Conn) {
 	user.conn = conn
 }
 
+func (user *User) GetConn() *httpserver.Conn {
+	return user.conn
+}
+
 func (user *User) Ntf(msg httpserver.IMessage) {
 	user.conn.WriteMessage(msg)
 }
