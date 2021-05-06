@@ -388,6 +388,7 @@ window.onload = function(){
     document.getElementById("go-board").onclick = function(e) {
         if (e.target.id.startsWith("go-")){
             let arr = e.target.id.split("-");
+            if (arr.length !== 3) {return}
             let x = arr[1];
             let y = arr[2];
             conn.send(JSON.stringify({
