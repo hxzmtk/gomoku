@@ -14,6 +14,7 @@ const (
 	ntfAskRegret
 	ntfAgreeRegret
 	ntfSyncWalk
+	ntfCommonMsg
 )
 
 type NtfJoinRoom struct {
@@ -66,4 +67,9 @@ type NtfSyncWalk struct {
 	msgUtil
 	Walks  chessboard.XYS `json:"walks"`
 	Latest chessboard.XY  `json:"latest"`
+}
+
+type NtfCommonMsg struct {
+	msgUtil
+	Msg string `json:"msg"`
 }

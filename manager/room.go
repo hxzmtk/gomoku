@@ -205,6 +205,17 @@ func (m *RoomManager) delete(username string) {
 	delete(m.users, username)
 }
 
+func (m *RoomManager) notifyDisconnect(username string) {
+	roomId, ok1 := m.users[username]
+	room, ok2 := m.rooms[roomId]
+	user, ok3 := manager.UserManager.users[username]
+	if ok1 && ok2 && ok3 {
+		if enemy := room.GetEnemy(user); enemy != nil {
+			enemy.Ntf(&httpserver.NtfCommonMsg{Msg: "对方掉线了"})
+		}
+	}
+}
+
 func NewRoomManager() *RoomManager {
 	return &RoomManager{
 		rooms:  make(map[int]*objs.Room),

@@ -30,7 +30,8 @@ let msgId = {
     'ntfWalkWatchingUser': 1007,
     'ntfAskRegret': 1008,
     'ntfAgreeRegret': 1009,
-    'ntfSyncWalk': 1010
+    'ntfSyncWalk': 1010,
+    'ntfCommonMsg': 1011
 }
 
 let msgAck = {}
@@ -354,7 +355,9 @@ function handle(event) {
                 })
                 mark(msg.latest.x,msg.latest.y)
                 break;
-            case msgId.
+            case msgId.ntfCommonMsg:
+                modalSystemMessage(msg.msg)
+                break;
             default:
                 break;
         }

@@ -44,6 +44,7 @@ func init() {
 	msgTypes[ntfAskRegret] = reflect.TypeOf((*NtfAskRegret)(nil)).Elem()
 	msgTypes[ntfAgreeRegret] = reflect.TypeOf((*NtfAgreeRegret)(nil)).Elem()
 	msgTypes[ntfSyncWalk] = reflect.TypeOf((*NtfSyncWalk)(nil)).Elem()
+	msgTypes[ntfCommonMsg] = reflect.TypeOf((*NtfCommonMsg)(nil)).Elem()
 }
 
 type IConn interface {

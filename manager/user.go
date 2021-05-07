@@ -1,6 +1,8 @@
 package manager
 
 import (
+	"sync"
+
 	"github.com/zqhhh/gomoku/errex"
 	"github.com/zqhhh/gomoku/internal/httpserver"
 	"github.com/zqhhh/gomoku/objs"
@@ -8,9 +10,10 @@ import (
 
 type UserManager struct {
 	users map[string]*objs.User
+	mux   sync.Mutex
 }
 
-func (UserManager) Init() error {
+func (*UserManager) Init() error {
 	return nil
 }
 func (m *UserManager) AddUser(user *objs.User) {
@@ -18,6 +21,8 @@ func (m *UserManager) AddUser(user *objs.User) {
 }
 
 func (m *UserManager) LoadUser(conn *httpserver.Conn) error {
+	m.mux.Lock()
+	defer m.mux.Unlock()
 	if err := m.reconnect(conn); err == nil {
 		return nil
 	}
@@ -38,6 +43,9 @@ func (m *UserManager) reconnect(conn *httpserver.Conn) error {
 	user, ok := m.users[username]
 	if ok {
 		user.SetConn(conn)
+		if session := manager.ClientManager.getWaitSession(username); session != nil {
+			session.stopwaitTimer <- struct{}{}
+		}
 		return nil
 	}
 	return errex.ErrReconnect
