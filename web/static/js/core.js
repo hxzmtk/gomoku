@@ -358,7 +358,7 @@ function handle(event) {
                 mark(msg.latest.x,msg.latest.y)
                 break;
             case msgId.ntfCommonMsg:
-                modalSystemMessage(msg.msg)
+                toastShow(msg.msg)
                 break;
             default:
                 break;
@@ -455,4 +455,11 @@ function btnGameRestart() {
 
 function btnRegret() {
     askRegret()
+}
+
+function toastShow(msg){
+    var elm = document.getElementById("systemMsg")
+    elm.getElementsByClassName("toast-body")[0].innerText = msg
+    var a = new bootstrap.Toast(elm)
+    a.show()
 }

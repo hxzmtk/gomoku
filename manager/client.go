@@ -86,7 +86,7 @@ func (s *Session) OnMessage(data []byte) {
 
 func (s *Session) OnClose(c *httpserver.Conn) {
 	manager.ClientManager.addWaitSession(s)
-	manager.RoomManager.notifyDisconnect(c.Username)
+	manager.RoomManager.notifyEnemyMsg(c.Username, "对方掉线了")
 	s.waitTimer = time.NewTimer(10 * time.Second)
 	go func() {
 		select {
@@ -98,6 +98,7 @@ func (s *Session) OnClose(c *httpserver.Conn) {
 			}
 			manager.UserManager.mux.RUnlock()
 		case <-s.stopwaitTimer:
+			manager.RoomManager.notifyEnemyMsg(c.Username, "对方已重连")
 			log.Debugf("user:%s, reconnect", s.conn.Username)
 		}
 		s.waitTimer.Stop()

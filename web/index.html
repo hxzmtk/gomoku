@@ -94,7 +94,14 @@
               </div>
             </div>
         </div>
-      
+  </div>
+
+  <div class="toast position-absolute top-50 start-0 translate-middle-y p-2" role="alert" aria-live="assertive" aria-atomic="true" id="systemMsg">
+    <div class="d-flex">
+      <div class="toast-body"></div>
+      <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+  </div>
     {{if .debug}}
         <script src="static/js/bootstrap.bundle.min.js"></script>
 
