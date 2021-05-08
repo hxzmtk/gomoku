@@ -92,7 +92,7 @@ func (s *Session) OnClose(c *httpserver.Conn) {
 		select {
 		case <-s.waitTimer.C:
 			manager.UserManager.mux.RLock()
-			if !manager.UserManager.GetUser(c).Online() {
+			if user := manager.UserManager.GetUser(c); user != nil && !user.Online() {
 				manager.UserManager.disconnect(c.Username)
 				manager.RoomManager.delete(c.Username)
 			}

@@ -25,9 +25,6 @@ func (user *User) Ntf(msg httpserver.IMessage) {
 }
 
 func (user *User) Online() bool {
-	if user.conn == nil {
-		return false
-	}
 	return user.conn.Online()
 }
 
