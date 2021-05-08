@@ -239,7 +239,9 @@ function handle(event) {
                         user.lastPos.y = msg.latest.y
                         updateStatus(msg.latest.hand)
                     }
-                    mark(msg.latest.x,msg.latest.y)
+                    if (msg.latest.x >= 0){
+                        mark(msg.latest.x,msg.latest.y)
+                    }
                 } else {
                     listRoom()
                 }

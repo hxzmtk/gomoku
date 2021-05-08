@@ -91,8 +91,12 @@ func (s *Session) OnClose(c *httpserver.Conn) {
 	go func() {
 		select {
 		case <-s.waitTimer.C:
-			manager.UserManager.disconnect(c.Username)
-			manager.RoomManager.delete(c.Username)
+			manager.UserManager.mux.RLock()
+			if !manager.UserManager.GetUser(c).Online() {
+				manager.UserManager.disconnect(c.Username)
+				manager.RoomManager.delete(c.Username)
+			}
+			manager.UserManager.mux.RUnlock()
 		case <-s.stopwaitTimer:
 			log.Debugf("user:%s, reconnect", s.conn.Username)
 		}

@@ -10,7 +10,7 @@ import (
 
 type UserManager struct {
 	users map[string]*objs.User
-	mux   sync.Mutex
+	mux   sync.RWMutex
 }
 
 func (*UserManager) Init() error {

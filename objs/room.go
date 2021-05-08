@@ -50,6 +50,8 @@ func (m *Room) reset() {
 	m.currentMove = nil
 	m.winner = nil
 	m.walkRecords = make(chessboard.XYS, 0)
+	m.Latest.X = -1
+	m.Latest.Y = -1
 	m.pause = false
 }
 
@@ -157,7 +159,7 @@ func (m *Room) ntfGameOver() {
 
 func (m *Room) GoSet(user *User, x, y int) error {
 	if m.pause {
-		if time.Now().Unix() - m.pauseAt.Unix() < 10  {
+		if time.Now().Unix()-m.pauseAt.Unix() < 10 {
 			return errex.ErrPaused
 		}
 		m.pause = false
@@ -258,5 +260,6 @@ func NewRoom() *Room {
 		chessboard:  chessboard.NewChessboard(15),
 		watch:       make(map[string]*User),
 		walkRecords: make(chessboard.XYS, 0),
+		Latest:      chessboard.XY{X: -1, Y: -1},
 	}
 }
