@@ -22,27 +22,6 @@
 go run main.go
 ```
 
-### nginx 配置
-```
-server {
-       listen 80;
-       listen [::]:80;
-
-       server_name gk.sadeye.cn;
-
-       index index.html;
-
-       location / {
-            proxy_pass http://127.0.0.1:8000;
-       }
-       location /ws {
-           proxy_pass http://127.0.0.1:8000/ws;
-           proxy_http_version 1.1;
-           proxy_set_header Upgrade $http_upgrade;
-           proxy_set_header Connection "upgrade";
-       }
-}
-```
 ### 参考资料
 
 - UI : https://github.com/ccforward/cc/issues/51
