@@ -5,7 +5,6 @@
 该游戏是基于Websocket开发的，采用Go + Bootstrap5   
 你可以了解到:
 - 五子棋盘的实现 --> internal/chessboard
-- 如何优雅地处理通信消息 --> internal/httpserver/httpserver.go
 - 简单的断线重连
 
 ### 特性
