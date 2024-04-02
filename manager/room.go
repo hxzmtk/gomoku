@@ -4,10 +4,11 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/zqb7/gomoku/errex"
 	"github.com/zqb7/gomoku/internal/chessboard"
-	"github.com/zqb7/gomoku/internal/httpserver"
+	"github.com/zqb7/gomoku/internal/message"
+	"github.com/zqb7/gomoku/internal/session"
 	"github.com/zqb7/gomoku/objs"
+	"github.com/zqb7/gomoku/pkg/errex"
 )
 
 type RoomManager struct {
@@ -45,25 +46,25 @@ func (m *RoomManager) ListRooms() []objs.Room {
 	return rooms
 }
 
-func (m *RoomManager) CreateRoom(conn *httpserver.Conn) (*objs.Room, error) {
-	_, ok := m.users[conn.Username]
+func (m *RoomManager) CreateRoom(s *session.Session) (*objs.Room, error) {
+	_, ok := m.users[s.Username]
 	if ok {
 		return nil, errex.ErrDupCreateRoom
 	}
 	newRoom := m.createRoom()
-	newRoom.Master = manager.UserManager.GetUser(conn)
+	newRoom.Master = manager.UserManager.GetUser(s)
 	m.addRoom(newRoom)
 	m.addUserRecord(newRoom.Master.Username, newRoom.Id)
 	return newRoom, nil
 
 }
 
-func (m *RoomManager) JoinRoom(conn *httpserver.Conn, roomId int) error {
+func (m *RoomManager) JoinRoom(s *session.Session, roomId int) error {
 	room, ok := m.rooms[roomId]
 	if !ok {
 		return errex.ErrNotExistedRoom
 	}
-	user := manager.UserManager.GetUser(conn)
+	user := manager.UserManager.GetUser(s)
 	if room.Master == user {
 		return errex.ErrInRoom
 	}
@@ -73,7 +74,7 @@ func (m *RoomManager) JoinRoom(conn *httpserver.Conn, roomId int) error {
 	} else if room.Master != nil && room.Enemy != nil {
 		return errex.ErrJoinRoom
 	} else {
-		room.Enemy = manager.UserManager.GetUser(conn)
+		room.Enemy = manager.UserManager.GetUser(s)
 	}
 	room.NtfJoinRoom()
 	m.addUserRecord(user.Username, room.Id)
@@ -81,12 +82,12 @@ func (m *RoomManager) JoinRoom(conn *httpserver.Conn, roomId int) error {
 
 }
 
-func (m *RoomManager) ChessboardWalk(conn *httpserver.Conn, roomId, x, y int) (chessboard.Hand, error) {
+func (m *RoomManager) ChessboardWalk(s *session.Session, roomId, x, y int) (chessboard.Hand, error) {
 	room, ok := m.rooms[roomId]
 	if !ok {
 		return chessboard.NilHand, errex.ErrNotExistedRoom
 	}
-	user := manager.UserManager.GetUser(conn)
+	user := manager.UserManager.GetUser(s)
 	if room.CheckIsWathingUser(user.Username) {
 		return chessboard.NilHand, errex.ErrIsWatchingUser
 	}
@@ -103,7 +104,7 @@ func (m *RoomManager) ChessboardWalk(conn *httpserver.Conn, roomId, x, y int) (c
 	return room.GetMyHand(user), room.GoSet(user, x, y)
 }
 
-func (m *RoomManager) StartGame(conn *httpserver.Conn, roomId int) error {
+func (m *RoomManager) StartGame(s *session.Session, roomId int) error {
 	room, err := m.getRoom(roomId)
 	if err != nil {
 		return err
@@ -111,7 +112,7 @@ func (m *RoomManager) StartGame(conn *httpserver.Conn, roomId int) error {
 	if room.Started {
 		return errex.ErrGameStarted
 	}
-	user := manager.UserManager.GetUser(conn)
+	user := manager.UserManager.GetUser(s)
 	if room.Master != user {
 		return errex.ErrNotRoomMaster
 	}
@@ -122,12 +123,12 @@ func (m *RoomManager) StartGame(conn *httpserver.Conn, roomId int) error {
 	return nil
 }
 
-func (m *RoomManager) RestartGame(conn *httpserver.Conn, roomId int) error {
+func (m *RoomManager) RestartGame(s *session.Session, roomId int) error {
 	room, err := m.getRoom(roomId)
 	if err != nil {
 		return err
 	}
-	user := manager.UserManager.GetUser(conn)
+	user := manager.UserManager.GetUser(s)
 	if room.Master != user {
 		return errex.ErrNotRoomMaster
 	}
@@ -138,23 +139,23 @@ func (m *RoomManager) RestartGame(conn *httpserver.Conn, roomId int) error {
 	return nil
 }
 
-func (m *RoomManager) LeaveRoom(conn *httpserver.Conn, roomId int) error {
+func (m *RoomManager) LeaveRoom(s *session.Session, roomId int) error {
 	room, err := m.getRoom(roomId)
 	if err != nil {
 		return err
 	}
-	user := manager.UserManager.GetUser(conn)
+	user := manager.UserManager.GetUser(s)
 	room.Leave(user)
 	m.deleteUserRecord(user.Username)
 	return nil
 }
 
-func (m *RoomManager) WatchGame(conn *httpserver.Conn, roomId int) error {
+func (m *RoomManager) WatchGame(s *session.Session, roomId int) error {
 	room, err := m.getRoom(roomId)
 	if err != nil {
 		return err
 	}
-	user := manager.UserManager.GetUser(conn)
+	user := manager.UserManager.GetUser(s)
 	if err := room.JoinWatch(user); err != nil {
 		return err
 	}
@@ -183,8 +184,8 @@ func (m *RoomManager) createRoom() *objs.Room {
 	return newRoom
 }
 
-func (m *RoomManager) GetRoom(conn *httpserver.Conn) *objs.Room {
-	if roomId, ok := m.users[conn.Username]; !ok {
+func (m *RoomManager) GetRoom(s *session.Session) *objs.Room {
+	if roomId, ok := m.users[s.Username]; !ok {
 		return nil
 	} else {
 		return m.rooms[roomId]
@@ -211,7 +212,7 @@ func (m *RoomManager) notifyEnemyMsg(username, msg string) {
 	user, ok3 := manager.UserManager.users[username]
 	if ok1 && ok2 && ok3 {
 		if enemy := room.GetEnemy(user); enemy != nil {
-			enemy.Ntf(&httpserver.NtfCommonMsg{Msg: msg})
+			enemy.Ntf(&message.NtfCommonMsg{Msg: msg})
 		}
 	}
 }

@@ -4,9 +4,9 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/zqb7/gomoku/errex"
 	"github.com/zqb7/gomoku/internal/chessboard"
-	"github.com/zqb7/gomoku/internal/httpserver"
+	"github.com/zqb7/gomoku/internal/message"
+	"github.com/zqb7/gomoku/pkg/errex"
 )
 
 type Room struct {
@@ -90,7 +90,7 @@ func (m *Room) Leave(user *User) {
 	}
 	m.Enemy = nil
 	if m.Master != nil {
-		m.Master.Ntf(&httpserver.NtfLeaveRoom{})
+		m.Master.Ntf(&message.NtfLeaveRoom{})
 	}
 }
 
@@ -102,7 +102,7 @@ func (m *Room) JoinWatch(user *User) error {
 		return errex.ErrInRoom
 	}
 	m.watch[user.Username] = user
-	user.Ntf(&httpserver.NtfWalkWatchingUser{Walks: m.chessboard.GetState(), Latest: m.Latest})
+	user.Ntf(&message.NtfWalkWatchingUser{Walks: m.chessboard.GetState(), Latest: m.Latest})
 	return nil
 }
 
@@ -116,8 +116,8 @@ func (m *Room) ntfStartGame() {
 	if m.firstMove == m.Master {
 		hand = chessboard.BlackHand
 	}
-	m.Master.Ntf(&httpserver.NtfStartGame{Hand: hand})
-	m.Enemy.Ntf(&httpserver.NtfStartGame{Hand: hand.Reverse()})
+	m.Master.Ntf(&message.NtfStartGame{Hand: hand})
+	m.Enemy.Ntf(&message.NtfStartGame{Hand: hand.Reverse()})
 }
 
 func (m *Room) ntfRestartGame() {
@@ -125,8 +125,8 @@ func (m *Room) ntfRestartGame() {
 	if m.firstMove == m.Master {
 		hand = chessboard.BlackHand
 	}
-	m.Master.Ntf(&httpserver.NtfRestartGame{Hand: hand})
-	m.Enemy.Ntf(&httpserver.NtfRestartGame{Hand: hand.Reverse()})
+	m.Master.Ntf(&message.NtfRestartGame{Hand: hand})
+	m.Enemy.Ntf(&message.NtfRestartGame{Hand: hand.Reverse()})
 }
 
 func (m *Room) NtfJoinRoom() {
@@ -134,26 +134,26 @@ func (m *Room) NtfJoinRoom() {
 	if user == nil {
 		user = m.Master
 	}
-	m.Master.Ntf(&httpserver.NtfJoinRoom{Username: user.Username})
+	m.Master.Ntf(&message.NtfJoinRoom{Username: user.Username})
 }
 
 func (m *Room) ntfWalk(x, y int, hand chessboard.Hand) {
-	m.Master.Ntf(&httpserver.NtfWalk{X: x, Y: y, Hand: hand})
-	m.Enemy.Ntf(&httpserver.NtfWalk{X: x, Y: y, Hand: hand})
+	m.Master.Ntf(&message.NtfWalk{X: x, Y: y, Hand: hand})
+	m.Enemy.Ntf(&message.NtfWalk{X: x, Y: y, Hand: hand})
 
 	walks := m.chessboard.GetState()
 	for _, user := range m.watch {
-		user.Ntf(&httpserver.NtfWalkWatchingUser{Walks: walks, Latest: chessboard.XY{X: x, Y: y, Hand: hand}})
+		user.Ntf(&message.NtfWalkWatchingUser{Walks: walks, Latest: chessboard.XY{X: x, Y: y, Hand: hand}})
 	}
 }
 
 func (m *Room) ntfGameOver() {
 	if m.Master == m.winner {
-		m.Master.Ntf(&httpserver.NtfGameOver{Msg: "恭喜您获得胜利"})
-		m.Enemy.Ntf(&httpserver.NtfGameOver{Msg: "您输了,请再接再厉"})
+		m.Master.Ntf(&message.NtfGameOver{Msg: "恭喜您获得胜利"})
+		m.Enemy.Ntf(&message.NtfGameOver{Msg: "您输了,请再接再厉"})
 	} else {
-		m.Enemy.Ntf(&httpserver.NtfGameOver{Msg: "恭喜您获得胜利"})
-		m.Master.Ntf(&httpserver.NtfGameOver{Msg: "您输了,请再接再厉"})
+		m.Enemy.Ntf(&message.NtfGameOver{Msg: "恭喜您获得胜利"})
+		m.Master.Ntf(&message.NtfGameOver{Msg: "您输了,请再接再厉"})
 	}
 }
 
@@ -163,7 +163,7 @@ func (m *Room) GoSet(user *User, x, y int) error {
 			return errex.ErrPaused
 		}
 		m.pause = false
-		user.Ntf(&httpserver.NtfAgreeRegret{Agree: false})
+		user.Ntf(&message.NtfAgreeRegret{Agree: false})
 	}
 	if m.winner != nil {
 		return errex.ErrGameOver
@@ -220,7 +220,7 @@ func (m *Room) AckRegret(user *User) error {
 	if m.currentMove != user {
 		return errex.ErrRegretWait
 	}
-	m.GetEnemy(user).Ntf(&httpserver.NtfAskRegret{})
+	m.GetEnemy(user).Ntf(&message.NtfAskRegret{})
 	m.pause = true
 	m.pauseAt = time.Now()
 	return nil
@@ -229,7 +229,7 @@ func (m *Room) AckRegret(user *User) error {
 func (m *Room) AgreeRegret(user *User, agree bool) {
 	m.pause = false
 
-	m.GetEnemy(user).Ntf(&httpserver.NtfAgreeRegret{Agree: agree})
+	m.GetEnemy(user).Ntf(&message.NtfAgreeRegret{Agree: agree})
 	if agree {
 		m.rollBack()
 	}
@@ -247,7 +247,7 @@ func (m *Room) rollBack() {
 	m.delRecords(stepCount)
 
 	m.Latest = m.walkRecords[len(m.walkRecords)-1]
-	ntf := &httpserver.NtfSyncWalk{
+	ntf := &message.NtfSyncWalk{
 		Walks:  m.chessboard.GetState(),
 		Latest: m.Latest,
 	}

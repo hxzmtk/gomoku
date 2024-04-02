@@ -213,156 +213,162 @@ function generate_board(row, col){
 
 function handle(event) {
     try {
-        let msg = JSON.parse(event.data)
-        if (!msg.hasOwnProperty("msgId")){
-            console.log("invalid msg:",msg)
-            return
-        }
-        switch (msg.msgId) {
-            case -msgId.error:
-                modalSystemMessage(msg.msg)
-                break;
-            case -msgId.connect:
-                sessionStorage.setItem("un",msg.username)
-                user.name = msg.username
-                document.getElementById("myname").innerText = user.name
-                if (msg.roomId > 0) {
-                    document.getElementById("room-number-info").innerHTML = msg.roomId
+        let reader= new FileReader();
+        reader.readAsText(event.data,"UTF-8")
+        let msg = {}
+        reader.onload=(e)=>{
+            msg = JSON.parse(reader.result)
+            if (!msg.hasOwnProperty("msgId")){
+                console.log("invalid msg:",msg)
+                return
+            }
+            switch (msg.msgId) {
+                case -msgId.error:
+                    modalSystemMessage(msg.msg)
+                    break;
+                case -msgId.connect:
+                    sessionStorage.setItem("un",msg.username)
+                    user.name = msg.username
+                    document.getElementById("myname").innerText = user.name
+                    if (msg.roomId > 0) {
+                        document.getElementById("room-number-info").innerHTML = msg.roomId
+                        document.getElementById("dating").classList.add("d-none")
+                        document.getElementById("room").classList.remove("d-none")
+                        msg.walks.forEach(element =>{
+                            walk(element.x,element.y,element.hand)
+                        })
+                        if (!msg.isWatcher){
+                            user.myhand = msg.myhand
+                            user.lastPos.x = msg.latest.x
+                            user.lastPos.y = msg.latest.y
+                            updateStatus(msg.latest.hand)
+                        }
+                        if (msg.latest.x >= 0){
+                            mark(msg.latest.x,msg.latest.y)
+                        }
+                    } else {
+                        listRoom()
+                    }
+                    break;
+                case -msgId.listRoom:
+                    let tmp = ""
+                    msg.data.forEach(element => {
+                        element.master = element.master == "" ? "无":element.master
+                        element.enemy = element.enemy == "" ? "无":element.enemy
+                        isDisabled = element.isFull == true ? "disabled": ""
+                        funcName = element.isFull == true ? "watchGame": "joinRoom"
+                        info = element.isFull == true ? "观战": "加入"
+                        tmp += `<tr>
+                        <th scope="row">${element.roomId}</th>
+                        <td>${element.master}</td>
+                        <td>${element.enemy}</td>
+                        <td><button type="button" class="btn btn-sm btn-primary" onclick="${funcName}(${element.roomId})">${info}</button></td>
+                      </tr>`
+                    });
+                    document.getElementById("dating-data").innerHTML = tmp
+                    break;
+                case -msgId.createRoom:
+                    user.isMaster = true
+                    generate_board(15,15)
                     document.getElementById("dating").classList.add("d-none")
                     document.getElementById("room").classList.remove("d-none")
+                    document.getElementById("room-number-info").innerHTML = msg.roomId
+                    break;
+                case -msgId.joinRoom:
+                    generate_board(15,15)
+                    document.getElementById("dating").classList.add("d-none")
+                    document.getElementById("room").classList.remove("d-none")
+                    document.getElementById("room-number-info").innerHTML = msg.roomId
+                    break;
+                case -msgId.chessboardWalk:
+                    break;
+                case -msgId.startGame:
+                    break;
+                case -msgId.restartGame:
+                    modalSystemMessage("游戏已重开")
+                    break;
+                case -msgId.leaveRoom:
+                    document.getElementById("dating").classList.remove("d-none")
+                    document.getElementById("room").classList.add("d-none")
+                    listRoom()
+                    resetGame()
+                    break;
+                case -msgId.watchGame:
+                    document.getElementById("dating").classList.add("d-none")
+                    document.getElementById("room").classList.remove("d-none")
+                    document.getElementById("room-number-info").innerHTML = msg.roomId
+                    break;
+                case -msgId.askRegret:
+                    break;
+                case -msgId.agreeRegret:
+                    break;
+    
+                case msgId.ntfJoinRoom:
+                    if (msg.username == user.name) {
+                        modalSystemMessage("您成为房主了")
+                    }else {
+                        modalStartGame(msg.username)
+                    }
+                    break;
+                case msgId.ntfStartGame:
+                    user.myhand = msg.hand
+                    if (!user.isMaster){modalSystemMessage("游戏开始了")}
+                    updateStatus(msg.hand)
+                    break;
+                case msgId.ntfWalk:
+                    walk(msg.x,msg.y,msg.hand)
+                    mark(msg.x,msg.y)
+                    updateStatus(msg.hand)
+                    break;
+                case msgId.ntfGameOver:
+                    modalSystemMessage(msg.msg)
+                    break;
+                case msgId.ntfRestartGame:
+                    resetGame()
+                    user.myhand = msg.hand
+                    if (!user.isMaster){modalSystemMessage("房主重开了游戏")}
+                    updateStatus(msg.hand)
+                    break;
+                case msgId.ntfLeaveRoom:
+                    if (!user.isMaster){
+                        modalSystemMessage("对方离开了,您已成为房主")
+                        user.isMaster = true
+                    }else {
+                        modalSystemMessage("对方离开了该房间")
+                    }
+                    resetGame()
+                    break;
+                case msgId.ntfWalkWatchingUser:
                     msg.walks.forEach(element =>{
                         walk(element.x,element.y,element.hand)
                     })
-                    if (!msg.isWatcher){
-                        user.myhand = msg.myhand
-                        user.lastPos.x = msg.latest.x
-                        user.lastPos.y = msg.latest.y
-                        updateStatus(msg.latest.hand)
+                    mark(msg.latest.x,msg.latest.y)
+                    break;
+                case msgId.ntfAskRegret:
+                    modalAskRegret()
+                    break;
+                case msgId.ntfAgreeRegret:
+                    if (msg.agree){
+                        modalSystemMessage("对方同意了您的悔棋")
+                    } else{
+                        modalSystemMessage("对方拒绝悔棋了")
                     }
-                    if (msg.latest.x >= 0){
-                        mark(msg.latest.x,msg.latest.y)
-                    }
-                } else {
-                    listRoom()
-                }
-                break;
-            case -msgId.listRoom:
-                let tmp = ""
-                msg.data.forEach(element => {
-                    element.master = element.master == "" ? "无":element.master
-                    element.enemy = element.enemy == "" ? "无":element.enemy
-                    isDisabled = element.isFull == true ? "disabled": ""
-                    funcName = element.isFull == true ? "watchGame": "joinRoom"
-                    info = element.isFull == true ? "观战": "加入"
-                    tmp += `<tr>
-                    <th scope="row">${element.roomId}</th>
-                    <td>${element.master}</td>
-                    <td>${element.enemy}</td>
-                    <td><button type="button" class="btn btn-sm btn-primary" onclick="${funcName}(${element.roomId})">${info}</button></td>
-                  </tr>`
-                });
-                document.getElementById("dating-data").innerHTML = tmp
-                break;
-            case -msgId.createRoom:
-                user.isMaster = true
-                generate_board(15,15)
-                document.getElementById("dating").classList.add("d-none")
-                document.getElementById("room").classList.remove("d-none")
-                document.getElementById("room-number-info").innerHTML = msg.roomId
-                break;
-            case -msgId.joinRoom:
-                generate_board(15,15)
-                document.getElementById("dating").classList.add("d-none")
-                document.getElementById("room").classList.remove("d-none")
-                document.getElementById("room-number-info").innerHTML = msg.roomId
-                break;
-            case -msgId.chessboardWalk:
-                break;
-            case -msgId.startGame:
-                break;
-            case -msgId.restartGame:
-                modalSystemMessage("游戏已重开")
-                break;
-            case -msgId.leaveRoom:
-                document.getElementById("dating").classList.remove("d-none")
-                document.getElementById("room").classList.add("d-none")
-                listRoom()
-                resetGame()
-                break;
-            case -msgId.watchGame:
-                document.getElementById("dating").classList.add("d-none")
-                document.getElementById("room").classList.remove("d-none")
-                document.getElementById("room-number-info").innerHTML = msg.roomId
-                break;
-            case -msgId.askRegret:
-                break;
-            case -msgId.agreeRegret:
-                break;
-
-            case msgId.ntfJoinRoom:
-                if (msg.username == user.name) {
-                    modalSystemMessage("您成为房主了")
-                }else {
-                    modalStartGame(msg.username)
-                }
-                break;
-            case msgId.ntfStartGame:
-                user.myhand = msg.hand
-                if (!user.isMaster){modalSystemMessage("游戏开始了")}
-                updateStatus(msg.hand)
-                break;
-            case msgId.ntfWalk:
-                walk(msg.x,msg.y,msg.hand)
-                mark(msg.x,msg.y)
-                updateStatus(msg.hand)
-                break;
-            case msgId.ntfGameOver:
-                modalSystemMessage(msg.msg)
-                break;
-            case msgId.ntfRestartGame:
-                resetGame()
-                user.myhand = msg.hand
-                if (!user.isMaster){modalSystemMessage("房主重开了游戏")}
-                updateStatus(msg.hand)
-                break;
-            case msgId.ntfLeaveRoom:
-                if (!user.isMaster){
-                    modalSystemMessage("对方离开了,您已成为房主")
-                    user.isMaster = true
-                }else {
-                    modalSystemMessage("对方离开了该房间")
-                }
-                resetGame()
-                break;
-            case msgId.ntfWalkWatchingUser:
-                msg.walks.forEach(element =>{
-                    walk(element.x,element.y,element.hand)
-                })
-                mark(msg.latest.x,msg.latest.y)
-                break;
-            case msgId.ntfAskRegret:
-                modalAskRegret()
-                break;
-            case msgId.ntfAgreeRegret:
-                if (msg.agree){
-                    modalSystemMessage("对方同意了您的悔棋")
-                } else{
-                    modalSystemMessage("对方拒绝悔棋了")
-                }
-                break
-            case msgId.ntfSyncWalk:
-                generate_board(15,15)
-                msg.walks.forEach(element =>{
-                    walk(element.x,element.y,element.hand)
-                })
-                mark(msg.latest.x,msg.latest.y)
-                break;
-            case msgId.ntfCommonMsg:
-                toastShow(msg.msg)
-                break;
-            default:
-                break;
+                    break
+                case msgId.ntfSyncWalk:
+                    generate_board(15,15)
+                    msg.walks.forEach(element =>{
+                        walk(element.x,element.y,element.hand)
+                    })
+                    mark(msg.latest.x,msg.latest.y)
+                    break;
+                case msgId.ntfCommonMsg:
+                    toastShow(msg.msg)
+                    break;
+                default:
+                    break;
+            }
         }
+        
     } catch (error) {
         console.log(error)
     }

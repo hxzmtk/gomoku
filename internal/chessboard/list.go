@@ -1,6 +1,6 @@
 package chessboard
 
-import "github.com/zqb7/gomoku/errex"
+import "github.com/zqb7/gomoku/pkg/errex"
 
 /*
 链表实现的棋盘

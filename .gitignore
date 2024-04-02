@@ -2,3 +2,4 @@ __debug_bin
 .vscode
 .idea
 localhost.db
+__debug_bin*

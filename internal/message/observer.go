@@ -1,5 +1,4 @@
-package httpserver
-
+package message
 
 type IObserver interface {
 	Do(subject ISubject, msg IMessage) error

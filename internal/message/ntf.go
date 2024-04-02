@@ -1,4 +1,4 @@
-package httpserver
+package message
 
 import "github.com/zqb7/gomoku/internal/chessboard"
 

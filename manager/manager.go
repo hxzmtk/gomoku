@@ -2,6 +2,12 @@ package manager
 
 import (
 	"flag"
+	"runtime/debug"
+	"time"
+
+	log "github.com/sirupsen/logrus"
+	"github.com/zqb7/gomoku/internal/message"
+	"github.com/zqb7/gomoku/internal/session"
 )
 
 var httpPort int = 8000
@@ -47,7 +53,48 @@ func (m *Manager) Init() error {
 func (m *Manager) Stop() {
 }
 
+func (m *Manager) DisConnect(s *session.Session) {
+	m.ClientManager.addWaitSession(s)
+	m.RoomManager.notifyEnemyMsg(s.Username, "对方掉线了")
+	s.WaitTimer = time.NewTimer(10 * time.Second)
+	go func() {
+		select {
+		case <-s.WaitTimer.C:
+			m.UserManager.mux.RLock()
+			if user := m.UserManager.GetUser(s); user != nil && !user.Online() {
+				m.UserManager.disconnect(s.Username)
+				m.RoomManager.delete(s.Username)
+			}
+			m.UserManager.mux.RUnlock()
+		case <-s.StopwaitTimer:
+			m.RoomManager.notifyEnemyMsg(s.Username, "对方已重连")
+			log.Debugf("user:%s, reconnect", s.Username)
+		}
+		s.WaitTimer.Stop()
+		m.ClientManager.delWaitSession(s)
+	}()
+}
+
+func (m *Manager) Handle(s *session.Session, msg message.IMessage) (message.IMessage, error) {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Errorf("%s", debug.Stack())
+		}
+	}()
+	handle, ok := m.ClientManager.handles[msg.GetMsgId()]
+	if !ok {
+		log.Errorf("handle not existed,msgId:%d", msg.GetMsgId())
+		return nil, nil
+	}
+	msg, err := handle(s, msg)
+	return msg, err
+}
+
 var manager = &Manager{modules: make([]IModule, 0)}
+
+func init() {
+	session.Manager = manager
+}
 
 func Get() *Manager {
 	return manager
