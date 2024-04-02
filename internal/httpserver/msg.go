@@ -3,7 +3,7 @@ package httpserver
 import (
 	"encoding/json"
 
-	"github.com/zqhhh/gomoku/internal/chessboard"
+	"github.com/zqb7/gomoku/internal/chessboard"
 )
 
 type MsgRoomInfo struct {

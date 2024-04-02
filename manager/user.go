@@ -3,9 +3,9 @@ package manager
 import (
 	"sync"
 
-	"github.com/zqhhh/gomoku/errex"
-	"github.com/zqhhh/gomoku/internal/httpserver"
-	"github.com/zqhhh/gomoku/objs"
+	"github.com/zqb7/gomoku/errex"
+	"github.com/zqb7/gomoku/internal/httpserver"
+	"github.com/zqb7/gomoku/objs"
 )
 
 type UserManager struct {

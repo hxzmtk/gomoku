@@ -1,4 +1,4 @@
-module github.com/zqhhh/gomoku
+module github.com/zqb7/gomoku
 
 go 1.15
 

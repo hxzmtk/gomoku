@@ -4,9 +4,9 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/zqhhh/gomoku/errex"
-	"github.com/zqhhh/gomoku/internal/chessboard"
-	"github.com/zqhhh/gomoku/internal/httpserver"
+	"github.com/zqb7/gomoku/errex"
+	"github.com/zqb7/gomoku/internal/chessboard"
+	"github.com/zqb7/gomoku/internal/httpserver"
 )
 
 type Room struct {

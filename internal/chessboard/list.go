@@ -1,6 +1,6 @@
 package chessboard
 
-import "github.com/zqhhh/gomoku/errex"
+import "github.com/zqb7/gomoku/errex"
 
 /*
 链表实现的棋盘
@@ -45,8 +45,10 @@ func (n *node) rightBottom() *node {
 /*
 落子
 横坐标为x，纵坐标为y
-	x
- ----------->
+
+		x
+	 ----------->
+
 |
 |
 | y
@@ -136,7 +138,7 @@ func (n *node) Reset() {
 	}
 }
 
-//检查是否已分出胜负
+// 检查是否已分出胜负
 func (n *node) IsWin(x, y int) bool {
 	offset := n.get(x, y)
 	h := offset.value
@@ -270,7 +272,7 @@ func (n *node) IsWin(x, y int) bool {
 	}
 }
 
-//棋盘是否已满？
+// 棋盘是否已满？
 func (n *node) IsFull() bool {
 	for x := 0; x < n.getWidth(); x++ {
 		for y := 0; y < n.getHeight(); y++ {

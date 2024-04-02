@@ -1,6 +1,6 @@
 package httpserver
 
-import "github.com/zqhhh/gomoku/internal/chessboard"
+import "github.com/zqb7/gomoku/internal/chessboard"
 
 const (
 	_ = iota + 1000

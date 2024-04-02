@@ -6,8 +6,8 @@ import (
 	"syscall"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/zqhhh/gomoku/handler"
-	"github.com/zqhhh/gomoku/manager"
+	"github.com/zqb7/gomoku/handler"
+	"github.com/zqb7/gomoku/manager"
 )
 
 func init() {

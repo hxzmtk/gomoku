@@ -3,7 +3,7 @@ package objs
 import (
 	"time"
 
-	"github.com/zqhhh/gomoku/internal/httpserver"
+	"github.com/zqb7/gomoku/internal/httpserver"
 )
 
 type User struct {

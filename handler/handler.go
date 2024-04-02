@@ -1,9 +1,9 @@
 package handler
 
 import (
-	"github.com/zqhhh/gomoku/errex"
-	"github.com/zqhhh/gomoku/internal/httpserver"
-	"github.com/zqhhh/gomoku/manager"
+	"github.com/zqb7/gomoku/errex"
+	"github.com/zqb7/gomoku/internal/httpserver"
+	"github.com/zqb7/gomoku/manager"
 )
 
 var (

@@ -5,8 +5,8 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/zqhhh/gomoku/errex"
-	"github.com/zqhhh/gomoku/internal/httpserver"
+	"github.com/zqb7/gomoku/errex"
+	"github.com/zqb7/gomoku/internal/httpserver"
 )
 
 type ClientManager struct {
