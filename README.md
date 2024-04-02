@@ -20,6 +20,8 @@
 ```
 go run main.go
 ```
+- UI
+![image](docs/img/1.png)
 
 ### 参考资料
 
